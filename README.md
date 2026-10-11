@@ -19,6 +19,10 @@ Skeleton. Working so far: the Desktop shortcuts source (targets only), search, r
 | Esc | Hide |
 | Ctrl+Q | Quit (temporary, until the tray icon exists) |
 
+## Versioning
+
+Versions are `MAJOR.MINOR`: the first is **0.1**, the next **0.2**. The number is set once, in `Directory.Build.props`, and is stamped into all produced assemblies (including `coursee.exe`). The launcher window shows it at the bottom right.
+
 ## Architecture
 
 ```

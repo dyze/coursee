@@ -23,6 +23,13 @@ sources       DesktopShortcutsSource, then FirefoxBookmarksSource, ...
 ## Stack
 .NET 10, C#, WPF, xUnit. Shared settings live in `Directory.Build.props`; build output goes to `artifacts/`.
 
+## Versioning
+- Format `MAJOR.MINOR`, starting at **0.1**, then 0.2, and so on. No `v` prefix, and no 1.0 until the owner decides.
+- One source of truth: `<Version>` in `Directory.Build.props`. Never write the version anywhere else.
+- It is stamped into every assembly of every project (AssemblyVersion, FileVersion, InformationalVersion), including `coursee.exe`.
+- The UI shows it at the bottom right of the launcher window, read through `AppVersion` in `Core`.
+- Bump it only when the owner asks.
+
 ## Repo layout
 `src/`, `tests/`, `docs/`, `build/`, `lib/`, `packages/`, `samples/`, `artifacts/` (ignored). Do not add top-level folders without asking.
 

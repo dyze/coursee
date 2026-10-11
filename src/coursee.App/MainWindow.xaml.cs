@@ -16,6 +16,7 @@ public partial class MainWindow : Window
         _sources = sources;
         _recents = recents;
         InitializeComponent();
+        VersionText.Text = $"coursee {AppVersion.Of(typeof(MainWindow).Assembly)}";
     }
 
     public void Toggle()

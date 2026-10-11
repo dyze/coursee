@@ -14,6 +14,7 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
     <TextBox x:Name="SearchBox"
@@ -34,5 +35,12 @@
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>
+
+    <TextBlock x:Name="VersionText"
+               Grid.Row="2"
+               Margin="0,6,0,0"
+               HorizontalAlignment="Right"
+               FontSize="10"
+               Opacity="0.5" />
   </Grid>
 </Window>
