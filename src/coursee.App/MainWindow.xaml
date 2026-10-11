@@ -13,6 +13,7 @@
   <Grid Margin="12">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
@@ -39,22 +40,41 @@
               Click="SettingsButton_Click" />
     </Grid>
 
+    <TextBlock x:Name="ActionText"
+               Grid.Row="1"
+               Margin="4,6,0,0"
+               FontSize="12"
+               Opacity="0.7" />
+
     <ListBox x:Name="ResultsList"
-             Grid.Row="1"
-             Margin="0,8,0,0"
-             MouseDoubleClick="ResultsList_MouseDoubleClick">
+             Grid.Row="2"
+             Margin="0,6,0,0"
+             MouseDoubleClick="ResultsList_MouseDoubleClick"
+             SelectionChanged="ResultsList_SelectionChanged">
       <ListBox.ItemTemplate>
         <DataTemplate>
-          <StackPanel Margin="4">
-            <TextBlock Text="{Binding Name}" FontSize="15" />
-            <TextBlock Text="{Binding Target}" FontSize="11" Opacity="0.6" />
-          </StackPanel>
+          <Grid Margin="4">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+              <TextBlock Text="{Binding Name}" FontSize="15" TextTrimming="CharacterEllipsis" />
+              <TextBlock Text="{Binding Target}" FontSize="11" Opacity="0.6" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <TextBlock Grid.Column="1"
+                       Margin="12,0,0,0"
+                       VerticalAlignment="Center"
+                       FontSize="11"
+                       Opacity="0.6"
+                       Text="{Binding ActionLabel}" />
+          </Grid>
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>
 
     <StackPanel x:Name="SettingsPanel"
-                Grid.Row="1"
+                Grid.Row="2"
                 Margin="0,12,0,0"
                 Visibility="Collapsed">
       <TextBlock Text="Settings" FontSize="20" FontWeight="SemiBold" />
@@ -108,7 +128,7 @@
     </StackPanel>
 
     <TextBlock x:Name="VersionText"
-               Grid.Row="2"
+               Grid.Row="3"
                Margin="0,6,0,0"
                HorizontalAlignment="Right"
                FontSize="10"

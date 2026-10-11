@@ -15,7 +15,7 @@ Skeleton. Working so far: the Desktop shortcuts source (targets only), search, r
 | Ctrl+Alt+Space (default, configurable in Settings) | Show / hide the launcher |
 | Type | Filter resources |
 | Up / Down | Move selection |
-| Enter | Open the selected resource |
+| Enter | Open the selected resource. If nothing matches, act on the typed text like Win+R: open a URL, folder or file, or run a command. A line under the search box says which |
 | Gear button | Open / close settings (Windows integration: start with Windows; Sources: Firefox bookmarks; Launcher: hotkey and number of recent items) |
 | Esc | Close settings, or hide the launcher |
 | Ctrl+Q | Quit (temporary, until the tray icon exists) |

@@ -65,6 +65,7 @@ public partial class MainWindow : Window
     {
         StopCapturingHotkey();
         SettingsPanel.Visibility = Visibility.Collapsed;
+        ActionText.Visibility = Visibility.Visible;
         ResultsList.Visibility = Visibility.Visible;
         SearchBox.IsEnabled = true;
         SearchBox.Focus();
@@ -80,6 +81,7 @@ public partial class MainWindow : Window
         _loadingSettings = false;
 
         StopCapturingHotkey();
+        ActionText.Visibility = Visibility.Collapsed;
         ResultsList.Visibility = Visibility.Collapsed;
         SettingsPanel.Visibility = Visibility.Visible;
         SearchBox.IsEnabled = false;
@@ -101,14 +103,54 @@ public partial class MainWindow : Window
     private void Refresh()
     {
         var query = SearchBox.Text;
-        IReadOnlyList<Resource> items = string.IsNullOrWhiteSpace(query)
-            ? _recents.Items
-            : SearchEngine.Search(_all, query);
+        IReadOnlyList<Resource> items;
+
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            items = _recents.Items;
+        }
+        else
+        {
+            items = SearchEngine.Search(_all, query);
+
+            // Nothing matches: offer what the Windows Run dialog would do with the typed text.
+            if (items.Count == 0 && FallbackClassifier.Classify(query) is { } fallback)
+            {
+                items = [fallback];
+            }
+        }
 
         ResultsList.ItemsSource = items;
         if (items.Count > 0)
         {
             ResultsList.SelectedIndex = 0;
+        }
+
+        UpdateActionText();
+    }
+
+    private void UpdateActionText()
+    {
+        ActionText.Text = ResultsList.SelectedItem switch
+        {
+            Resource { Source: FallbackClassifier.SourceName } typed => $"Enter: {typed.ActionLabel} (what you typed)",
+            Resource resource => $"Enter: {resource.ActionLabel}",
+            _ => string.IsNullOrWhiteSpace(SearchBox.Text)
+                ? "Type to search, or type a path, URL or command"
+                : "No match",
+        };
+    }
+
+    private static void Launch(Resource resource)
+    {
+        if (resource.Kind == ResourceKind.Command)
+        {
+            var (fileName, arguments) = CommandLine.Split(resource.Target);
+            Process.Start(new ProcessStartInfo(fileName, arguments) { UseShellExecute = true });
+        }
+        else
+        {
+            Process.Start(new ProcessStartInfo(resource.Target) { UseShellExecute = true });
         }
     }
 
@@ -121,7 +163,7 @@ public partial class MainWindow : Window
 
         try
         {
-            Process.Start(new ProcessStartInfo(resource.Target) { UseShellExecute = true });
+            Launch(resource);
             _recents.Add(resource);
         }
         catch (Exception ex)
@@ -255,6 +297,8 @@ public partial class MainWindow : Window
     private void SearchBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e) => Refresh();
 
     private void ResultsList_MouseDoubleClick(object sender, MouseButtonEventArgs e) => OpenSelected();
+
+    private void ResultsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e) => UpdateActionText();
 
     private void SettingsButton_Click(object sender, RoutedEventArgs e)
     {
