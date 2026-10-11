@@ -26,15 +26,21 @@ Enter ─► open resource    Esc ─► hide
 - **Recents come from coursee only.** "Recent" means what was opened through coursee, not Windows' own recent list.
 - **Fast and out of the way.** Appears instantly on hotkey, hides on Esc or after opening.
 
-## v1 scope
+## Versioning
+- Format `MAJOR.MINOR`, starting at **0.1**, then 0.2, and so on. No `v` prefix, and no 1.0 until I decide.
+- The version is defined once (`Directory.Build.props`) and stamped into every produced assembly.
+- The version is shown in the UI, at the bottom right of the launcher window.
+
+## Version 0.1 scope
 1. Global hotkey toggles the compact window.
 2. Source #1: shortcuts (.lnk) on the Windows Desktop, resolved to their targets (files and folders).
 3. Search box with filtering as you type.
 4. Recent list (opened via coursee), shown when the search box is empty.
 5. Enter opens the target; Esc hides the window.
+6. The version number is shown in the window.
 
-## Planned sources (after v1)
-- Firefox shortcuts (exact meaning to be confirmed: bookmarks or other shortcut types)
+## Planned sources (after 0.1)
+- Firefox bookmarks
 - Other sources later, using the same plug-in contract
 
 ## Non-goals
@@ -46,5 +52,6 @@ Enter ─► open resource    Esc ─► hide
 ## Open questions
 - Hotkey choice and whether it should be configurable
 - Recent list: size limit, and ranking by recency only or recency plus frequency
-- Firefox source: bookmarks, or something else?
-- UI technology (the CSProjectTemplate decides what is natural)
+
+## Stack (decided)
+.NET 10, C#, WPF for the UI, xUnit for tests. See `CLAUDE.md` for the architecture rules.
