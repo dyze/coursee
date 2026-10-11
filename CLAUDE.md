@@ -44,6 +44,7 @@ sources       DesktopShortcutsSource, then FirefoxBookmarksSource, ...
 
 ## Git
 - Commit and push only when asked.
+- Create branches only when asked. Otherwise work on `main`.
 - Small commits, imperative subject line ("Add Firefox bookmarks source").
 
 ## Definition of done
