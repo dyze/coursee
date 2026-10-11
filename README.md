@@ -20,7 +20,7 @@ Working: sources (Desktop and Start Menu shortcuts, Firefox bookmarks, Windows R
 | Ctrl+Shift+Enter | Run the selected command or program as administrator (`.exe`, `.bat`, `.cmd`, `.com`, `.msc`) |
 | Del | On the recent list (search box empty): remove the selected item from recents |
 | Gear button | Open / close settings (Windows integration: start with Windows; Sources: Start Menu, Firefox bookmarks, Windows Run history; Launcher: hotkey and number of recent items) |
-| Log window | Settings > Logging > Open log window |
+| Log window | Tray menu > Log window, or Settings > Logging > Open log window |
 | Esc | Close settings, or hide the launcher |
 | Tray icon | Click: show the launcher. Menu: Show, Settings, Log window, Quit |
 
@@ -54,7 +54,7 @@ coursee.Core (search, recents, IResourceSource)
 sources: ShortcutsSource (Desktop, Start Menu) · FirefoxBookmarksSource · RunHistorySource
 ```
 
-`Core` has no Windows dependency, so it is fully unit-tested on any OS. Windows-specific parts (hotkey, `.lnk` resolution) live in `coursee.App`.
+`Core` has no Windows dependency, so it is fully unit-tested on any OS. Windows-specific parts (hotkey, tray icon, `.lnk` resolution, registry) live in `coursee.App`.
 
 ## Layout
 
@@ -63,7 +63,7 @@ sources: ShortcutsSource (Desktop, Start Menu) · FirefoxBookmarksSource · RunH
 | `src/` | Application code |
 | `tests/` | Unit tests |
 | `docs/` | Documentation |
-| `build/` | Build scripts and helpers |
+| `build/` | Build scripts and helpers (`installer.cmd` and `installer/coursee.iss` for the installer, `make_icon.py` for the app icon) |
 | `lib/` | Third-party binaries, if any |
 | `packages/` | Local NuGet packages, if any |
 | `samples/` | Samples |
