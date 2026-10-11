@@ -19,12 +19,14 @@ public sealed class FirefoxBookmarksSource : IResourceSource
         new(StringComparer.OrdinalIgnoreCase) { "http", "https", "ftp", "file" };
 
     private readonly string? _profileDirectory;
+    private readonly ILog _log;
     private string? _cachedStamp;
     private IReadOnlyList<Resource> _cached = [];
 
-    public FirefoxBookmarksSource(string? profileDirectory)
+    public FirefoxBookmarksSource(string? profileDirectory, ILog? log = null)
     {
         _profileDirectory = profileDirectory;
+        _log = log ?? NullLog.Instance;
     }
 
     public string Name => SourceName;
@@ -57,6 +59,7 @@ public sealed class FirefoxBookmarksSource : IResourceSource
         catch (Exception ex) when (ex is SqliteException or IOException or UnauthorizedAccessException)
         {
             // Keep the previous list; the next call will try again.
+            _log.Warn(Name, $"Cannot read the bookmarks: {ex.GetType().Name}: {ex.Message}");
         }
 
         return _cached;

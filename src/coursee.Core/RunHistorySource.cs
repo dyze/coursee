@@ -21,10 +21,12 @@ public sealed class RunHistorySource : IResourceSource
     private const string EntrySuffix = "\\1";
 
     private readonly IRunHistoryReader _reader;
+    private readonly ILog _log;
 
-    public RunHistorySource(IRunHistoryReader reader)
+    public RunHistorySource(IRunHistoryReader reader, ILog? log = null)
     {
         _reader = reader;
+        _log = log ?? NullLog.Instance;
     }
 
     public string Name => SourceName;
@@ -38,6 +40,7 @@ public sealed class RunHistorySource : IResourceSource
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
         {
+            _log.Warn(Name, $"Cannot read the Run history: {ex.GetType().Name}: {ex.Message}");
             return [];
         }
 

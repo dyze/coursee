@@ -12,6 +12,10 @@ public partial class MainWindow : Window
     private readonly SettingsStore _settings;
     private readonly IAutoStart _autoStart;
     private readonly IHotkeyRegistrar _hotkeys;
+    private readonly LogHub _logHub;
+    private readonly ILog _log;
+    private readonly SourceMonitor _monitor;
+    private LogWindow? _logWindow;
     private IReadOnlyList<Resource> _all = [];
     private bool _capturingHotkey;
     private bool _loadingSettings;
@@ -21,8 +25,12 @@ public partial class MainWindow : Window
         RecentStore recents,
         SettingsStore settings,
         IAutoStart autoStart,
-        IHotkeyRegistrar hotkeys)
+        IHotkeyRegistrar hotkeys,
+        LogHub logHub)
     {
+        _logHub = logHub;
+        _log = logHub.Filter;
+        _monitor = new SourceMonitor(_log);
         _sources = sources;
         _recents = recents;
         _settings = settings;
@@ -47,16 +55,34 @@ public partial class MainWindow : Window
 
     private void ShowLauncher()
     {
-        _all = _sources
-            .Where(s => _settings.IsSourceEnabled(s.Name))
-            .SelectMany(s => s.GetResources())
-            .ToList();
+        _log.Debug("Window", "Shown");
+        _all = LoadResources();
         SearchBox.Text = string.Empty;
         Refresh();
         ShowSearch();
         Show();
         Activate();
         SearchBox.Focus();
+    }
+
+    private List<Resource> LoadResources()
+    {
+        var all = new List<Resource>();
+        foreach (var source in _sources.Where(s => _settings.IsSourceEnabled(s.Name)))
+        {
+            try
+            {
+                var resources = source.GetResources();
+                _monitor.Observe(source.Name, resources);
+                all.AddRange(resources);
+            }
+            catch (Exception ex)
+            {
+                _log.Error(source.Name, "Source failed", ex);
+            }
+        }
+
+        return all;
     }
 
     private bool IsSettingsOpen => SettingsPanel.Visibility == Visibility.Visible;
@@ -76,6 +102,7 @@ public partial class MainWindow : Window
         AutoStartCheckBox.IsChecked = ReadAutoStart();
         FirefoxCheckBox.IsChecked = _settings.IsSourceEnabled(FirefoxBookmarksSource.SourceName);
         RunHistoryCheckBox.IsChecked = _settings.IsSourceEnabled(RunHistorySource.SourceName);
+        DebugLoggingCheckBox.IsChecked = _settings.DebugLogging;
 
         _loadingSettings = true;
         RecentsComboBox.SelectedItem = _settings.RecentsCapacity;
@@ -162,13 +189,18 @@ public partial class MainWindow : Window
             return;
         }
 
+        var typed = resource.Source == FallbackClassifier.SourceName;
         try
         {
             Launch(resource);
             _recents.Add(resource);
+            _log.Info(
+                "Action",
+                $"{resource.ActionLabel}: {resource.Target} ({(typed ? "typed" : resource.Source)}, {resource.Kind})");
         }
         catch (Exception ex)
         {
+            _log.Error("Action", $"{resource.ActionLabel} failed for {resource.Target}", ex);
             MessageBox.Show(ex.Message, "coursee");
             return;
         }
@@ -232,6 +264,7 @@ public partial class MainWindow : Window
             try
             {
                 _settings.SetHotkey(gesture);
+                _log.Info("Settings", $"Hotkey changed to {gesture}");
             }
             catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
             {
@@ -240,6 +273,7 @@ public partial class MainWindow : Window
         }
         else
         {
+            _log.Warn("Settings", $"Hotkey {gesture} is not available");
             MessageBox.Show($"The shortcut {gesture} is not available. Try another one.", "coursee");
         }
 
@@ -320,9 +354,11 @@ public partial class MainWindow : Window
         try
         {
             _autoStart.SetEnabled(wanted);
+            _log.Info("Settings", $"Start with Windows {(wanted ? "on" : "off")}");
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
         {
+            _log.Error("Settings", "Cannot change start with Windows", ex);
             MessageBox.Show(ex.Message, "coursee");
             AutoStartCheckBox.IsChecked = !wanted;
         }
@@ -340,9 +376,12 @@ public partial class MainWindow : Window
         try
         {
             _settings.SetSourceEnabled(sourceName, wanted);
+            _monitor.Reset(sourceName);
+            _log.Info("Settings", $"Source '{sourceName}' {(wanted ? "on" : "off")}");
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
         {
+            _log.Error("Settings", $"Cannot change source '{sourceName}'", ex);
             MessageBox.Show(ex.Message, "coursee");
             checkBox.IsChecked = !wanted;
         }
@@ -367,11 +406,45 @@ public partial class MainWindow : Window
         {
             _settings.SetRecentsCapacity(capacity);
             _recents.SetCapacity(capacity);
+            _log.Info("Settings", $"Recent items to keep: {capacity}");
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
         {
+            _log.Error("Settings", "Cannot change recent items", ex);
             MessageBox.Show(ex.Message, "coursee");
         }
+    }
+
+    private void DebugLoggingCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        var wanted = DebugLoggingCheckBox.IsChecked == true;
+
+        try
+        {
+            _settings.SetDebugLogging(wanted);
+            _logHub.SetDebug(wanted);
+            _log.Info("Settings", $"Detailed (debug) logging {(wanted ? "on" : "off")}");
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            _log.Error("Settings", "Cannot change debug logging", ex);
+            MessageBox.Show(ex.Message, "coursee");
+            DebugLoggingCheckBox.IsChecked = !wanted;
+        }
+    }
+
+    private void OpenLogButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_logWindow is { IsLoaded: true })
+        {
+            _logWindow.WindowState = WindowState.Normal;
+            _logWindow.Activate();
+            return;
+        }
+
+        _logWindow = new LogWindow(_logHub.Ring, _logHub.Directory);
+        _logWindow.Closed += (_, _) => _logWindow = null;
+        _logWindow.Show();
     }
 
     private void Window_Deactivated(object? sender, EventArgs e)

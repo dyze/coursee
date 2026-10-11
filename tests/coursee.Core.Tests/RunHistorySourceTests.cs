@@ -93,4 +93,17 @@ public class RunHistorySourceTests
     {
         Assert.Equal("Windows Run", new RunHistorySource(new FakeReader([])).Name);
     }
+
+    [Fact]
+    public void ReadFailure_IsLoggedAsAWarning()
+    {
+        var log = new RingLog();
+
+        var result = new RunHistorySource(new ThrowingReader(), log).GetResources();
+
+        Assert.Empty(result);
+        var entry = Assert.Single(log.Entries);
+        Assert.Equal(LogLevel.Warning, entry.Level);
+        Assert.Equal("Windows Run", entry.Category);
+    }
 }

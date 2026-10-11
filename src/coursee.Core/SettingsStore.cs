@@ -26,6 +26,7 @@ public sealed class SettingsStore
         RecentsCapacity = (data?.RecentsCapacity is int capacity and >= MinRecentsCapacity and <= MaxRecentsCapacity)
             ? capacity
             : DefaultRecentsCapacity;
+        DebugLogging = data?.DebugLogging ?? false;
     }
 
     /// <summary>The values offered in Settings for the number of recent items to keep.</summary>
@@ -34,6 +35,9 @@ public sealed class SettingsStore
     public HotkeyGesture Hotkey { get; private set; }
 
     public int RecentsCapacity { get; private set; }
+
+    /// <summary>When on, the log also records detailed (debug) entries. Off by default.</summary>
+    public bool DebugLogging { get; private set; }
 
     public bool IsSourceEnabled(string sourceName) => !_disabledSources.Contains(sourceName);
 
@@ -63,6 +67,12 @@ public sealed class SettingsStore
         Save();
     }
 
+    public void SetDebugLogging(bool enabled)
+    {
+        DebugLogging = enabled;
+        Save();
+    }
+
     private void Save()
     {
         var directory = Path.GetDirectoryName(_path);
@@ -74,7 +84,8 @@ public sealed class SettingsStore
         var data = new SettingsData(
             _disabledSources.Order(StringComparer.OrdinalIgnoreCase).ToList(),
             Hotkey.ToString(),
-            RecentsCapacity);
+            RecentsCapacity,
+            DebugLogging);
         File.WriteAllText(_path, JsonSerializer.Serialize(data));
     }
 
@@ -92,5 +103,5 @@ public sealed class SettingsStore
         }
     }
 
-    internal sealed record SettingsData(List<string>? DisabledSources, string? Hotkey, int? RecentsCapacity);
+    internal sealed record SettingsData(List<string>? DisabledSources, string? Hotkey, int? RecentsCapacity, bool? DebugLogging = null);
 }

@@ -103,6 +103,20 @@ public sealed class FirefoxBookmarksSourceTests : IDisposable
         Assert.Equal(new[] { "One", "Two" }, source.GetResources().Select(r => r.Name));
     }
 
+    [Fact]
+    public void UnreadableDatabase_IsLoggedAsAWarning()
+    {
+        File.WriteAllText(Database, "this is not a sqlite database, just text padding padding padding");
+        var log = new RingLog();
+
+        var result = new FirefoxBookmarksSource(_profile, log).GetResources();
+
+        Assert.Empty(result);
+        var entry = Assert.Single(log.Entries);
+        Assert.Equal(LogLevel.Warning, entry.Level);
+        Assert.Equal("Firefox", entry.Category);
+    }
+
     public void Dispose()
     {
         SqliteConnection.ClearAllPools();

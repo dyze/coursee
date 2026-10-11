@@ -43,6 +43,7 @@ Enter ─► open resource    Esc ─► hide
 9. A third settings section, **Launcher**, lets the user change the global hotkey (default Ctrl+Alt+Space) and how many recent items are kept (default 20).
 10. Fallback action, like the Windows Run dialog (Win+R): when the typed text matches no resource, Enter acts on the text itself. It opens a URL (`http(s)://`, `ftp://` or `www.`), opens an existing folder or file (quotes and `%VARS%` allowed), or runs the text as a command. The window always shows which kind of action Enter will do: a line under the search box ("Enter: Open folder") and a label on every row. Typed actions are added to recents.
 11. Source #3: Windows Run history. The commands previously typed in the Win+R dialog (read from the per-user `RunMRU` registry key, most recent first) are searchable in coursee, to ease the migration away from Win+R. They can be switched off in Settings, section **Sources**.
+12. Logging, for debugging and user feedback. coursee logs its activity: application start/stop, **changes in each source** (items added / removed at each refresh), **every action the user triggers** (resource opened, typed command, settings changed) and errors. Entries go to a rolling text file (`%LOCALAPPDATA%\coursee\logs`, at most 3 files of 1 MB) and to a **log window** opened from Settings (section **Logging**), which shows the last 1000 entries live with a level filter, a text filter, copy and clear. Level is Info by default; a Settings checkbox turns on detailed (Debug) logging. Never logged: keystrokes while searching, secrets. Library: Serilog (file sink) in the App.
 
 ## Planned sources (after 0.1)
 - Other sources later, using the same plug-in contract
@@ -58,4 +59,4 @@ Enter ─► open resource    Esc ─► hide
 - Recent list: size limit, and ranking by recency only or recency plus frequency
 
 ## Stack (decided)
-.NET 10, C#, WPF for the UI, xUnit for tests. See `CLAUDE.md` for the architecture rules.
+.NET 10, C#, WPF for the UI, xUnit for tests, Serilog (file sink) for the log file. See `CLAUDE.md` for the architecture rules.

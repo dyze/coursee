@@ -21,7 +21,13 @@ sources       DesktopShortcutsSource, then FirefoxBookmarksSource, ...
 - Anything Windows-specific goes in `coursee.App`, behind an interface defined in `Core`.
 
 ## Stack
-.NET 10, C#, WPF, xUnit. The only third-party package is `Microsoft.Data.Sqlite` (in `Core`, to read Firefox bookmarks). Shared settings live in `Directory.Build.props`; build output goes to `artifacts/`.
+.NET 10, C#, WPF, xUnit. Third-party packages: `Microsoft.Data.Sqlite` (in `Core`, to read Firefox bookmarks) and `Serilog` + `Serilog.Sinks.File` (in `App`, for the log file). Shared settings live in `Directory.Build.props`; build output goes to `artifacts/`.
+
+## Logging
+- `Core` writes through `ILog` (`log.Info(category, message)`); only `App` knows Serilog. Source classes take an optional `ILog`.
+- Log every action the user triggers at **Info**, source changes via `SourceMonitor`, and failures at Warning/Error. Details go to **Debug**.
+- Never log keystrokes typed in the search box, or secrets.
+- Logs stay local: 3 files x 1 MB, plus 1000 entries in memory.
 
 ## Versioning
 - Format `MAJOR.MINOR`, starting at **0.1**, then 0.2, and so on. No `v` prefix, and no 1.0 until the owner decides.

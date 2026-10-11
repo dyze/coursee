@@ -53,6 +53,32 @@ public sealed class SettingsStoreTests : IDisposable
         Assert.True(new SettingsStore(FilePath).IsSourceEnabled("Firefox"));
     }
 
+    [Fact]
+    public void DebugLogging_IsOffByDefault()
+    {
+        Assert.False(new SettingsStore(FilePath).DebugLogging);
+    }
+
+    [Fact]
+    public void DebugLogging_IsPersisted()
+    {
+        new SettingsStore(FilePath).SetDebugLogging(true);
+
+        Assert.True(new SettingsStore(FilePath).DebugLogging);
+    }
+
+    [Fact]
+    public void DebugLogging_AbsentFromAnOlderFile_MeansOff()
+    {
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(FilePath, "{\"DisabledSources\":[\"Firefox\"]}");
+
+        var store = new SettingsStore(FilePath);
+
+        Assert.False(store.DebugLogging);
+        Assert.False(store.IsSourceEnabled("Firefox"));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_directory))

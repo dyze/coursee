@@ -17,8 +17,18 @@ Skeleton. Working so far: the Desktop shortcuts source (targets only), search, r
 | Up / Down | Move selection |
 | Enter | Open the selected resource. If nothing matches, act on the typed text like Win+R: open a URL, folder or file, or run a command. A line under the search box says which |
 | Gear button | Open / close settings (Windows integration: start with Windows; Sources: Firefox bookmarks, Windows Run history; Launcher: hotkey and number of recent items) |
+| Log window | Settings > Logging > Open log window |
 | Esc | Close settings, or hide the launcher |
 | Ctrl+Q | Quit (temporary, until the tray icon exists) |
+
+## Logging
+
+coursee logs its activity to help debugging: start/stop, changes in each source (items added / removed), every action you trigger (opened resource, typed command, settings change) and errors.
+
+- **Log window**: Settings > Logging > *Open log window*. Live view of the last 1000 entries, level filter, text filter, Copy, Clear (window only), Open log folder.
+- **Files**: `%LOCALAPPDATA%\coursee\logs\coursee.log`. Size is limited: at most 3 files of 1 MB (about 3 MB), the oldest are deleted.
+- **Level**: Info by default. Settings > Logging > *Detailed (debug) logging* adds more detail.
+- **Privacy**: logs stay on your computer. What you type in the search box is not logged, only the action you trigger.
 
 ## Versioning
 
@@ -27,7 +37,7 @@ Versions are `MAJOR.MINOR`: the first is **0.1**, the next **0.2**. The number i
 ## Architecture
 
 ```
-coursee.App (WPF: hotkey, window, shortcut resolver)
+coursee.App (WPF: hotkey, window, shortcut resolver, log file + log window)
       │
 coursee.Core (search, recents, IResourceSource)
       │
