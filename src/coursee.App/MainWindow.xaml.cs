@@ -11,19 +11,25 @@ public partial class MainWindow : Window
     private readonly RecentStore _recents;
     private readonly SettingsStore _settings;
     private readonly IAutoStart _autoStart;
+    private readonly IHotkeyRegistrar _hotkeys;
     private IReadOnlyList<Resource> _all = [];
+    private bool _capturingHotkey;
+    private bool _loadingSettings;
 
     public MainWindow(
         IReadOnlyList<IResourceSource> sources,
         RecentStore recents,
         SettingsStore settings,
-        IAutoStart autoStart)
+        IAutoStart autoStart,
+        IHotkeyRegistrar hotkeys)
     {
         _sources = sources;
         _recents = recents;
         _settings = settings;
         _autoStart = autoStart;
+        _hotkeys = hotkeys;
         InitializeComponent();
+        RecentsComboBox.ItemsSource = SettingsStore.RecentsCapacityChoices;
         VersionText.Text = $"coursee {AppVersion.Of(typeof(MainWindow).Assembly)}";
     }
 
@@ -57,6 +63,7 @@ public partial class MainWindow : Window
 
     private void ShowSearch()
     {
+        StopCapturingHotkey();
         SettingsPanel.Visibility = Visibility.Collapsed;
         ResultsList.Visibility = Visibility.Visible;
         SearchBox.IsEnabled = true;
@@ -67,6 +74,12 @@ public partial class MainWindow : Window
     {
         AutoStartCheckBox.IsChecked = ReadAutoStart();
         FirefoxCheckBox.IsChecked = _settings.IsSourceEnabled(FirefoxBookmarksSource.SourceName);
+
+        _loadingSettings = true;
+        RecentsComboBox.SelectedItem = _settings.RecentsCapacity;
+        _loadingSettings = false;
+
+        StopCapturingHotkey();
         ResultsList.Visibility = Visibility.Collapsed;
         SettingsPanel.Visibility = Visibility.Visible;
         SearchBox.IsEnabled = false;
@@ -132,8 +145,72 @@ public partial class MainWindow : Window
         ResultsList.ScrollIntoView(ResultsList.SelectedItem);
     }
 
+    private void StopCapturingHotkey()
+    {
+        _capturingHotkey = false;
+        _hotkeys.Paused = false;
+        HotkeyText.Text = _settings.Hotkey.ToString();
+    }
+
+    private void CaptureHotkey(KeyEventArgs e)
+    {
+        e.Handled = true;
+
+        var key = e.Key == Key.System ? e.SystemKey : e.Key;
+        if (key == Key.Escape)
+        {
+            StopCapturingHotkey();
+            return;
+        }
+
+        if (key is Key.None or Key.DeadCharProcessed or Key.ImeProcessed
+            or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt
+            or Key.LeftShift or Key.RightShift or Key.LWin or Key.RWin)
+        {
+            return;
+        }
+
+        var modifiers = Keyboard.Modifiers;
+        var gesture = new HotkeyGesture(
+            Ctrl: modifiers.HasFlag(ModifierKeys.Control),
+            Alt: modifiers.HasFlag(ModifierKeys.Alt),
+            Shift: modifiers.HasFlag(ModifierKeys.Shift),
+            Win: modifiers.HasFlag(ModifierKeys.Windows),
+            Key: key.ToString());
+
+        if (!gesture.IsValid)
+        {
+            HotkeyText.Text = "Hold Ctrl, Alt, Shift or Win too...";
+            return;
+        }
+
+        if (_hotkeys.TryRegister(gesture))
+        {
+            try
+            {
+                _settings.SetHotkey(gesture);
+            }
+            catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+            {
+                MessageBox.Show(ex.Message, "coursee");
+            }
+        }
+        else
+        {
+            MessageBox.Show($"The shortcut {gesture} is not available. Try another one.", "coursee");
+        }
+
+        StopCapturingHotkey();
+    }
+
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
     {
+        if (_capturingHotkey)
+        {
+            CaptureHotkey(e);
+            return;
+        }
+
         if (e.Key == Key.Escape)
         {
             if (IsSettingsOpen)
@@ -221,5 +298,35 @@ public partial class MainWindow : Window
         }
     }
 
-    private void Window_Deactivated(object? sender, EventArgs e) => Hide();
+    private void HotkeyButton_Click(object sender, RoutedEventArgs e)
+    {
+        _capturingHotkey = true;
+        _hotkeys.Paused = true;
+        HotkeyText.Text = "Press the new shortcut (Esc to cancel)...";
+        Focus();
+    }
+
+    private void RecentsComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (_loadingSettings || RecentsComboBox.SelectedItem is not int capacity)
+        {
+            return;
+        }
+
+        try
+        {
+            _settings.SetRecentsCapacity(capacity);
+            _recents.SetCapacity(capacity);
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            MessageBox.Show(ex.Message, "coursee");
+        }
+    }
+
+    private void Window_Deactivated(object? sender, EventArgs e)
+    {
+        StopCapturingHotkey();
+        Hide();
+    }
 }

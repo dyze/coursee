@@ -9,8 +9,8 @@ namespace Coursee.Core;
 public sealed class RecentStore
 {
     private readonly string _path;
-    private readonly int _capacity;
     private readonly List<Resource> _items;
+    private int _capacity;
 
     public RecentStore(string path, int capacity = 20)
     {
@@ -25,13 +25,24 @@ public sealed class RecentStore
     {
         _items.RemoveAll(r => string.Equals(r.Target, resource.Target, StringComparison.OrdinalIgnoreCase));
         _items.Insert(0, resource);
+        Trim();
+        Save();
+    }
 
+    /// <summary>Changes how many items are kept; the oldest ones beyond the new limit are dropped.</summary>
+    public void SetCapacity(int capacity)
+    {
+        _capacity = Math.Max(1, capacity);
+        Trim();
+        Save();
+    }
+
+    private void Trim()
+    {
         if (_items.Count > _capacity)
         {
             _items.RemoveRange(_capacity, _items.Count - _capacity);
         }
-
-        Save();
     }
 
     private void Save()

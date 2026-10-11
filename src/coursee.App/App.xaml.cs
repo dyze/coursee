@@ -32,20 +32,31 @@ public partial class App : Application
         var dataDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "coursee");
-        var recents = new RecentStore(Path.Combine(dataDirectory, "recents.json"));
+        var settings = new SettingsStore(Path.Combine(dataDirectory, "settings.json"));
+        var recents = new RecentStore(Path.Combine(dataDirectory, "recents.json"), settings.RecentsCapacity);
 
         var executablePath = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "coursee.exe");
-        var settings = new SettingsStore(Path.Combine(dataDirectory, "settings.json"));
-        var window = new MainWindow(sources, recents, settings, new RegistryAutoStart(executablePath));
 
-        try
+        MainWindow? window = null;
+        _hotkey = new HotkeyService(() => window?.Toggle());
+        window = new MainWindow(sources, recents, settings, new RegistryAutoStart(executablePath), _hotkey);
+
+        if (!_hotkey.TryRegister(settings.Hotkey))
         {
-            _hotkey = new HotkeyService(window.Toggle);
-        }
-        catch (InvalidOperationException ex)
-        {
-            MessageBox.Show(ex.Message, "coursee");
-            Shutdown(1);
+            if (settings.Hotkey != HotkeyGesture.Default && _hotkey.TryRegister(HotkeyGesture.Default))
+            {
+                MessageBox.Show(
+                    $"The hotkey {settings.Hotkey} is not available. Using {HotkeyGesture.Default} instead.",
+                    "coursee");
+                settings.SetHotkey(HotkeyGesture.Default);
+            }
+            else
+            {
+                MessageBox.Show(
+                    $"Could not register the hotkey {HotkeyGesture.Default} (already in use?).",
+                    "coursee");
+                Shutdown(1);
+            }
         }
     }
 
