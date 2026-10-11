@@ -40,6 +40,34 @@ public class SourceLoaderTests
     }
 
     [Fact]
+    public void Merge_ListsAnItemInTwoSourcesOnce_FirstSourceWins()
+    {
+        var desktop = new Resource("Firefox", @"C:\ff\firefox.exe", ResourceKind.File, "Desktop", @"C:\Desktop\Firefox.lnk");
+        var startMenu = new Resource("firefox", @"C:\FF\Firefox.exe", ResourceKind.File, "Start Menu", @"C:\Start\Firefox.lnk");
+
+        var merged = SourceLoader.Merge([[desktop], [startMenu]]);
+
+        Assert.Equal(desktop, Assert.Single(merged));
+    }
+
+    [Fact]
+    public void Merge_KeepsSameTargetWithDifferentNames()
+    {
+        var work = new Resource("Chrome (work)", @"C:\chrome.exe", ResourceKind.File, "Desktop", @"C:\D\work.lnk");
+        var home = new Resource("Chrome (home)", @"C:\chrome.exe", ResourceKind.File, "Desktop", @"C:\D\home.lnk");
+
+        Assert.Equal(new[] { work, home }, SourceLoader.Merge([[work, home]]));
+    }
+
+    [Fact]
+    public void Merge_KeepsTheOrder()
+    {
+        var merged = SourceLoader.Merge([[R("b", "A"), R("a", "A")], [R("c", "B")]]);
+
+        Assert.Equal(new[] { "b", "a", "c" }, merged.Select(r => r.Name));
+    }
+
+    [Fact]
     public void NoSources_MeansNoResults()
     {
         Assert.Empty(SourceLoader.Load([]));

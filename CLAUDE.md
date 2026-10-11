@@ -12,7 +12,7 @@ coursee.App   WPF, hotkey, window, Windows-only code
     │
 coursee.Core  search, recents, IResourceSource (no Windows dependency)
     │
-sources       DesktopShortcutsSource, then FirefoxBookmarksSource, ...
+sources       ShortcutsSource (Desktop, Start Menu), FirefoxBookmarksSource, RunHistorySource, ...
 ```
 
 - New resource sources implement `IResourceSource`. Adding one must not change the UI.
@@ -21,7 +21,7 @@ sources       DesktopShortcutsSource, then FirefoxBookmarksSource, ...
 - Anything Windows-specific goes in `coursee.App`, behind an interface defined in `Core`.
 
 ## Stack
-.NET 10, C#, WPF, xUnit. Third-party packages: `Microsoft.Data.Sqlite` (in `Core`, to read Firefox bookmarks) and `Serilog` + `Serilog.Sinks.File` (in `App`, for the log file). Shared settings live in `Directory.Build.props`; build output goes to `artifacts/`.
+.NET 10, C#, WPF, xUnit. WinForms is enabled in `App` for the tray icon only (`NotifyIcon`). Third-party packages: `Microsoft.Data.Sqlite` (in `Core`, to read Firefox bookmarks) and `Serilog` + `Serilog.Sinks.File` (in `App`, for the log file). Shared settings live in `Directory.Build.props`; build output goes to `artifacts/`.
 
 ## Logging
 - `Core` writes through `ILog` (`log.Info(category, message)`); only `App` knows Serilog. Source classes take an optional `ILog`.

@@ -29,6 +29,18 @@ public sealed class RecentStore
         Save();
     }
 
+    /// <summary>Removes the item with this target. Returns false (and saves nothing) when it is not in the list.</summary>
+    public bool Remove(string target)
+    {
+        if (_items.RemoveAll(r => string.Equals(r.Target, target, StringComparison.OrdinalIgnoreCase)) == 0)
+        {
+            return false;
+        }
+
+        Save();
+        return true;
+    }
+
     /// <summary>Changes how many items are kept; the oldest ones beyond the new limit are dropped.</summary>
     public void SetCapacity(int capacity)
     {

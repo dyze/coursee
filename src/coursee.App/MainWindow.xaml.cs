@@ -70,6 +70,16 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>Shows the launcher with its settings open (tray menu).</summary>
+    public void ShowSettingsFromOutside()
+    {
+        ShowFromOutside();
+        if (!IsSettingsOpen)
+        {
+            ShowSettings();
+        }
+    }
+
     private void ShowLauncher()
     {
         _log.Debug("Window", "Shown");
@@ -121,7 +131,7 @@ public partial class MainWindow : Window
     /// <summary>Runs on the UI thread: tracks and logs changes, then updates the visible list.</summary>
     private void ApplyResults(IReadOnlyList<SourceResult> results)
     {
-        var all = new List<Resource>();
+        var lists = new List<IReadOnlyList<Resource>>();
         foreach (var result in results)
         {
             // Switched off while this refresh was running.
@@ -137,10 +147,10 @@ public partial class MainWindow : Window
             }
 
             _monitor.Observe(result.SourceName, result.Resources);
-            all.AddRange(result.Resources);
+            lists.Add(result.Resources);
         }
 
-        _all = all;
+        _all = SourceLoader.Merge(lists);
         if (IsVisible && !IsSettingsOpen && !string.IsNullOrWhiteSpace(SearchBox.Text))
         {
             Refresh(keepSelection: true);
@@ -162,6 +172,7 @@ public partial class MainWindow : Window
     private void ShowSettings()
     {
         AutoStartCheckBox.IsChecked = ReadAutoStart();
+        StartMenuCheckBox.IsChecked = _settings.IsSourceEnabled(ShortcutsSource.StartMenuName);
         FirefoxCheckBox.IsChecked = _settings.IsSourceEnabled(FirefoxBookmarksSource.SourceName);
         RunHistoryCheckBox.IsChecked = _settings.IsSourceEnabled(RunHistorySource.SourceName);
         DebugLoggingCheckBox.IsChecked = _settings.DebugLogging;
@@ -229,51 +240,77 @@ public partial class MainWindow : Window
     {
         ActionText.Text = ResultsList.SelectedItem switch
         {
-            Resource { Source: FallbackClassifier.SourceName } typed => $"Enter: {typed.ActionLabel} (what you typed)",
-            Resource resource => $"Enter: {resource.ActionLabel}",
+            Resource resource => ResourceActions.Hint(resource, inRecents: IsShowingRecents),
             _ => string.IsNullOrWhiteSpace(SearchBox.Text)
                 ? "Type to search, or type a path, URL or command"
                 : "No match",
         };
     }
 
-    private static void Launch(Resource resource)
+    /// <summary>The recent list is shown (search box empty), so Del can remove the selected item.</summary>
+    private bool IsShowingRecents => !IsSettingsOpen && string.IsNullOrWhiteSpace(SearchBox.Text);
+
+    private const int ErrorCancelled = 1223;
+
+    private static void Launch(Resource resource, bool asAdministrator)
     {
+        ProcessStartInfo start;
         if (resource.Kind == ResourceKind.Command)
         {
             var (fileName, arguments) = CommandLine.Split(resource.Target);
-            Process.Start(new ProcessStartInfo(fileName, arguments) { UseShellExecute = true });
+            start = new ProcessStartInfo(fileName, arguments);
         }
         else
         {
-            // For a Desktop shortcut this is the .lnk, so its arguments and working folder are kept.
-            Process.Start(new ProcessStartInfo(resource.OpenTarget) { UseShellExecute = true });
+            // For a shortcut this is the .lnk, so its arguments and working folder are kept.
+            start = new ProcessStartInfo(resource.OpenTarget);
         }
+
+        start.UseShellExecute = true;
+        if (asAdministrator)
+        {
+            start.Verb = "runas";
+        }
+
+        Process.Start(start);
     }
 
-    private void OpenSelected()
+    /// <summary>Enter (or Ctrl+Shift+Enter, elevated): opens the selected item, remembers it, hides.</summary>
+    private void OpenSelected(bool asAdministrator = false)
     {
         if (ResultsList.SelectedItem is not Resource resource)
         {
             return;
         }
 
+        if (asAdministrator && !ResourceActions.CanRunAsAdministrator(resource))
+        {
+            return;
+        }
+
+        var label = asAdministrator ? "Run as administrator" : resource.ActionLabel;
         var typed = resource.Source == FallbackClassifier.SourceName;
         try
         {
-            Launch(resource);
+            Launch(resource, asAdministrator);
+        }
+        catch (System.ComponentModel.Win32Exception ex) when (asAdministrator && ex.NativeErrorCode == ErrorCancelled)
+        {
+            // The user said no to the Windows confirmation: nothing to report.
+            _log.Info("Action", $"{label} cancelled: {resource.Target}");
+            return;
         }
         catch (Exception ex)
         {
             // Stay open so the user can correct the text or pick another item.
-            _log.Error("Action", $"{resource.ActionLabel} failed for {resource.Target}", ex);
+            _log.Error("Action", $"{label} failed for {resource.Target}", ex);
             ShowMessage(ex.Message);
             return;
         }
 
         _log.Info(
             "Action",
-            $"{resource.ActionLabel}: {resource.Target} ({(typed ? "typed" : resource.Source)}, {resource.Kind})");
+            $"{label}: {resource.Target} ({(typed ? "typed" : resource.Source)}, {resource.Kind})");
 
         // The resource is open: failing to remember it is only worth a log entry.
         try
@@ -286,6 +323,60 @@ public partial class MainWindow : Window
         }
 
         Hide();
+    }
+
+    /// <summary>Ctrl+Enter: opens the containing folder in Explorer with the item selected.</summary>
+    private void ShowSelectedInFolder()
+    {
+        if (ResultsList.SelectedItem is not Resource resource || !ResourceActions.CanShowInFolder(resource))
+        {
+            return;
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo("explorer.exe", ResourceActions.ShowInFolderArguments(resource)));
+        }
+        catch (Exception ex)
+        {
+            _log.Error("Action", $"Show in folder failed for {resource.Target}", ex);
+            ShowMessage(ex.Message);
+            return;
+        }
+
+        _log.Info("Action", $"Show in folder: {resource.Target} ({resource.Source})");
+        Hide();
+    }
+
+    /// <summary>Del on the recent list: forgets the selected item and keeps the selection in place.</summary>
+    private void RemoveSelectedFromRecents()
+    {
+        if (!IsShowingRecents || ResultsList.SelectedItem is not Resource resource)
+        {
+            return;
+        }
+
+        var index = ResultsList.SelectedIndex;
+        try
+        {
+            if (!_recents.Remove(resource.Target))
+            {
+                return;
+            }
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            _log.Error("Recents", "Cannot save the recent items", ex);
+            ShowMessage(ex.Message);
+            return;
+        }
+
+        _log.Info("Action", $"Removed from recents: {resource.Target}");
+        Refresh();
+        if (ResultsList.Items.Count > 0)
+        {
+            ResultsList.SelectedIndex = Math.Min(index, ResultsList.Items.Count - 1);
+        }
     }
 
     private void MoveSelection(int delta)
@@ -383,15 +474,27 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (IsSettingsOpen && e.Key != Key.Q)
+        if (IsSettingsOpen)
         {
             return;
         }
 
         switch (e.Key)
         {
-            case Key.Enter:
+            case Key.Enter when Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift):
+                OpenSelected(asAdministrator: true);
+                e.Handled = true;
+                break;
+            case Key.Enter when Keyboard.Modifiers == ModifierKeys.Control:
+                ShowSelectedInFolder();
+                e.Handled = true;
+                break;
+            case Key.Enter when Keyboard.Modifiers == ModifierKeys.None:
                 OpenSelected();
+                e.Handled = true;
+                break;
+            case Key.Delete when IsShowingRecents && ResultsList.SelectedItem is not null:
+                RemoveSelectedFromRecents();
                 e.Handled = true;
                 break;
             case Key.Down:
@@ -400,10 +503,6 @@ public partial class MainWindow : Window
                 break;
             case Key.Up:
                 MoveSelection(-1);
-                e.Handled = true;
-                break;
-            case Key.Q when Keyboard.Modifiers == ModifierKeys.Control:
-                Application.Current.Shutdown();
                 e.Handled = true;
                 break;
         }
@@ -514,7 +613,10 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OpenLogButton_Click(object sender, RoutedEventArgs e)
+    private void OpenLogButton_Click(object sender, RoutedEventArgs e) => OpenLogWindow();
+
+    /// <summary>Opens the log window, or brings it to the front when it is already open.</summary>
+    public void OpenLogWindow()
     {
         if (_logWindow is { IsLoaded: true })
         {

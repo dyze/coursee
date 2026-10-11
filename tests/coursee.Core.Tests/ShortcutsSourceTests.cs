@@ -1,11 +1,11 @@
 namespace Coursee.Core.Tests;
 
-public sealed class DesktopShortcutsSourceTests : IDisposable
+public sealed class ShortcutsSourceTests : IDisposable
 {
     private readonly string _root = Path.Combine(Path.GetTempPath(), "coursee-tests-" + Guid.NewGuid().ToString("N"));
     private readonly string _desktop;
 
-    public DesktopShortcutsSourceTests()
+    public ShortcutsSourceTests()
     {
         _desktop = Path.Combine(_root, "desktop");
         Directory.CreateDirectory(_desktop);
@@ -40,7 +40,7 @@ public sealed class DesktopShortcutsSourceTests : IDisposable
         var work = Shortcut("Work");
         var notes = Shortcut("Notes");
         var map = new Dictionary<string, string> { [work] = folder, [notes] = file };
-        var source = new DesktopShortcutsSource([_desktop], new FakeResolver(map));
+        var source = ShortcutsSource.Desktop([_desktop], new FakeResolver(map));
 
         var result = source.GetResources().OrderBy(r => r.Name).ToList();
 
@@ -55,7 +55,7 @@ public sealed class DesktopShortcutsSourceTests : IDisposable
         var file = Path.Combine(_root, "app.exe");
         File.WriteAllText(file, "x");
         var shortcut = Shortcut("App");
-        var source = new DesktopShortcutsSource([_desktop], new FakeResolver(new() { [shortcut] = file }));
+        var source = ShortcutsSource.Desktop([_desktop], new FakeResolver(new() { [shortcut] = file }));
 
         var resource = Assert.Single(source.GetResources());
 
@@ -70,7 +70,7 @@ public sealed class DesktopShortcutsSourceTests : IDisposable
         File.WriteAllText(file, "x");
         var shortcut = Shortcut("Notes");
         var resolver = new FakeResolver(new() { [shortcut] = file });
-        var source = new DesktopShortcutsSource([_desktop], resolver);
+        var source = ShortcutsSource.Desktop([_desktop], resolver);
 
         source.GetResources();
         source.GetResources();
@@ -88,7 +88,7 @@ public sealed class DesktopShortcutsSourceTests : IDisposable
         var shortcut = Shortcut("Notes");
         var map = new Dictionary<string, string> { [shortcut] = first };
         var resolver = new FakeResolver(map);
-        var source = new DesktopShortcutsSource([_desktop], resolver);
+        var source = ShortcutsSource.Desktop([_desktop], resolver);
         source.GetResources();
 
         map[shortcut] = second;
@@ -104,7 +104,7 @@ public sealed class DesktopShortcutsSourceTests : IDisposable
         var file = Path.Combine(_root, "notes.txt");
         File.WriteAllText(file, "x");
         var shortcut = Shortcut("Notes");
-        var source = new DesktopShortcutsSource([_desktop], new FakeResolver(new() { [shortcut] = file }));
+        var source = ShortcutsSource.Desktop([_desktop], new FakeResolver(new() { [shortcut] = file }));
         source.GetResources();
 
         File.Delete(shortcut);
@@ -120,7 +120,7 @@ public sealed class DesktopShortcutsSourceTests : IDisposable
             [Shortcut("Gone")] = Path.Combine(_root, "does-not-exist"),
         };
         Shortcut("Unresolvable");
-        var source = new DesktopShortcutsSource([_desktop], new FakeResolver(map));
+        var source = ShortcutsSource.Desktop([_desktop], new FakeResolver(map));
 
         Assert.Empty(source.GetResources());
     }
@@ -129,7 +129,7 @@ public sealed class DesktopShortcutsSourceTests : IDisposable
     public void IgnoresNonShortcutFiles()
     {
         File.WriteAllText(Path.Combine(_desktop, "readme.txt"), "x");
-        var source = new DesktopShortcutsSource([_desktop], new FakeResolver([]));
+        var source = ShortcutsSource.Desktop([_desktop], new FakeResolver([]));
 
         Assert.Empty(source.GetResources());
     }
@@ -137,9 +137,67 @@ public sealed class DesktopShortcutsSourceTests : IDisposable
     [Fact]
     public void MissingFolder_IsIgnored()
     {
-        var source = new DesktopShortcutsSource([Path.Combine(_root, "nope")], new FakeResolver([]));
+        var source = ShortcutsSource.Desktop([Path.Combine(_root, "nope")], new FakeResolver([]));
 
         Assert.Empty(source.GetResources());
+    }
+
+    [Fact]
+    public void Desktop_IgnoresSubfolders()
+    {
+        var file = Path.Combine(_root, "notes.txt");
+        File.WriteAllText(file, "x");
+        var nested = Path.Combine(_desktop, "Tools", "Notes.lnk");
+        Directory.CreateDirectory(Path.GetDirectoryName(nested)!);
+        File.WriteAllText(nested, string.Empty);
+        var source = ShortcutsSource.Desktop([_desktop], new FakeResolver(new() { [nested] = file }));
+
+        Assert.Empty(source.GetResources());
+    }
+
+    [Fact]
+    public void StartMenu_IncludesSubfolders_AndHasItsOwnName()
+    {
+        var file = Path.Combine(_root, "app.exe");
+        File.WriteAllText(file, "x");
+        var nested = Path.Combine(_desktop, "Programs", "Vendor", "App.lnk");
+        Directory.CreateDirectory(Path.GetDirectoryName(nested)!);
+        File.WriteAllText(nested, string.Empty);
+        var source = ShortcutsSource.StartMenu([_desktop], new FakeResolver(new() { [nested] = file }));
+
+        var resource = Assert.Single(source.GetResources());
+
+        Assert.Equal("Start Menu", source.Name);
+        Assert.Equal(new Resource("App", file, ResourceKind.File, "Start Menu", nested), resource);
+    }
+
+    [Fact]
+    public void UninstallShortcuts_AreSkipped()
+    {
+        var uninstaller = Path.Combine(_root, "unins000.exe");
+        var app = Path.Combine(_root, "app.exe");
+        File.WriteAllText(uninstaller, "x");
+        File.WriteAllText(app, "x");
+        var map = new Dictionary<string, string>
+        {
+            [Shortcut("Remove App")] = uninstaller,
+            [Shortcut("Uninstall Tool")] = app,
+            [Shortcut("App")] = app,
+        };
+        var source = ShortcutsSource.StartMenu([_desktop], new FakeResolver(map));
+
+        Assert.Equal("App", Assert.Single(source.GetResources()).Name);
+    }
+
+    [Theory]
+    [InlineData("Uninstall App", "app.exe", true)]
+    [InlineData("App", "unins000.exe", true)]
+    [InlineData("App", "Uninstall.exe", true)]
+    [InlineData("App", "app.exe", false)]
+    [InlineData("Install guide", "setup.exe", false)]
+    public void IsUninstaller_LooksAtTheNameAndTheTargetFile(string name, string targetFile, bool expected)
+    {
+        Assert.Equal(expected, ShortcutsSource.IsUninstaller(name, Path.Combine(_root, targetFile)));
     }
 
     public void Dispose()

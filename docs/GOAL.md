@@ -45,6 +45,16 @@ Enter ─► open resource    Esc ─► hide
 11. Source #3: Windows Run history. The commands previously typed in the Win+R dialog (read from the per-user `RunMRU` registry key, most recent first) are searchable in coursee, to ease the migration away from Win+R. They can be switched off in Settings, section **Sources**.
 12. Logging, for debugging and user feedback. coursee logs its activity: application start/stop, **changes in each source** (items added / removed at each refresh), **every action the user triggers** (resource opened, typed command, settings changed) and errors. Entries go to a rolling text file (`%LOCALAPPDATA%\coursee\logs`, at most 3 files of 1 MB) and to a **log window** opened from Settings (section **Logging**), which shows the last 1000 entries live with a level filter, a text filter, copy and clear. Level is Info by default; a Settings checkbox turns on detailed (Debug) logging. Never logged: keystrokes while searching, secrets. Library: Serilog (file sink) in the App.
 
+## Version 0.3 scope
+1. **Tray icon.** coursee shows an icon in the notification area. Click: show the launcher. Menu: *Show coursee* (with the current hotkey), *Settings*, *Log window*, *Quit*. The temporary Ctrl+Q shortcut is removed. If no hotkey can be registered, coursee keeps running and is reached from the tray. coursee.exe and the tray use the same application icon.
+2. **Source #4: Start Menu.** Shortcuts (.lnk) in the user's and the common Start Menu, subfolders included, handled like the Desktop ones (target shown and searched, the shortcut itself opened). Uninstall shortcuts are skipped. An item found in two sources with the same name and target is listed once. It can be switched off in Settings, section **Sources**.
+3. **Row actions.** On the selected item:
+   - **Ctrl+Enter**: show it in its folder (Explorer opens the containing folder with the item selected). Files, folders and network paths only.
+   - **Del**, while the recent list is shown (search box empty): remove the item from recents.
+4. **Run as administrator.** **Ctrl+Shift+Enter** runs the selected item elevated (Windows asks for confirmation). Commands and executable files only (`.exe`, `.bat`, `.cmd`, `.com`, `.msc`). Cancelling the Windows prompt is not an error.
+
+The line under the search box lists the actions available for the selected item.
+
 ## Planned sources (after 0.1)
 - Other sources later, using the same plug-in contract
 

@@ -54,6 +54,29 @@ public sealed class RecentStoreTests : IDisposable
     }
 
     [Fact]
+    public void Remove_DropsTheItem_AndIsPersisted()
+    {
+        var store = new RecentStore(FilePath);
+        store.Add(R("a"));
+        store.Add(R("b"));
+
+        Assert.True(store.Remove(@"c:\A"));
+
+        Assert.Equal(new[] { "b" }, store.Items.Select(r => r.Name));
+        Assert.Equal(new[] { "b" }, new RecentStore(FilePath).Items.Select(r => r.Name));
+    }
+
+    [Fact]
+    public void Remove_UnknownTarget_ReturnsFalse()
+    {
+        var store = new RecentStore(FilePath);
+        store.Add(R("a"));
+
+        Assert.False(store.Remove(@"C:\nope"));
+        Assert.Single(store.Items);
+    }
+
+    [Fact]
     public void CorruptFile_MeansEmptyList()
     {
         Directory.CreateDirectory(_directory);

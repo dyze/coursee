@@ -6,7 +6,7 @@ See [docs/GOAL.md](docs/GOAL.md) for the goal, scope and non-goals.
 
 ## Status
 
-Skeleton. Working so far: the Desktop shortcuts source (targets only), search, recents, hotkey, the compact window and a settings view (auto start with Windows). Firefox bookmarks (default profile, can be switched off in Settings) are included; a tray icon comes next.
+Working: sources (Desktop and Start Menu shortcuts, Firefox bookmarks, Windows Run history), search, recents, row actions (show in folder, run as administrator), hotkey, tray icon, and a settings view.
 
 ## Usage
 
@@ -15,23 +15,27 @@ Skeleton. Working so far: the Desktop shortcuts source (targets only), search, r
 | Ctrl+Alt+Space (default, configurable in Settings; needs Ctrl, Alt or Win) | Show / hide the launcher |
 | Type | Filter resources |
 | Up / Down | Move selection |
-| Enter | Open the selected resource. If nothing matches, act on the typed text like Win+R: open a URL, folder or file, or run a command. Network paths (`\\server\share`) are opened without being checked, so typing them never freezes the window. A line under the search box says which |
-| Gear button | Open / close settings (Windows integration: start with Windows; Sources: Firefox bookmarks, Windows Run history; Launcher: hotkey and number of recent items) |
+| Enter | Open the selected resource. If nothing matches, act on the typed text like Win+R: open a URL, folder or file, or run a command. Network paths (`\\server\share`) are opened without being checked, so typing them never freezes the window. A line under the search box says which, and lists the other keys that apply |
+| Ctrl+Enter | Show the selected file or folder in Explorer (containing folder, item selected) |
+| Ctrl+Shift+Enter | Run the selected command or program as administrator (`.exe`, `.bat`, `.cmd`, `.com`, `.msc`) |
+| Del | On the recent list (search box empty): remove the selected item from recents |
+| Gear button | Open / close settings (Windows integration: start with Windows; Sources: Start Menu, Firefox bookmarks, Windows Run history; Launcher: hotkey and number of recent items) |
 | Log window | Settings > Logging > Open log window |
 | Esc | Close settings, or hide the launcher |
-| Ctrl+Q | Quit (temporary, until the tray icon exists) |
+| Tray icon | Click: show the launcher. Menu: Show, Settings, Log window, Quit |
 
 ## Behavior notes
 
 - **One copy at a time.** Starting coursee while it is already running shows the launcher of the running copy.
 - **Instant window.** Sources are reloaded in the background each time the launcher opens: it shows the previous list at once, and new or removed items appear a moment later.
-- **Desktop shortcuts** are searched by their target, but opened through the shortcut itself, so their arguments and working folder are kept.
+- **Desktop and Start Menu shortcuts** are searched by their target, but opened through the shortcut itself, so their arguments and working folder are kept. Uninstall shortcuts are skipped, and a program found in both places is listed once.
+- **No hotkey available?** coursee keeps running: use the tray icon and choose another hotkey in Settings.
 
 ## Logging
 
 coursee logs its activity to help debugging: start/stop, changes in each source (items added / removed), every action you trigger (opened resource, typed command, settings change) and errors.
 
-- **Log window**: Settings > Logging > *Open log window*. Live view of the last 1000 entries, level filter, text filter, Copy, Clear (window only), Open log folder.
+- **Log window**: tray menu > *Log window*, or Settings > Logging > *Open log window*. Live view of the last 1000 entries, level filter, text filter, Copy, Clear (window only), Open log folder.
 - **Files**: `%LOCALAPPDATA%\coursee\logs\coursee.log`. Size is limited: at most 3 files of 1 MB (about 3 MB), the oldest are deleted.
 - **Level**: Info by default. Settings > Logging > *Detailed (debug) logging* adds more detail.
 - **Privacy**: logs stay on your computer. What you type in the search box is not logged, only the action you trigger.
@@ -43,11 +47,11 @@ Versions are `MAJOR.MINOR`: the first is **0.1**, the next **0.2**. The number i
 ## Architecture
 
 ```
-coursee.App (WPF: hotkey, window, shortcut resolver, log file + log window)
+coursee.App (WPF: hotkey, window, tray icon, shortcut resolver, log file + log window)
       │
 coursee.Core (search, recents, IResourceSource)
       │
-sources: DesktopShortcutsSource · FirefoxBookmarksSource · RunHistorySource
+sources: ShortcutsSource (Desktop, Start Menu) · FirefoxBookmarksSource · RunHistorySource
 ```
 
 `Core` has no Windows dependency, so it is fully unit-tested on any OS. Windows-specific parts (hotkey, `.lnk` resolution) live in `coursee.App`.

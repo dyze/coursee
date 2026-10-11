@@ -9,6 +9,7 @@ public partial class App : Application
     private LogHub? _logHub;
     private SingleInstance? _singleInstance;
     private MainWindow? _window;
+    private TrayIcon? _tray;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -41,6 +42,12 @@ public partial class App : Application
             Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
             Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory),
         };
+        var startMenus = new[]
+        {
+            Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu),
+        };
+        var shortcutResolver = new WshShortcutResolver();
 
         var firefoxRoot = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -58,7 +65,9 @@ public partial class App : Application
 
         IResourceSource[] sources =
         [
-            new DesktopShortcutsSource(desktops, new WshShortcutResolver()),
+            // Order matters: an item on both the Desktop and the Start Menu is listed once, as the Desktop one.
+            ShortcutsSource.Desktop(desktops, shortcutResolver, log),
+            ShortcutsSource.StartMenu(startMenus, shortcutResolver, log),
             new FirefoxBookmarksSource(firefoxProfile, log),
             new RunHistorySource(new RegistryRunHistoryReader(), log),
         ];
@@ -72,6 +81,19 @@ public partial class App : Application
 
         // Load the sources now, in the background, so the first hotkey press shows a full list.
         _window.RefreshResources();
+
+        var window = _window;
+        _tray = new TrayIcon(
+            AppVersion.Of(typeof(App).Assembly),
+            () => settings.Hotkey.ToString(),
+            show: () => window.ShowFromOutside(),
+            showSettings: () => window.ShowSettingsFromOutside(),
+            showLog: () => window.OpenLogWindow(),
+            quit: () =>
+            {
+                log.Info("Action", "Quit from the tray");
+                Shutdown();
+            });
 
         if (_hotkey.TryRegister(settings.Hotkey))
         {
@@ -89,17 +111,19 @@ public partial class App : Application
             }
             else
             {
-                log.Error("Hotkey", $"Could not register {HotkeyGesture.Default}; exiting");
+                // The tray icon still gives access to the launcher and to Settings.
+                log.Error("Hotkey", $"Could not register {settings.Hotkey} nor {HotkeyGesture.Default}; no hotkey");
                 MessageBox.Show(
-                    $"Could not register the hotkey {HotkeyGesture.Default} (already in use?).",
+                    $"Could not register the hotkey {settings.Hotkey} (already in use?).\n\n"
+                    + "Use the coursee icon in the notification area, and choose another hotkey in Settings.",
                     "coursee");
-                Shutdown(1);
             }
         }
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
+        _tray?.Dispose();
         _hotkey?.Dispose();
         _logHub?.Filter.Info("App", "coursee stopped");
         _logHub?.Dispose();

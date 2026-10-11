@@ -92,6 +92,11 @@
                  Margin="0,16,0,0"
                  FontSize="15"
                  FontWeight="SemiBold" />
+      <CheckBox x:Name="StartMenuCheckBox"
+                Margin="0,8,0,0"
+                Content="Start Menu shortcuts"
+                Tag="Start Menu"
+                Click="SourceCheckBox_Click" />
       <CheckBox x:Name="FirefoxCheckBox"
                 Margin="0,8,0,0"
                 Content="Firefox bookmarks"
