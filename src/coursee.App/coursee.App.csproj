@@ -8,6 +8,11 @@
     <AssemblyName>coursee</AssemblyName>
   </PropertyGroup>
 
+  <!-- The WPF SDK leaves System.IO out of the implicit usings (System.Windows.Shapes.Path would clash); this project needs it. -->
+  <ItemGroup>
+    <Using Include="System.IO" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Serilog" Version="4.4.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
