@@ -6,7 +6,7 @@ See [docs/GOAL.md](docs/GOAL.md) for the goal, scope and non-goals.
 
 ## Status
 
-Skeleton. Working so far: the Desktop shortcuts source (targets only), search, recents, hotkey and the compact window. Firefox bookmarks and a tray icon come next.
+Skeleton. Working so far: the Desktop shortcuts source (targets only), search, recents, hotkey, the compact window and a settings view (auto start with Windows). Firefox bookmarks and a tray icon come next.
 
 ## Usage
 
@@ -16,7 +16,8 @@ Skeleton. Working so far: the Desktop shortcuts source (targets only), search, r
 | Type | Filter resources |
 | Up / Down | Move selection |
 | Enter | Open the selected resource |
-| Esc | Hide |
+| Gear button | Open / close settings (Windows integration: start with Windows) |
+| Esc | Close settings, or hide the launcher |
 | Ctrl+Q | Quit (temporary, until the tray icon exists) |
 
 ## Versioning

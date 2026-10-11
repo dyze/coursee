@@ -24,7 +24,8 @@ public partial class App : Application
             "coursee");
         var recents = new RecentStore(Path.Combine(dataDirectory, "recents.json"));
 
-        var window = new MainWindow(sources, recents);
+        var executablePath = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "coursee.exe");
+        var window = new MainWindow(sources, recents, new RegistryAutoStart(executablePath));
 
         try
         {

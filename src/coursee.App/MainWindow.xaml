@@ -17,10 +17,27 @@
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
-    <TextBox x:Name="SearchBox"
-             FontSize="20"
-             Padding="8"
-             TextChanged="SearchBox_TextChanged" />
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+
+      <TextBox x:Name="SearchBox"
+               FontSize="20"
+               Padding="8"
+               TextChanged="SearchBox_TextChanged" />
+
+      <Button x:Name="SettingsButton"
+              Grid.Column="1"
+              Width="44"
+              Margin="8,0,0,0"
+              Content="&#x2699;"
+              FontSize="20"
+              ToolTip="Settings"
+              Focusable="False"
+              Click="SettingsButton_Click" />
+    </Grid>
 
     <ListBox x:Name="ResultsList"
              Grid.Row="1"
@@ -35,6 +52,27 @@
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>
+
+    <StackPanel x:Name="SettingsPanel"
+                Grid.Row="1"
+                Margin="0,12,0,0"
+                Visibility="Collapsed">
+      <TextBlock Text="Settings" FontSize="20" FontWeight="SemiBold" />
+
+      <TextBlock Text="Windows integration"
+                 Margin="0,16,0,0"
+                 FontSize="15"
+                 FontWeight="SemiBold" />
+      <CheckBox x:Name="AutoStartCheckBox"
+                Margin="0,8,0,0"
+                Content="Start coursee when I sign in to Windows"
+                Click="AutoStartCheckBox_Click" />
+
+      <TextBlock Text="Esc or the gear button goes back to search."
+                 Margin="0,24,0,0"
+                 FontSize="11"
+                 Opacity="0.5" />
+    </StackPanel>
 
     <TextBlock x:Name="VersionText"
                Grid.Row="2"

@@ -9,12 +9,14 @@ public partial class MainWindow : Window
 {
     private readonly IReadOnlyList<IResourceSource> _sources;
     private readonly RecentStore _recents;
+    private readonly IAutoStart _autoStart;
     private IReadOnlyList<Resource> _all = [];
 
-    public MainWindow(IReadOnlyList<IResourceSource> sources, RecentStore recents)
+    public MainWindow(IReadOnlyList<IResourceSource> sources, RecentStore recents, IAutoStart autoStart)
     {
         _sources = sources;
         _recents = recents;
+        _autoStart = autoStart;
         InitializeComponent();
         VersionText.Text = $"coursee {AppVersion.Of(typeof(MainWindow).Assembly)}";
     }
@@ -36,9 +38,41 @@ public partial class MainWindow : Window
         _all = _sources.SelectMany(s => s.GetResources()).ToList();
         SearchBox.Text = string.Empty;
         Refresh();
+        ShowSearch();
         Show();
         Activate();
         SearchBox.Focus();
+    }
+
+    private bool IsSettingsOpen => SettingsPanel.Visibility == Visibility.Visible;
+
+    private void ShowSearch()
+    {
+        SettingsPanel.Visibility = Visibility.Collapsed;
+        ResultsList.Visibility = Visibility.Visible;
+        SearchBox.IsEnabled = true;
+        SearchBox.Focus();
+    }
+
+    private void ShowSettings()
+    {
+        AutoStartCheckBox.IsChecked = ReadAutoStart();
+        ResultsList.Visibility = Visibility.Collapsed;
+        SettingsPanel.Visibility = Visibility.Visible;
+        SearchBox.IsEnabled = false;
+        Focus();
+    }
+
+    private bool ReadAutoStart()
+    {
+        try
+        {
+            return _autoStart.IsEnabled;
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
+        {
+            return false;
+        }
     }
 
     private void Refresh()
@@ -90,12 +124,28 @@ public partial class MainWindow : Window
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
     {
+        if (e.Key == Key.Escape)
+        {
+            if (IsSettingsOpen)
+            {
+                ShowSearch();
+            }
+            else
+            {
+                Hide();
+            }
+
+            e.Handled = true;
+            return;
+        }
+
+        if (IsSettingsOpen && e.Key != Key.Q)
+        {
+            return;
+        }
+
         switch (e.Key)
         {
-            case Key.Escape:
-                Hide();
-                e.Handled = true;
-                break;
             case Key.Enter:
                 OpenSelected();
                 e.Handled = true;
@@ -118,6 +168,33 @@ public partial class MainWindow : Window
     private void SearchBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e) => Refresh();
 
     private void ResultsList_MouseDoubleClick(object sender, MouseButtonEventArgs e) => OpenSelected();
+
+    private void SettingsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (IsSettingsOpen)
+        {
+            ShowSearch();
+        }
+        else
+        {
+            ShowSettings();
+        }
+    }
+
+    private void AutoStartCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        var wanted = AutoStartCheckBox.IsChecked == true;
+
+        try
+        {
+            _autoStart.SetEnabled(wanted);
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
+        {
+            MessageBox.Show(ex.Message, "coursee");
+            AutoStartCheckBox.IsChecked = !wanted;
+        }
+    }
 
     private void Window_Deactivated(object? sender, EventArgs e) => Hide();
 }
