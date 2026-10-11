@@ -9,13 +9,19 @@ public partial class MainWindow : Window
 {
     private readonly IReadOnlyList<IResourceSource> _sources;
     private readonly RecentStore _recents;
+    private readonly SettingsStore _settings;
     private readonly IAutoStart _autoStart;
     private IReadOnlyList<Resource> _all = [];
 
-    public MainWindow(IReadOnlyList<IResourceSource> sources, RecentStore recents, IAutoStart autoStart)
+    public MainWindow(
+        IReadOnlyList<IResourceSource> sources,
+        RecentStore recents,
+        SettingsStore settings,
+        IAutoStart autoStart)
     {
         _sources = sources;
         _recents = recents;
+        _settings = settings;
         _autoStart = autoStart;
         InitializeComponent();
         VersionText.Text = $"coursee {AppVersion.Of(typeof(MainWindow).Assembly)}";
@@ -35,7 +41,10 @@ public partial class MainWindow : Window
 
     private void ShowLauncher()
     {
-        _all = _sources.SelectMany(s => s.GetResources()).ToList();
+        _all = _sources
+            .Where(s => _settings.IsSourceEnabled(s.Name))
+            .SelectMany(s => s.GetResources())
+            .ToList();
         SearchBox.Text = string.Empty;
         Refresh();
         ShowSearch();
@@ -57,6 +66,7 @@ public partial class MainWindow : Window
     private void ShowSettings()
     {
         AutoStartCheckBox.IsChecked = ReadAutoStart();
+        FirefoxCheckBox.IsChecked = _settings.IsSourceEnabled(FirefoxBookmarksSource.SourceName);
         ResultsList.Visibility = Visibility.Collapsed;
         SettingsPanel.Visibility = Visibility.Visible;
         SearchBox.IsEnabled = false;
@@ -193,6 +203,21 @@ public partial class MainWindow : Window
         {
             MessageBox.Show(ex.Message, "coursee");
             AutoStartCheckBox.IsChecked = !wanted;
+        }
+    }
+
+    private void FirefoxCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        var wanted = FirefoxCheckBox.IsChecked == true;
+
+        try
+        {
+            _settings.SetSourceEnabled(FirefoxBookmarksSource.SourceName, wanted);
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            MessageBox.Show(ex.Message, "coursee");
+            FirefoxCheckBox.IsChecked = !wanted;
         }
     }
 

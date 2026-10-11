@@ -68,6 +68,15 @@
                 Content="Start coursee when I sign in to Windows"
                 Click="AutoStartCheckBox_Click" />
 
+      <TextBlock Text="Sources"
+                 Margin="0,16,0,0"
+                 FontSize="15"
+                 FontWeight="SemiBold" />
+      <CheckBox x:Name="FirefoxCheckBox"
+                Margin="0,8,0,0"
+                Content="Firefox bookmarks"
+                Click="FirefoxCheckBox_Click" />
+
       <TextBlock Text="Esc or the gear button goes back to search."
                  Margin="0,24,0,0"
                  FontSize="11"

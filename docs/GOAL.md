@@ -39,9 +39,9 @@ Enter ─► open resource    Esc ─► hide
 5. Enter opens the target; Esc hides the window.
 6. The version number is shown in the window.
 7. A settings button (gear) in the window opens a settings view. Its first section, **Windows integration**, lets the user turn auto start on or off: when on, coursee starts when the user signs in to Windows. Auto start uses the per-user Run registry key (no administrator rights needed).
+8. Source #2: Firefox bookmarks. Default profile only, real bookmarks only (no folders or smart queries), opened in the default browser. A second settings section, **Sources**, lets the user switch the Firefox source on or off.
 
 ## Planned sources (after 0.1)
-- Firefox bookmarks
 - Other sources later, using the same plug-in contract
 
 ## Non-goals

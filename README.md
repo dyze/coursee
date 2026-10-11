@@ -6,7 +6,7 @@ See [docs/GOAL.md](docs/GOAL.md) for the goal, scope and non-goals.
 
 ## Status
 
-Skeleton. Working so far: the Desktop shortcuts source (targets only), search, recents, hotkey, the compact window and a settings view (auto start with Windows). Firefox bookmarks and a tray icon come next.
+Skeleton. Working so far: the Desktop shortcuts source (targets only), search, recents, hotkey, the compact window and a settings view (auto start with Windows). Firefox bookmarks (default profile, can be switched off in Settings) are included; a tray icon comes next.
 
 ## Usage
 
@@ -16,7 +16,7 @@ Skeleton. Working so far: the Desktop shortcuts source (targets only), search, r
 | Type | Filter resources |
 | Up / Down | Move selection |
 | Enter | Open the selected resource |
-| Gear button | Open / close settings (Windows integration: start with Windows) |
+| Gear button | Open / close settings (Windows integration: start with Windows; Sources: Firefox bookmarks) |
 | Esc | Close settings, or hide the launcher |
 | Ctrl+Q | Quit (temporary, until the tray icon exists) |
 
@@ -31,7 +31,7 @@ coursee.App (WPF: hotkey, window, shortcut resolver)
       │
 coursee.Core (search, recents, IResourceSource)
       │
-sources: DesktopShortcutsSource · (next) FirefoxBookmarksSource
+sources: DesktopShortcutsSource · FirefoxBookmarksSource
 ```
 
 `Core` has no Windows dependency, so it is fully unit-tested on any OS. Windows-specific parts (hotkey, `.lnk` resolution) live in `coursee.App`.
