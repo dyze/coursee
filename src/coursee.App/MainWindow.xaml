@@ -95,7 +95,13 @@
       <CheckBox x:Name="FirefoxCheckBox"
                 Margin="0,8,0,0"
                 Content="Firefox bookmarks"
-                Click="FirefoxCheckBox_Click" />
+                Tag="Firefox"
+                Click="SourceCheckBox_Click" />
+      <CheckBox x:Name="RunHistoryCheckBox"
+                Margin="0,8,0,0"
+                Content="Windows Run history (Win+R)"
+                Tag="Windows Run"
+                Click="SourceCheckBox_Click" />
 
       <TextBlock Text="Launcher"
                  Margin="0,16,0,0"

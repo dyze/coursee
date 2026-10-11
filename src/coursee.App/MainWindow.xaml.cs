@@ -75,6 +75,7 @@ public partial class MainWindow : Window
     {
         AutoStartCheckBox.IsChecked = ReadAutoStart();
         FirefoxCheckBox.IsChecked = _settings.IsSourceEnabled(FirefoxBookmarksSource.SourceName);
+        RunHistoryCheckBox.IsChecked = _settings.IsSourceEnabled(RunHistorySource.SourceName);
 
         _loadingSettings = true;
         RecentsComboBox.SelectedItem = _settings.RecentsCapacity;
@@ -327,18 +328,23 @@ public partial class MainWindow : Window
         }
     }
 
-    private void FirefoxCheckBox_Click(object sender, RoutedEventArgs e)
+    private void SourceCheckBox_Click(object sender, RoutedEventArgs e)
     {
-        var wanted = FirefoxCheckBox.IsChecked == true;
+        if (sender is not System.Windows.Controls.CheckBox { Tag: string sourceName } checkBox)
+        {
+            return;
+        }
+
+        var wanted = checkBox.IsChecked == true;
 
         try
         {
-            _settings.SetSourceEnabled(FirefoxBookmarksSource.SourceName, wanted);
+            _settings.SetSourceEnabled(sourceName, wanted);
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
         {
             MessageBox.Show(ex.Message, "coursee");
-            FirefoxCheckBox.IsChecked = !wanted;
+            checkBox.IsChecked = !wanted;
         }
     }
 

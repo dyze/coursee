@@ -42,6 +42,7 @@ Enter ─► open resource    Esc ─► hide
 8. Source #2: Firefox bookmarks. Default profile only, real bookmarks only (no folders or smart queries), opened in the default browser. A second settings section, **Sources**, lets the user switch the Firefox source on or off.
 9. A third settings section, **Launcher**, lets the user change the global hotkey (default Ctrl+Alt+Space) and how many recent items are kept (default 20).
 10. Fallback action, like the Windows Run dialog (Win+R): when the typed text matches no resource, Enter acts on the text itself. It opens a URL (`http(s)://`, `ftp://` or `www.`), opens an existing folder or file (quotes and `%VARS%` allowed), or runs the text as a command. The window always shows which kind of action Enter will do: a line under the search box ("Enter: Open folder") and a label on every row. Typed actions are added to recents.
+11. Source #3: Windows Run history. The commands previously typed in the Win+R dialog (read from the per-user `RunMRU` registry key, most recent first) are searchable in coursee, to ease the migration away from Win+R. They can be switched off in Settings, section **Sources**.
 
 ## Planned sources (after 0.1)
 - Other sources later, using the same plug-in contract

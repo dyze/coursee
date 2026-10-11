@@ -27,6 +27,7 @@ public partial class App : Application
         [
             new DesktopShortcutsSource(desktops, new WshShortcutResolver()),
             new FirefoxBookmarksSource(firefoxProfile),
+            new RunHistorySource(new RegistryRunHistoryReader()),
         ];
 
         var dataDirectory = Path.Combine(
