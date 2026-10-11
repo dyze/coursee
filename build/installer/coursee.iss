@@ -1,6 +1,6 @@
 ; coursee installer (Inno Setup 6.3 or later).
 ; Built by build\installer.cmd, which publishes the app and passes the version:
-;   ISCC.exe /DAppVersion=0.3 /DPublishDir=<published app folder> build\installer\coursee.iss
+;   ISCC.exe /DAppVersion=<version> /DPublishDir=<published app folder> build\installer\coursee.iss
 ;
 ; Per-user install: no administrator rights, installed in %LOCALAPPDATA%\Programs\coursee.
 ; User data (%LOCALAPPDATA%\coursee: settings, recents, logs) is left in place on uninstall.

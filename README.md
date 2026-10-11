@@ -42,7 +42,7 @@ coursee logs its activity to help debugging: start/stop, changes in each source 
 
 ## Versioning
 
-Versions are `MAJOR.MINOR`: the first is **0.1**, the next **0.2**. The number is set once, in `Directory.Build.props`, and is stamped into all produced assemblies (including `coursee.exe`). The launcher window shows it at the bottom right.
+Versions are `MAJOR.MINOR`, starting at 0.1; the current version is the one in `Directory.Build.props` (scope of each version: [docs/GOAL.md](docs/GOAL.md)). It is set only there, and is stamped into all produced assemblies (including `coursee.exe`). The launcher window shows it at the bottom right.
 
 ## Architecture
 

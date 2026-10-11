@@ -45,7 +45,7 @@ Enter ─► open resource    Esc ─► hide
 11. Source #3: Windows Run history. The commands previously typed in the Win+R dialog (read from the per-user `RunMRU` registry key, most recent first) are searchable in coursee, to ease the migration away from Win+R. They can be switched off in Settings, section **Sources**.
 12. Logging, for debugging and user feedback. coursee logs its activity: application start/stop, **changes in each source** (items added / removed at each refresh), **every action the user triggers** (resource opened, typed command, settings changed) and errors. Entries go to a rolling text file (`%LOCALAPPDATA%\coursee\logs`, at most 3 files of 1 MB) and to a **log window** opened from Settings (section **Logging**) or the tray menu, which shows the last 1000 entries live with a level filter, a text filter, copy and clear. Level is Info by default; a Settings checkbox turns on detailed (Debug) logging. Never logged: keystrokes while searching, secrets. Library: Serilog (file sink) in the App.
 
-## Version 0.3 scope
+## Version 0.2 scope
 1. **Tray icon.** coursee shows an icon in the notification area. Click: show the launcher. Menu: *Show coursee* (with the current hotkey), *Settings*, *Log window*, *Quit*. The temporary Ctrl+Q shortcut is removed. If no hotkey can be registered, coursee keeps running and is reached from the tray. coursee.exe and the tray use the same application icon.
 2. **Source #4: Start Menu.** Shortcuts (.lnk) in the user's and the common Start Menu, subfolders included, handled like the Desktop ones (target shown and searched, the shortcut itself opened). Uninstall shortcuts are skipped. An item found in two sources with the same name and target is listed once. It can be switched off in Settings, section **Sources**.
 3. **Row actions.** On the selected item:
@@ -62,7 +62,7 @@ Enter ─► open resource    Esc ─► hide
 ## Non-goals
 - Indexing or searching file contents
 - Using Windows' own recent-files list
-- Multi-user or public release (a personal, per-user installer is fine: see 0.3 scope)
+- Multi-user or public release (a personal, per-user installer is fine: see 0.2 scope)
 - Managing system settings, processes or hardware (possible later, not now)
 
 ## Open questions
