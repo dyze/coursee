@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Deterministic>true</Deterministic>
+    <!-- Lets the Windows-only WPF project be restored/built on non-Windows machines (CI). -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <!-- All build output goes to the artifacts/ folder. -->
+    <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
+  </PropertyGroup>
+</Project>

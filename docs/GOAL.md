@@ -1,0 +1,50 @@
+# coursee: goal
+
+## One-liner
+A personal Windows launcher: press a global hotkey, a compact window appears with a search box, type to find a resource, press Enter to open it.
+
+## Who it's for
+Just me. Personal tool, optimised for my own workflow, not for distribution.
+
+## How it works
+
+```
+Hotkey ─► compact window
+          ┌──────────────────────────┐
+          │ search…                  │
+          ├──────────────────────────┤
+          │ recent 1                 │
+          │ recent 2                 │
+          │ matches from sources     │
+          └──────────────────────────┘
+Enter ─► open resource    Esc ─► hide
+```
+
+## Principles
+- **Pluggable sources.** The app is source-agnostic. Each source supplies resources (name, target, kind). Adding a source must not touch the UI.
+- **Targets only.** Search matches the shortcut targets themselves (files and folders), never the contents of the folders they point to. No file-system indexing.
+- **Recents come from coursee only.** "Recent" means what was opened through coursee, not Windows' own recent list.
+- **Fast and out of the way.** Appears instantly on hotkey, hides on Esc or after opening.
+
+## v1 scope
+1. Global hotkey toggles the compact window.
+2. Source #1: shortcuts (.lnk) on the Windows Desktop, resolved to their targets (files and folders).
+3. Search box with filtering as you type.
+4. Recent list (opened via coursee), shown when the search box is empty.
+5. Enter opens the target; Esc hides the window.
+
+## Planned sources (after v1)
+- Firefox shortcuts (exact meaning to be confirmed: bookmarks or other shortcut types)
+- Other sources later, using the same plug-in contract
+
+## Non-goals
+- Indexing or searching file contents
+- Using Windows' own recent-files list
+- Multi-user, installer, or public release
+- Managing system settings, processes or hardware (possible later, not now)
+
+## Open questions
+- Hotkey choice and whether it should be configurable
+- Recent list: size limit, and ranking by recency only or recency plus frequency
+- Firefox source: bookmarks, or something else?
+- UI technology (the CSProjectTemplate decides what is natural)

@@ -1,0 +1,24 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+artifacts/*
+!artifacts/.gitkeep
+
+# Local package folder
+packages/*
+!packages/.gitkeep
+
+# IDE / user files
+.vs/
+.idea/
+*.user
+*.suo
+*.rsuser
+
+# Test results
+TestResults/
+*.trx
+
+# OS
+Thumbs.db
+.DS_Store
