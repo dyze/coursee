@@ -69,6 +69,16 @@ sources: ShortcutsSource (Desktop, Start Menu) · FirefoxBookmarksSource · RunH
 | `samples/` | Samples |
 | `artifacts/` | Build output (git-ignored) |
 
+## Install
+
+```
+build\installer.cmd
+```
+
+Builds `artifacts\installer\coursee-setup-<version>.exe` (needs the .NET 10 SDK and [Inno Setup](https://jrsoftware.org/isinfo.php) 6.3+). Run it to install coursee for your user only, no administrator rights: `%LOCALAPPDATA%\Programs\coursee`, with a Start Menu shortcut and, if chosen, a desktop shortcut and auto start. The app is self-contained, so the PC needs no .NET runtime.
+
+Upgrade: run a newer setup over the old one. Uninstall: *Settings > Apps*. Your settings, recents and logs (`%LOCALAPPDATA%\coursee`) are kept.
+
 ## Build
 
 Requires the .NET 10 SDK.

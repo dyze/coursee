@@ -55,13 +55,15 @@ Enter ─► open resource    Esc ─► hide
 
 The line under the search box lists the actions available for the selected item.
 
+5. **Installer.** `build\installer.cmd` builds `coursee-setup-<version>.exe` with Inno Setup. Per-user (no administrator rights), installed in `%LOCALAPPDATA%\Programs\coursee`, self-contained (no .NET runtime needed on the PC). It adds a Start Menu shortcut, optionally a desktop shortcut and auto start, and an entry in *Apps & features* to uninstall. Setup and uninstall ask to quit coursee if it is running. Uninstalling keeps the user data (`%LOCALAPPDATA%\coursee`).
+
 ## Planned sources (after 0.1)
 - Other sources later, using the same plug-in contract
 
 ## Non-goals
 - Indexing or searching file contents
 - Using Windows' own recent-files list
-- Multi-user, installer, or public release
+- Multi-user or public release (a personal, per-user installer is fine: see 0.3 scope)
 - Managing system settings, processes or hardware (possible later, not now)
 
 ## Open questions

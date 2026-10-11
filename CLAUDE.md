@@ -21,7 +21,7 @@ sources       ShortcutsSource (Desktop, Start Menu), FirefoxBookmarksSource, Run
 - Anything Windows-specific goes in `coursee.App`, behind an interface defined in `Core`.
 
 ## Stack
-.NET 10, C#, WPF, xUnit. WinForms is enabled in `App` for the tray icon only (`NotifyIcon`). Third-party packages: `Microsoft.Data.Sqlite` (in `Core`, to read Firefox bookmarks) and `Serilog` + `Serilog.Sinks.File` (in `App`, for the log file). Shared settings live in `Directory.Build.props`; build output goes to `artifacts/`.
+.NET 10, C#, WPF, xUnit. WinForms is enabled in `App` for the tray icon only (`NotifyIcon`). Third-party packages: `Microsoft.Data.Sqlite` (in `Core`, to read Firefox bookmarks) and `Serilog` + `Serilog.Sinks.File` (in `App`, for the log file). Shared settings live in `Directory.Build.props`; build output goes to `artifacts/`. The installer is built with Inno Setup (`build/installer.cmd`, `build/installer/coursee.iss`), a tool on the owner's PC, not a package.
 
 ## Logging
 - `Core` writes through `ILog` (`log.Info(category, message)`); only `App` knows Serilog. Source classes take an optional `ILog`.
