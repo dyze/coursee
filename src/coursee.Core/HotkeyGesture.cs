@@ -8,8 +8,11 @@ public sealed record HotkeyGesture(bool Ctrl, bool Alt, bool Shift, bool Win, st
 {
     public static HotkeyGesture Default { get; } = new(Ctrl: true, Alt: true, Shift: false, Win: false, Key: "Space");
 
-    /// <summary>A usable hotkey has a key and at least one modifier.</summary>
-    public bool IsValid => (Ctrl || Alt || Shift || Win) && !string.IsNullOrWhiteSpace(Key);
+    /// <summary>
+    /// A usable hotkey has a key and Ctrl, Alt or Win. Shift alone does not count: a global
+    /// Shift+A would stop every application from receiving a capital A.
+    /// </summary>
+    public bool IsValid => (Ctrl || Alt || Win) && !string.IsNullOrWhiteSpace(Key);
 
     public override string ToString()
     {

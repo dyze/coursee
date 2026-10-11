@@ -52,6 +52,16 @@ public class RunHistorySourceTests
     }
 
     [Fact]
+    public void NetworkPathEntries_AreOpenedAsNetworkPaths()
+    {
+        var result = Load(new() { ["MRUList"] = "a", ["a"] = @"\\server\my share\1" });
+
+        Assert.Equal(
+            new Resource(@"\\server\my share", @"\\server\my share", ResourceKind.NetworkPath, "Windows Run"),
+            Assert.Single(result));
+    }
+
+    [Fact]
     public void Duplicates_KeepTheMostRecentOne()
     {
         var result = Load(new() { ["MRUList"] = "ba", ["a"] = "Notepad\\1", ["b"] = "notepad\\1" });

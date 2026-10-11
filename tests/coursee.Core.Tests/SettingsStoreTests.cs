@@ -79,6 +79,15 @@ public sealed class SettingsStoreTests : IDisposable
         Assert.False(store.IsSourceEnabled("Firefox"));
     }
 
+    [Fact]
+    public void StoredShiftOnlyHotkey_FallsBackToTheDefault()
+    {
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(FilePath, "{\"Hotkey\":\"Shift+A\"}");
+
+        Assert.Equal(HotkeyGesture.Default, new SettingsStore(FilePath).Hotkey);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_directory))

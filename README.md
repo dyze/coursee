@@ -12,14 +12,20 @@ Skeleton. Working so far: the Desktop shortcuts source (targets only), search, r
 
 | Key | Action |
 | --- | --- |
-| Ctrl+Alt+Space (default, configurable in Settings) | Show / hide the launcher |
+| Ctrl+Alt+Space (default, configurable in Settings; needs Ctrl, Alt or Win) | Show / hide the launcher |
 | Type | Filter resources |
 | Up / Down | Move selection |
-| Enter | Open the selected resource. If nothing matches, act on the typed text like Win+R: open a URL, folder or file, or run a command. A line under the search box says which |
+| Enter | Open the selected resource. If nothing matches, act on the typed text like Win+R: open a URL, folder or file, or run a command. Network paths (`\\server\share`) are opened without being checked, so typing them never freezes the window. A line under the search box says which |
 | Gear button | Open / close settings (Windows integration: start with Windows; Sources: Firefox bookmarks, Windows Run history; Launcher: hotkey and number of recent items) |
 | Log window | Settings > Logging > Open log window |
 | Esc | Close settings, or hide the launcher |
 | Ctrl+Q | Quit (temporary, until the tray icon exists) |
+
+## Behavior notes
+
+- **One copy at a time.** Starting coursee while it is already running shows the launcher of the running copy.
+- **Instant window.** Sources are reloaded in the background each time the launcher opens: it shows the previous list at once, and new or removed items appear a moment later.
+- **Desktop shortcuts** are searched by their target, but opened through the shortcut itself, so their arguments and working folder are kept.
 
 ## Logging
 

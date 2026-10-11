@@ -31,6 +31,13 @@ public static class FallbackClassifier
         }
 
         var path = ExpandedPath(text);
+        if (IsNetworkPath(path))
+        {
+            // Checking a network path can block for seconds (server down, VPN off), and this
+            // runs on every keystroke. The shell opens a file or a folder the same way.
+            return new Resource(text, path, ResourceKind.NetworkPath, SourceName);
+        }
+
         if (LooksLikePath(path))
         {
             directoryExists ??= Directory.Exists;
@@ -77,6 +84,10 @@ public static class FallbackClassifier
 
         return Environment.ExpandEnvironmentVariables(unquoted);
     }
+
+    /// <summary>A UNC path (<c>\\server\share\...</c>) with at least a server name.</summary>
+    private static bool IsNetworkPath(string path) =>
+        path.Length > 2 && path.StartsWith(@"\\", StringComparison.Ordinal) && path[2] != '\\';
 
     private static bool LooksLikePath(string path) =>
         Path.IsPathRooted(path) || path.Contains('\\') || path.Contains('/');

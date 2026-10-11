@@ -19,6 +19,9 @@ public partial class MainWindow : Window
     private IReadOnlyList<Resource> _all = [];
     private bool _capturingHotkey;
     private bool _loadingSettings;
+    private bool _showingDialog;
+    private bool _refreshing;
+    private bool _refreshAgain;
 
     public MainWindow(
         IReadOnlyList<IResourceSource> sources,
@@ -53,36 +56,95 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>Shows the launcher when asked by another copy of coursee (never hides it).</summary>
+    public void ShowFromOutside()
+    {
+        if (IsVisible)
+        {
+            Activate();
+            SearchBox.Focus();
+        }
+        else
+        {
+            ShowLauncher();
+        }
+    }
+
     private void ShowLauncher()
     {
         _log.Debug("Window", "Shown");
-        _all = LoadResources();
+
+        // Show the list from the last refresh at once; the fresh one replaces it when ready.
         SearchBox.Text = string.Empty;
         Refresh();
         ShowSearch();
         Show();
         Activate();
         SearchBox.Focus();
+        RefreshResources();
     }
 
-    private List<Resource> LoadResources()
+    /// <summary>
+    /// Reloads the enabled sources on a background thread, then updates the list. Only one
+    /// refresh runs at a time; a request made meanwhile runs once the current one ends.
+    /// </summary>
+    public async void RefreshResources()
     {
-        var all = new List<Resource>();
-        foreach (var source in _sources.Where(s => _settings.IsSourceEnabled(s.Name)))
+        if (_refreshing)
         {
-            try
-            {
-                var resources = source.GetResources();
-                _monitor.Observe(source.Name, resources);
-                all.AddRange(resources);
-            }
-            catch (Exception ex)
-            {
-                _log.Error(source.Name, "Source failed", ex);
-            }
+            _refreshAgain = true;
+            return;
         }
 
-        return all;
+        _refreshing = true;
+        try
+        {
+            do
+            {
+                _refreshAgain = false;
+                var enabled = _sources.Where(s => _settings.IsSourceEnabled(s.Name)).ToList();
+                var results = await Task.Run(() => SourceLoader.Load(enabled));
+                ApplyResults(results);
+            }
+            while (_refreshAgain);
+        }
+        catch (Exception ex)
+        {
+            _log.Error("App", "Refreshing the sources failed", ex);
+        }
+        finally
+        {
+            _refreshing = false;
+        }
+    }
+
+    /// <summary>Runs on the UI thread: tracks and logs changes, then updates the visible list.</summary>
+    private void ApplyResults(IReadOnlyList<SourceResult> results)
+    {
+        var all = new List<Resource>();
+        foreach (var result in results)
+        {
+            // Switched off while this refresh was running.
+            if (!_settings.IsSourceEnabled(result.SourceName))
+            {
+                continue;
+            }
+
+            if (result.Error is not null)
+            {
+                _log.Error(result.SourceName, "Source failed", result.Error);
+                continue;
+            }
+
+            _monitor.Observe(result.SourceName, result.Resources);
+            all.AddRange(result.Resources);
+        }
+
+        _all = all;
+        if (IsVisible && !IsSettingsOpen && !string.IsNullOrWhiteSpace(SearchBox.Text))
+        {
+            Refresh(keepSelection: true);
+        }
     }
 
     private bool IsSettingsOpen => SettingsPanel.Visibility == Visibility.Visible;
@@ -128,8 +190,11 @@ public partial class MainWindow : Window
         }
     }
 
-    private void Refresh()
+    /// <param name="keepSelection">True when the list is rebuilt under the user (background refresh):
+    /// the selected row stays selected. Otherwise the best match is selected.</param>
+    private void Refresh(bool keepSelection = false)
     {
+        var selectedTarget = keepSelection ? (ResultsList.SelectedItem as Resource)?.Target : null;
         var query = SearchBox.Text;
         IReadOnlyList<Resource> items;
 
@@ -151,7 +216,10 @@ public partial class MainWindow : Window
         ResultsList.ItemsSource = items;
         if (items.Count > 0)
         {
-            ResultsList.SelectedIndex = 0;
+            var keep = selectedTarget is null
+                ? -1
+                : items.ToList().FindIndex(r => string.Equals(r.Target, selectedTarget, StringComparison.OrdinalIgnoreCase));
+            ResultsList.SelectedIndex = Math.Max(keep, 0);
         }
 
         UpdateActionText();
@@ -178,7 +246,8 @@ public partial class MainWindow : Window
         }
         else
         {
-            Process.Start(new ProcessStartInfo(resource.Target) { UseShellExecute = true });
+            // For a Desktop shortcut this is the .lnk, so its arguments and working folder are kept.
+            Process.Start(new ProcessStartInfo(resource.OpenTarget) { UseShellExecute = true });
         }
     }
 
@@ -193,16 +262,27 @@ public partial class MainWindow : Window
         try
         {
             Launch(resource);
-            _recents.Add(resource);
-            _log.Info(
-                "Action",
-                $"{resource.ActionLabel}: {resource.Target} ({(typed ? "typed" : resource.Source)}, {resource.Kind})");
         }
         catch (Exception ex)
         {
+            // Stay open so the user can correct the text or pick another item.
             _log.Error("Action", $"{resource.ActionLabel} failed for {resource.Target}", ex);
-            MessageBox.Show(ex.Message, "coursee");
+            ShowMessage(ex.Message);
             return;
+        }
+
+        _log.Info(
+            "Action",
+            $"{resource.ActionLabel}: {resource.Target} ({(typed ? "typed" : resource.Source)}, {resource.Kind})");
+
+        // The resource is open: failing to remember it is only worth a log entry.
+        try
+        {
+            _recents.Add(resource);
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            _log.Warn("Recents", $"Cannot save the recent items: {ex.GetType().Name}: {ex.Message}");
         }
 
         Hide();
@@ -255,7 +335,7 @@ public partial class MainWindow : Window
 
         if (!gesture.IsValid)
         {
-            HotkeyText.Text = "Hold Ctrl, Alt, Shift or Win too...";
+            HotkeyText.Text = "Hold Ctrl, Alt or Win too...";
             return;
         }
 
@@ -268,13 +348,13 @@ public partial class MainWindow : Window
             }
             catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
             {
-                MessageBox.Show(ex.Message, "coursee");
+                ShowMessage(ex.Message);
             }
         }
         else
         {
             _log.Warn("Settings", $"Hotkey {gesture} is not available");
-            MessageBox.Show($"The shortcut {gesture} is not available. Try another one.", "coursee");
+            ShowMessage($"The shortcut {gesture} is not available. Try another one.");
         }
 
         StopCapturingHotkey();
@@ -359,7 +439,7 @@ public partial class MainWindow : Window
         catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
         {
             _log.Error("Settings", "Cannot change start with Windows", ex);
-            MessageBox.Show(ex.Message, "coursee");
+            ShowMessage(ex.Message);
             AutoStartCheckBox.IsChecked = !wanted;
         }
     }
@@ -378,11 +458,12 @@ public partial class MainWindow : Window
             _settings.SetSourceEnabled(sourceName, wanted);
             _monitor.Reset(sourceName);
             _log.Info("Settings", $"Source '{sourceName}' {(wanted ? "on" : "off")}");
+            RefreshResources();
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
         {
             _log.Error("Settings", $"Cannot change source '{sourceName}'", ex);
-            MessageBox.Show(ex.Message, "coursee");
+            ShowMessage(ex.Message);
             checkBox.IsChecked = !wanted;
         }
     }
@@ -411,7 +492,7 @@ public partial class MainWindow : Window
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
         {
             _log.Error("Settings", "Cannot change recent items", ex);
-            MessageBox.Show(ex.Message, "coursee");
+            ShowMessage(ex.Message);
         }
     }
 
@@ -428,7 +509,7 @@ public partial class MainWindow : Window
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
         {
             _log.Error("Settings", "Cannot change debug logging", ex);
-            MessageBox.Show(ex.Message, "coursee");
+            ShowMessage(ex.Message);
             DebugLoggingCheckBox.IsChecked = !wanted;
         }
     }
@@ -447,8 +528,36 @@ public partial class MainWindow : Window
         _logWindow.Show();
     }
 
+    /// <summary>
+    /// Shows a message owned by the launcher. Without this, the message box would take the focus,
+    /// the launcher would hide itself (it hides when deactivated), and the message would end up alone.
+    /// </summary>
+    private void ShowMessage(string message)
+    {
+        _showingDialog = true;
+        try
+        {
+            MessageBox.Show(this, message, "coursee");
+        }
+        finally
+        {
+            _showingDialog = false;
+        }
+
+        Activate();
+        if (!IsSettingsOpen)
+        {
+            SearchBox.Focus();
+        }
+    }
+
     private void Window_Deactivated(object? sender, EventArgs e)
     {
+        if (_showingDialog)
+        {
+            return;
+        }
+
         StopCapturingHotkey();
         Hide();
     }

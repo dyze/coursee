@@ -54,4 +54,18 @@ public class HotkeyGestureTests
         Assert.False(new HotkeyGesture(true, false, false, false, " ").IsValid);
         Assert.True(new HotkeyGesture(true, false, false, false, "A").IsValid);
     }
+
+    [Fact]
+    public void IsValid_ShiftAloneIsNotEnough()
+    {
+        Assert.False(new HotkeyGesture(Ctrl: false, Alt: false, Shift: true, Win: false, Key: "A").IsValid);
+        Assert.True(new HotkeyGesture(Ctrl: true, Alt: false, Shift: true, Win: false, Key: "A").IsValid);
+        Assert.True(new HotkeyGesture(Ctrl: false, Alt: false, Shift: true, Win: true, Key: "A").IsValid);
+    }
+
+    [Fact]
+    public void TryParse_RejectsShiftAlone()
+    {
+        Assert.False(HotkeyGesture.TryParse("Shift+A", out _));
+    }
 }

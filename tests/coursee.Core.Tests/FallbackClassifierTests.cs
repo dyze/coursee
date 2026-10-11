@@ -83,6 +83,29 @@ public class FallbackClassifierTests
         }
     }
 
+    [Theory]
+    [InlineData(@"\\server")]
+    [InlineData(@"\\server\share\folder")]
+    [InlineData(@"\\server\share\my notes.txt")]
+    public void NetworkPath_IsOpenedWithoutTouchingTheDisk(string input)
+    {
+        Func<string, bool> fail = path => throw new InvalidOperationException("Disk checked for " + path);
+
+        var result = FallbackClassifier.Classify(input, fail, fail);
+
+        Assert.Equal(new Resource(input, input, ResourceKind.NetworkPath, "Typed"), result);
+        Assert.Equal("Open", result!.ActionLabel);
+    }
+
+    [Fact]
+    public void QuotedNetworkPath_IsUnquoted()
+    {
+        var result = FallbackClassifier.Classify("\"\\\\server\\my share\"", Never, Never);
+
+        Assert.Equal(ResourceKind.NetworkPath, result!.Kind);
+        Assert.Equal(@"\\server\my share", result.Target);
+    }
+
     [Fact]
     public void PathThatDoesNotExist_IsRunAsACommand()
     {

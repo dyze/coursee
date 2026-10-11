@@ -9,6 +9,7 @@ public static class ActionLabels
         ResourceKind.Folder => "Open folder",
         ResourceKind.Url => "Open URL",
         ResourceKind.Command => "Run command",
+        ResourceKind.NetworkPath => "Open",
         _ => "Open",
     };
 }

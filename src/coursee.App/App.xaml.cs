@@ -7,10 +7,20 @@ public partial class App : Application
 {
     private HotkeyService? _hotkey;
     private LogHub? _logHub;
+    private SingleInstance? _singleInstance;
+    private MainWindow? _window;
 
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        // Another copy is running: it has been asked to show its launcher, so this one leaves.
+        _singleInstance = SingleInstance.TryClaim(() => Dispatcher.BeginInvoke(() => _window?.ShowFromOutside()));
+        if (_singleInstance is null)
+        {
+            Shutdown(0);
+            return;
+        }
 
         var dataDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -57,9 +67,11 @@ public partial class App : Application
 
         var executablePath = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "coursee.exe");
 
-        MainWindow? window = null;
-        _hotkey = new HotkeyService(() => window?.Toggle());
-        window = new MainWindow(sources, recents, settings, new RegistryAutoStart(executablePath), _hotkey, _logHub);
+        _hotkey = new HotkeyService(() => _window?.Toggle());
+        _window = new MainWindow(sources, recents, settings, new RegistryAutoStart(executablePath), _hotkey, _logHub);
+
+        // Load the sources now, in the background, so the first hotkey press shows a full list.
+        _window.RefreshResources();
 
         if (_hotkey.TryRegister(settings.Hotkey))
         {
@@ -91,6 +103,7 @@ public partial class App : Application
         _hotkey?.Dispose();
         _logHub?.Filter.Info("App", "coursee stopped");
         _logHub?.Dispose();
+        _singleInstance?.Dispose();
         base.OnExit(e);
     }
 }
