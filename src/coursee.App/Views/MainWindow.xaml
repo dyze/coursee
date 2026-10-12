@@ -54,8 +54,12 @@
     <ListBox x:Name="ResultsList"
              Grid.Row="2"
              Margin="0,6,0,0"
+             HorizontalContentAlignment="Stretch"
+             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
              MouseDoubleClick="ResultsList_MouseDoubleClick"
              SelectionChanged="ResultsList_SelectionChanged">
+      <!-- Rows are as wide as the list (no horizontal scroll): a long name or target is cut with "…",
+           so the action column on the right always shows. -->
       <ListBox.ItemTemplate>
         <DataTemplate>
           <Grid Margin="4">
