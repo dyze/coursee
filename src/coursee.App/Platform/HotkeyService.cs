@@ -36,6 +36,8 @@ public sealed class HotkeyService : IHotkeyRegistrar, IDisposable
 
     public bool Paused { get; set; }
 
+    public HotkeyGesture? Current => _current;
+
     public bool TryRegister(HotkeyGesture gesture)
     {
         var previous = _current;

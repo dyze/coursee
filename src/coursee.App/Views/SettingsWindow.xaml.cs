@@ -40,6 +40,7 @@ public partial class SettingsWindow : Window
     private readonly Action _openLog;
     private readonly Dictionary<string, CheckBox> _sourceCheckBoxes = [];
     private bool _capturingHotkey;
+    private bool _focusHotkey;
     private bool _loading;
 
     /// <param name="sources">All the sources; those that can be switched off get a checkbox.</param>
@@ -86,7 +87,7 @@ public partial class SettingsWindow : Window
         TabList.ItemsSource = _catalog.Tabs;
         TabList.SelectedIndex = 0;
 
-        Loaded += (_, _) => FindBox.Focus();
+        Loaded += (_, _) => (_focusHotkey ? (UIElement)HotkeyButton : FindBox).Focus();
         Closed += (_, _) => StopCapturingHotkey();
     }
 
@@ -105,9 +106,34 @@ public partial class SettingsWindow : Window
             checkBox.IsChecked = _settings.IsSourceEnabled(name);
         }
 
-        HotkeyText.Text = _settings.Hotkey.ToString();
+        ShowHotkey();
         _loading = false;
     }
+
+    /// <summary>
+    /// The hotkey could not be registered: explain why, on top of the window, and put the focus
+    /// on the button that changes it. The banner goes away once a hotkey works.
+    /// </summary>
+    public void ShowHotkeyProblem()
+    {
+        HotkeyBannerText.Text =
+            $"The hotkey {_settings.Hotkey} is used by another application or by Windows, so coursee has no hotkey. "
+            + "Choose another one with Change. Meanwhile, the coursee icon in the notification area opens the launcher.";
+        HotkeyBanner.Visibility = Visibility.Visible;
+        ShowTab(SettingsCatalog.GeneralTab);
+
+        _focusHotkey = true;
+        if (IsLoaded)
+        {
+            HotkeyButton.Focus();
+        }
+    }
+
+    /// <summary>The saved hotkey, marked when it is not registered.</summary>
+    private void ShowHotkey() =>
+        HotkeyText.Text = _hotkeys.Current is null
+            ? $"{_settings.Hotkey} (not active)"
+            : _settings.Hotkey.ToString();
 
     /// <summary>The panel of each tab; its Tag is the tab name.</summary>
     private IEnumerable<StackPanel> Sections => SectionsPanel.Children.OfType<StackPanel>();
@@ -179,7 +205,7 @@ public partial class SettingsWindow : Window
     {
         _capturingHotkey = false;
         _hotkeys.Paused = false;
-        HotkeyText.Text = _settings.Hotkey.ToString();
+        ShowHotkey();
     }
 
     private void CaptureHotkey(KeyEventArgs e)
@@ -216,6 +242,7 @@ public partial class SettingsWindow : Window
 
         if (_hotkeys.TryRegister(gesture))
         {
+            HotkeyBanner.Visibility = Visibility.Collapsed;
             try
             {
                 _settings.SetHotkey(gesture);

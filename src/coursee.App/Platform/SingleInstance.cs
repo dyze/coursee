@@ -3,8 +3,8 @@ namespace Coursee.UI.Platform;
 /// <summary>
 /// Keeps a single coursee running per Windows session. The first copy owns a named mutex and
 /// waits on a named event; a later copy sets the event (the first copy then shows its
-/// launcher) and exits. Without this, a second copy could not register the hotkey and would
-/// fall back to the default one, overwriting the saved setting.
+/// launcher) and exits. Without this, a second copy could not register the hotkey, and would
+/// open Settings to ask for another one.
 /// </summary>
 public sealed class SingleInstance : IDisposable
 {

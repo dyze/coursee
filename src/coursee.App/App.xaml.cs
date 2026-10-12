@@ -132,7 +132,7 @@ public partial class App : Application
 
         _tray = new TrayIcon(
             AppVersion.Of(typeof(App).Assembly),
-            () => settings.Hotkey.ToString(),
+            () => hotkey.Current?.ToString() ?? "no hotkey",
             show: () => window.ShowFromOutside(),
             showSettings: () => OpenSettings(),
             showLog: OpenLogWindow,
@@ -148,23 +148,11 @@ public partial class App : Application
         }
         else
         {
-            if (settings.Hotkey != HotkeyGesture.Default && _hotkey.TryRegister(HotkeyGesture.Default))
-            {
-                log.Warn("Hotkey", $"{settings.Hotkey} is not available, using {HotkeyGesture.Default}");
-                MessageBox.Show(
-                    $"The hotkey {settings.Hotkey} is not available. Using {HotkeyGesture.Default} instead.",
-                    "coursee");
-                settings.SetHotkey(HotkeyGesture.Default);
-            }
-            else
-            {
-                // The tray icon still gives access to the launcher and to Settings.
-                log.Error("Hotkey", $"Could not register {settings.Hotkey} nor {HotkeyGesture.Default}; no hotkey");
-                MessageBox.Show(
-                    $"Could not register the hotkey {settings.Hotkey} (already in use?).\n\n"
-                    + "Use the coursee icon in the notification area, and choose another hotkey in Settings.",
-                    "coursee");
-            }
+            // Windows does not tell which application holds a hotkey. The tray icon still gives
+            // access to the launcher; Settings opens so that another hotkey can be chosen.
+            log.Warn("Hotkey", $"Could not register {settings.Hotkey} (used by another application or by Windows); no hotkey");
+            OpenSettings(SettingsCatalog.GeneralTab);
+            _settingsWindow?.ShowHotkeyProblem();
         }
     }
 

@@ -70,7 +70,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#search).
 - **Instant window.** Sources are reloaded in the background each time the launcher opens: it shows the previous list at once, and new or removed items appear a moment later.
 - **Desktop and Start Menu shortcuts** are searched by their target, but opened through the shortcut itself, so their arguments and working folder are kept. Uninstall shortcuts are skipped, and a program found in both places is listed once.
 - **Firefox**: default profile only, bookmarks only (no folders), opened in the default browser.
-- **No hotkey available?** coursee keeps running: use the tray icon and choose another hotkey in Settings.
+- **Hotkey already taken?** If another application (or Windows) holds the hotkey at start, coursee keeps running without one and opens Settings on it, so you can choose another; meanwhile the tray icon opens the launcher. Windows does not tell which application holds a hotkey, so coursee cannot name it.
 
 ## Data and logs
 
