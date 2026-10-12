@@ -22,3 +22,4 @@ TestResults/
 # OS
 Thumbs.db
 .DS_Store
+/.obsidian/**

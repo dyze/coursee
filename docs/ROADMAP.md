@@ -34,4 +34,15 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 5. **Installer.** A per-user setup (no administrator rights), self-contained (no .NET runtime needed). It adds a Start Menu shortcut, optionally a desktop shortcut and auto start, and an entry in *Apps & features* to uninstall. Setup and uninstall ask to quit coursee if it is running. Uninstalling keeps the user data.
 
 ## 0.3
+1. **File reorganisation.** In App & Core, all files are in root of project. Define a suitable structure and move files. Adapt namespaces.
+2. **Add Edge browser source.** Retrieve links from Edge browser.
+3. **Use right web browser.** If a link comes from a specific browser database, when opening url the source browser is used.
+4. **Save & restore Windows positions.** Save position of Main, Log windows... including Monitor index. And restore them when windows are shown again. Ensure positions are valid. 
+5. **Hot key conflict.** If hot key is not available at registration, show settings window directly to let user change it. Can we say who is taking the lead of the hot key? if yes, show info to user.
+6. **Dark mode.** Allow user to choose between light and dark mode. By default, sync with system setting, but user can override.
+7. **Group settings.** App will have more and more settings. Add tabs to group them.
+8. **Search for setting.** An edit box can be used to locate a setting quicker.
+9. In settings window, Main window fields must not be shown.
+
+## 0.4
 Not defined yet.
