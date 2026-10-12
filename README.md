@@ -33,7 +33,7 @@ Upgrade: run a newer setup over the old one. Uninstall: *Settings > Apps*. Your 
 | Ctrl+Enter | Show the selected file or folder in Explorer, item selected |
 | Ctrl+Shift+Enter | Run the selected command or program as administrator (`.exe`, `.bat`, `.cmd`, `.com`, `.msc`) |
 | Del | Remove the selected item from recents (search box empty) |
-| Esc | Close settings, or hide the launcher |
+| Esc | Hide the launcher |
 
 The line under the search box always says what Enter will do and which other keys apply.
 
@@ -43,13 +43,12 @@ The line under the search box always says what Enter will do and which other key
 
 ## Settings
 
-Gear button in the launcher, or tray menu > Settings.
+Gear button in the launcher, or tray menu > Settings. A window of its own: changes are saved at once, Esc closes it.
 
-| Section | Options |
+| Tab | Options |
 | --- | --- |
-| Windows integration | Start with Windows |
+| General | Hotkey (must include Ctrl, Alt or Win), number of recent items (default 20), start with Windows |
 | Sources | Start Menu, Firefox bookmarks, Windows Run history (on / off) |
-| Launcher | Hotkey (must include Ctrl, Alt or Win), number of recent items (default 20) |
 | Logging | Detailed (debug) logging, open the log window |
 
 ## Search

@@ -33,6 +33,10 @@ public sealed class FirefoxBookmarksSource : IResourceSource
 
     public string Name => SourceName;
 
+    public string DisplayName => "Firefox bookmarks";
+
+    public bool CanBeDisabled => true;
+
     public IReadOnlyList<Resource> GetResources()
     {
         if (string.IsNullOrEmpty(_profileDirectory))

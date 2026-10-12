@@ -200,6 +200,17 @@ public sealed class ShortcutsSourceTests : IDisposable
         Assert.Equal(expected, ShortcutsSource.IsUninstaller(name, Path.Combine(_root, targetFile)));
     }
 
+    [Fact]
+    public void DesktopIsAlwaysOn_StartMenuCanBeSwitchedOff()
+    {
+        var desktop = ShortcutsSource.Desktop([_desktop], new FakeResolver([]));
+        var startMenu = ShortcutsSource.StartMenu([_desktop], new FakeResolver([]));
+
+        Assert.False(desktop.CanBeDisabled);
+        Assert.True(startMenu.CanBeDisabled);
+        Assert.Equal("Start Menu shortcuts", startMenu.DisplayName);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_root))

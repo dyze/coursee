@@ -4,14 +4,14 @@
 
 ```
 coursee.App   (WPF, Windows only)
-│  window, tray icon, settings view, log window
+│  launcher, settings window, log window, tray icon
 │  adapters: WshShortcutResolver, RegistryRunHistoryReader, RegistryAutoStart,
 │            HotkeyService, SerilogFileLog, SingleInstance
 │
 │  implements ▼  IShortcutResolver · IRunHistoryReader · IAutoStart · IHotkeyRegistrar · ILog
 │
 coursee.Core  (no Windows dependency, fully unit-tested on any OS)
-   SearchEngine · RecentStore · SettingsStore · SourceLoader · SourceMonitor · FallbackClassifier
+   SearchEngine · RecentStore · SettingsStore · SettingsCatalog · SourceLoader · SourceMonitor · FallbackClassifier
    sources (IResourceSource): ShortcutsSource (Desktop, Start Menu) · FirefoxBookmarksSource · RunHistorySource
 ```
 
@@ -28,7 +28,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `Resources/` | `Resource` and what can be done with it: `ResourceActions`, `ActionLabels`, `FallbackClassifier`, `CommandLine` |
 | `Search/` | `SearchEngine` |
 | `Recents/` | `RecentStore` |
-| `Settings/` | `SettingsStore` |
+| `Settings/` | `SettingsStore`, `SettingsCatalog` (the entries of the Settings window, their tabs, and the search that finds them) |
 | `Sources/` | `IResourceSource`, `SourceLoader`, `SourceMonitor`, and each source with the interface it needs from `App` |
 | `Platform/` | The other interfaces `App` implements (`IAutoStart`, `IHotkeyRegistrar`) and their rules (`AutoStartCommand`, `HotkeyGesture`) |
 | `Logging/` | `ILog`, `LogEntry`, `RingLog`, `CompositeLog`, `FilteredLog` |
@@ -36,7 +36,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `coursee.App` | Content |
 | --- | --- |
 | *(root)* | `App.xaml`: startup and wiring |
-| `Views/` | Windows: `MainWindow`, `LogWindow` |
+| `Views/` | Windows: `MainWindow` (the launcher), `SettingsWindow`, `LogWindow` |
 | `Tray/` | `TrayIcon` |
 | `Platform/` | Implementations of the `Core` interfaces, and `SingleInstance` |
 | `Logging/` | `LogHub`, `SerilogFileLog` |
@@ -79,12 +79,11 @@ Enter  ─► shell opens Resource.OpenTarget, RecentStore records it
 Results are sorted by total score, then by name, and capped at 50. Matching ignores case.
 
 ## Adding a source
-1. In `Core/Sources`, implement `IResourceSource`: a stable `Name` (it is also the key stored in `settings.json`), and `GetResources()` returning `Resource` records. Take an optional `ILog`.
+1. In `Core/Sources`, implement `IResourceSource`: a stable `Name` (it is also the key stored in `settings.json`), a `DisplayName` for Settings, `CanBeDisabled` (true gives it a checkbox in **Sources**), and `GetResources()` returning `Resource` records. Take an optional `ILog`.
 2. If it needs Windows, define an interface in `Core` (like `IRunHistoryReader`) and implement it in `App`.
 3. Register it in the `sources` array in `App.xaml.cs`. Order matters for duplicates: the first source wins.
 4. Add xUnit tests in `tests/coursee.Core.Tests`, with a fake for any interface from step 2.
-5. To make it switchable: today this needs a checkbox in the **Sources** section of `MainWindow.xaml` and its line in `MainWindow.xaml.cs` (an open question in [GOAL.md](GOAL.md#open-questions)).
-6. Update `README.md` and [ROADMAP.md](ROADMAP.md).
+5. Update `README.md` and [ROADMAP.md](ROADMAP.md).
 
 `GetResources()` runs on a background thread, at each launcher opening. It must not block for long, and may throw: `SourceLoader` catches the error, the window logs it and keeps the other sources.
 

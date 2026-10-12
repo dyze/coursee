@@ -29,29 +29,37 @@ public sealed class ShortcutsSource : IResourceSource
     private readonly Dictionary<string, (DateTime Stamp, string? Target)> _resolved =
         new(StringComparer.OrdinalIgnoreCase);
 
-    public ShortcutsSource(
+    private ShortcutsSource(
         string name,
+        string displayName,
+        bool canBeDisabled,
         IEnumerable<string> folders,
         IShortcutResolver resolver,
-        bool includeSubfolders = false,
-        ILog? log = null)
+        bool includeSubfolders,
+        ILog? log)
     {
         Name = name;
+        DisplayName = displayName;
+        CanBeDisabled = canBeDisabled;
         _folders = folders.ToList();
         _resolver = resolver;
         _searchOption = includeSubfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
         _log = log ?? NullLog.Instance;
     }
 
-    /// <summary>The user's Desktop folders (personal and common), top level only.</summary>
+    /// <summary>The user's Desktop folders (personal and common), top level only. Always on.</summary>
     public static ShortcutsSource Desktop(IEnumerable<string> folders, IShortcutResolver resolver, ILog? log = null) =>
-        new(DesktopName, folders, resolver, includeSubfolders: false, log);
+        new(DesktopName, "Desktop shortcuts", canBeDisabled: false, folders, resolver, includeSubfolders: false, log);
 
     /// <summary>The Start Menu folders (personal and common), subfolders included.</summary>
     public static ShortcutsSource StartMenu(IEnumerable<string> folders, IShortcutResolver resolver, ILog? log = null) =>
-        new(StartMenuName, folders, resolver, includeSubfolders: true, log);
+        new(StartMenuName, "Start Menu shortcuts", canBeDisabled: true, folders, resolver, includeSubfolders: true, log);
 
     public string Name { get; }
+
+    public string DisplayName { get; }
+
+    public bool CanBeDisabled { get; }
 
     public IReadOnlyList<Resource> GetResources()
     {

@@ -34,6 +34,10 @@ public sealed class RunHistorySource : IResourceSource
 
     public string Name => SourceName;
 
+    public string DisplayName => "Windows Run history (Win+R)";
+
+    public bool CanBeDisabled => true;
+
     public IReadOnlyList<Resource> GetResources()
     {
         IReadOnlyDictionary<string, string> values;

@@ -40,7 +40,6 @@ What each version contains: [ROADMAP.md](ROADMAP.md).
 
 ## Open questions
 - Recent list ranking: recency only (today), or recency plus frequency
-- Source on/off toggles: each one is a checkbox in the settings view today, so adding a switchable source still touches the UI (see [ARCHITECTURE.md](ARCHITECTURE.md#adding-a-source))
 
 ## Stack and architecture
 See [ARCHITECTURE.md](ARCHITECTURE.md).

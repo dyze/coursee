@@ -6,12 +6,20 @@ public class SourceLoaderTests
     {
         public string Name => name;
 
+        public string DisplayName => name;
+
+        public bool CanBeDisabled => true;
+
         public IReadOnlyList<Resource> GetResources() => resources;
     }
 
     private sealed class FailingSource(string name) : IResourceSource
     {
         public string Name => name;
+
+        public string DisplayName => name;
+
+        public bool CanBeDisabled => true;
 
         public IReadOnlyList<Resource> GetResources() => throw new InvalidOperationException("boom");
     }

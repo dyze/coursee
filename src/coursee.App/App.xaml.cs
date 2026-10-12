@@ -18,7 +18,13 @@ public partial class App : Application
     private LogHub? _logHub;
     private SingleInstance? _singleInstance;
     private MainWindow? _window;
+    private SettingsWindow? _settingsWindow;
+    private LogWindow? _logWindow;
     private TrayIcon? _tray;
+
+    // Set at startup; a closed window cannot be shown again, so each opening creates a new one.
+    private Func<SettingsWindow>? _createSettingsWindow;
+    private Func<LogWindow>? _createLogWindow;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -85,19 +91,33 @@ public partial class App : Application
 
         var executablePath = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "coursee.exe");
 
+        var autoStart = new RegistryAutoStart(executablePath);
+        var logHub = _logHub;
         _hotkey = new HotkeyService(() => _window?.Toggle());
-        _window = new MainWindow(sources, recents, settings, new RegistryAutoStart(executablePath), _hotkey, _logHub);
+        var hotkey = _hotkey;
+        _window = new MainWindow(sources, recents, settings, log, openSettings: () => OpenSettings());
+        var window = _window;
+
+        _createSettingsWindow = () => new SettingsWindow(
+            sources,
+            settings,
+            recents,
+            autoStart,
+            hotkey,
+            logHub,
+            onSourceToggled: window.OnSourceToggled,
+            openLog: OpenLogWindow);
+        _createLogWindow = () => new LogWindow(logHub.Ring, logHub.Directory);
 
         // Load the sources now, in the background, so the first hotkey press shows a full list.
         _window.RefreshResources();
 
-        var window = _window;
         _tray = new TrayIcon(
             AppVersion.Of(typeof(App).Assembly),
             () => settings.Hotkey.ToString(),
             show: () => window.ShowFromOutside(),
-            showSettings: () => window.ShowSettingsFromOutside(),
-            showLog: () => window.OpenLogWindow(),
+            showSettings: () => OpenSettings(),
+            showLog: OpenLogWindow,
             quit: () =>
             {
                 log.Info("Action", "Quit from the tray");
@@ -128,6 +148,57 @@ public partial class App : Application
                     "coursee");
             }
         }
+    }
+
+    /// <summary>Opens the Settings window, or brings it to the front, on the given tab if any.</summary>
+    private void OpenSettings(string? tab = null)
+    {
+        if (_settingsWindow is null && _createSettingsWindow is not null)
+        {
+            _settingsWindow = _createSettingsWindow();
+            _settingsWindow.Closed += (_, _) => _settingsWindow = null;
+        }
+
+        if (_settingsWindow is null)
+        {
+            return;
+        }
+
+        BringToFront(_settingsWindow);
+        if (tab is not null)
+        {
+            _settingsWindow.ShowTab(tab);
+        }
+    }
+
+    /// <summary>Opens the log window, or brings it to the front when it is already open.</summary>
+    private void OpenLogWindow()
+    {
+        if (_logWindow is null && _createLogWindow is not null)
+        {
+            _logWindow = _createLogWindow();
+            _logWindow.Closed += (_, _) => _logWindow = null;
+        }
+
+        if (_logWindow is not null)
+        {
+            BringToFront(_logWindow);
+        }
+    }
+
+    private static void BringToFront(Window window)
+    {
+        if (!window.IsVisible)
+        {
+            window.Show();
+        }
+
+        if (window.WindowState == WindowState.Minimized)
+        {
+            window.WindowState = WindowState.Normal;
+        }
+
+        window.Activate();
     }
 
     protected override void OnExit(ExitEventArgs e)

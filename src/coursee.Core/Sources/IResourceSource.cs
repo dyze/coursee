@@ -8,7 +8,14 @@ namespace Coursee.Core.Sources;
 /// </summary>
 public interface IResourceSource
 {
+    /// <summary>Stable key: stored in settings.json and recents.json, used as the log category.</summary>
     string Name { get; }
+
+    /// <summary>What Settings shows for the source (for example "Firefox bookmarks").</summary>
+    string DisplayName { get; }
+
+    /// <summary>True when Settings offers a checkbox to switch the source off.</summary>
+    bool CanBeDisabled { get; }
 
     IReadOnlyList<Resource> GetResources();
 }
