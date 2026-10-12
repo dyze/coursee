@@ -7,7 +7,7 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 | 0.1 | Done | Hotkey, search, recents, Desktop, Firefox and Run history sources, settings, logging |
 | 0.2 | Done | Tray icon, Start Menu source, row actions, installer |
 | 0.3 | Done | Code layout, Edge source, right browser, window positions, theme, settings window |
-| 0.4 | Not defined | |
+| 0.4 | In progress | Launcher position, list keys, Windows settings source, icons, keyboard-only Settings |
 
 ## 0.1
 1. **Hotkey and window.** A global hotkey toggles the compact window. Only one copy of coursee runs: starting it again shows the launcher of the running copy.
@@ -45,23 +45,17 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 8. **Find a setting.** A search box at the top of Settings: while it has text, only the matching settings are shown, from every tab.
 9. **Start hidden.** `coursee.exe --hidden` starts in the notification area only; the auto start entry uses it. Started without it (by the user or the installer), coursee shows the launcher.
 
-## 0.5
-1. **Different kinds of positioning.** Today, Main window is shown using last known position. Allow the user to chose between those options:
-	* Last known position (as today)
-	* At mouse position
-	* Centred, using the monitor on which the mouse is. Set it as default behaviour
-2. **Page Up, Page Down. Home, End** Keys can be used to navigate into the list of entries.
-3. **Windows settings source.** Give user quick access to windows settings as
-	* Installed apps
-	* Advanced network settings
-	* services.msc
-	* Advanced system settings
-	* ...
-4. **First esc clear text.** Today esc on main window closes the window. If user presses esc when there is text, the text should be cleared. if no text, close as today.
-5. **Make action always visible.** Today, action is at right of the entry. but if text is long, the action is hidden. Make it always visible.
-6. **Use icons for actions.** Today, in the list of entries, a text are shown. Use meaningful icons instead. Warning: Keep available actions below edit box as is.
-7. **Identify source.** In the list of entries, for each show with a small icon what is the source. Show same icons in sources tab to make the relationship easier.
-8. **Settings with keyboard.** Make access, navigation and change inside settings possible with use of keyboard only.
-
 ## 0.4
-Not defined yet.
+1. **Launcher position.** Settings > General chooses where the launcher appears each time it is shown:
+   - **Centered** (default): in the middle of the monitor under the mouse.
+   - **At the mouse**: centered on the mouse pointer.
+   - **Last position**: where it was left (as in 0.3).
+
+   It is always kept fully on screen. The launcher can still be dragged; only *Last position* remembers where.
+2. **List keys.** Page Up / Page Down move the selection by one page of the list, Ctrl+Home / Ctrl+End to the first / last item. Home and End stay with the search box (start / end of the text).
+3. **Source: Windows settings.** A fixed list of Windows settings pages and tools, opened directly: Installed apps, Network, Display, Sound, Windows Update, Services, Device Manager, Event Viewer, Advanced system settings, Environment variables, Control Panel, and more. coursee only opens them, it never changes a setting. Names are written to be found (for example "Installed apps (uninstall programs)"); search still matches name and target only. Consoles and programs (`.msc`, `.exe`) can be run as administrator. Switchable in **Sources**.
+4. **Esc clears first.** Esc with text in the search box clears it (the recent list is shown again); Esc with an empty box hides the launcher.
+5. **Action always visible.** In the list, a long name or target is cut with "…"; the action column on the right is always shown.
+6. **Action icons.** Each row shows its action (open file, open folder, open URL, open in a browser, run command, open setting) as an icon, with the wording as tooltip. The line under the search box is unchanged.
+7. **Source icons.** Each row shows a small icon of the source it comes from (typed text has its own). The **Sources** tab shows the same icon next to each source.
+8. **Keyboard only.** In the launcher, Tab moves the focus to the Settings button, Enter or Space opens Settings, Tab again goes back to the search box. In Settings: a logical Tab order, Ctrl+Tab / Ctrl+Shift+Tab switch tabs (arrows too, on the tab strip), Down in the Find box goes to the first setting shown, and the focused control is always visible.

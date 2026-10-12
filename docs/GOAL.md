@@ -36,7 +36,7 @@ What each version contains: [ROADMAP.md](ROADMAP.md).
 - Indexing or searching file contents
 - Using Windows' own recent-files list
 - Multi-user or public release (a personal, per-user installer is fine)
-- Managing system settings, processes or hardware (possible later, not now)
+- Managing system settings, processes or hardware (possible later, not now). Opening a Windows settings page is fine; changing a setting is not
 
 ## Open questions
 - Recent list ranking: recency only (today), or recency plus frequency
