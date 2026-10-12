@@ -48,6 +48,14 @@ public static class PlacementRules
         return new ScreenRect(left, top, width, height);
     }
 
+    /// <summary>
+    /// Where to move a window at <paramref name="bounds"/> so that it is fully visible: inside the
+    /// work area of the monitor showing most of it, shrunk if larger. Equal to
+    /// <paramref name="bounds"/> when it is already visible; null when there is no monitor.
+    /// </summary>
+    public static ScreenRect? KeepVisible(ScreenRect bounds, IReadOnlyList<MonitorInfo> monitors) =>
+        Capture(bounds, monitors) is { } placement ? Fit(placement, monitors) : null;
+
     /// <summary>The monitor holding the window's center, else the one it overlaps most, else the primary one.</summary>
     private static MonitorInfo? MonitorOf(ScreenRect bounds, IReadOnlyList<MonitorInfo> monitors)
     {

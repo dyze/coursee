@@ -95,6 +95,7 @@ Results are sorted by total score, then by name, and capped at 50. Matching igno
 - Saved in `windows.json` by window name (`Launcher`, `Settings`, `Log`) when a window is hidden or closed, restored when it is first shown. Kept out of `settings.json`: it is state, not a setting.
 - Stored in screen pixels (WPF units change with each monitor's scaling), as the monitor's device name (`\\.\DISPLAY2`, steadier than a monitor number) and the position relative to its work area.
 - `PlacementRules.Fit` (in `Core`, tested) makes a saved position visible again: back on its monitor, or on the primary one if it is gone, then shrunk to the work area and moved inside it.
+- `PlacementRules.KeepVisible` does the same for a window on screen. `WindowPlacer.KeepOnScreen` applies it each time a window is shown, after a scaling change (`DpiChanged`), and after the launcher is dragged. It checks the visible frame (without the invisible resize borders), so a window snapped to an edge is left alone.
 - `App` reads the monitors and window rectangles through Win32 (`NativeWindows`); WinForms' `Screen` is not used, so WinForms stays limited to the tray.
 - A maximized window keeps its normal size, to be restored to it.
 

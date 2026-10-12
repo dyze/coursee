@@ -111,6 +111,38 @@ public class PlacementRulesTests
     }
 
     [Fact]
+    public void KeepVisible_LeavesAVisibleWindowAlone()
+    {
+        var bounds = new ScreenRect(300, 200, 640, 520);
+
+        Assert.Equal(bounds, PlacementRules.KeepVisible(bounds, Both));
+    }
+
+    [Fact]
+    public void KeepVisible_PullsBackAWindowPastTheRightAndBottomEdges()
+    {
+        // Dragged into the bottom-right corner of the primary monitor, partly over the taskbar.
+        var bounds = new ScreenRect(1500, 800, 640, 520);
+
+        Assert.Equal(new ScreenRect(1280, 520, 640, 520), PlacementRules.KeepVisible(bounds, [Primary]));
+    }
+
+    [Fact]
+    public void KeepVisible_KeepsTheWindowOnTheMonitorShowingMostOfIt()
+    {
+        // Center on the second monitor, top above the screens.
+        var bounds = new ScreenRect(2000, -100, 640, 520);
+
+        Assert.Equal(new ScreenRect(2000, 0, 640, 520), PlacementRules.KeepVisible(bounds, Both));
+    }
+
+    [Fact]
+    public void KeepVisible_WithoutMonitor_IsNull()
+    {
+        Assert.Null(PlacementRules.KeepVisible(new ScreenRect(0, 0, 100, 100), []));
+    }
+
+    [Fact]
     public void CaptureThenFit_GivesTheSameRectangle()
     {
         var bounds = new ScreenRect(300, 200, 900, 500);

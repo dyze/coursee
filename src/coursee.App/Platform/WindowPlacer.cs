@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Threading;
 using Coursee.Core.Logging;
 using Coursee.Core.Placement;
 
@@ -8,6 +9,8 @@ namespace Coursee.UI.Platform;
 /// <summary>
 /// Puts windows back where they were left (same monitor, same place) and remembers where they
 /// are when they are hidden or closed. A window without a saved position opens as its XAML says.
+/// Each time a window is shown, or its monitor's scaling changes its size, it is moved back
+/// inside the screen if part of it is off.
 /// </summary>
 public sealed class WindowPlacer
 {
@@ -53,8 +56,41 @@ public sealed class WindowPlacer
             {
                 Save(window, name, lastNormal);
             }
+            else
+            {
+                // Once WPF has finished sizing the window for its monitor.
+                window.Dispatcher.BeginInvoke(() => KeepOnScreen(window), DispatcherPriority.Loaded);
+            }
         };
+        window.DpiChanged += (_, _) => window.Dispatcher.BeginInvoke(() => KeepOnScreen(window), DispatcherPriority.Loaded);
         window.Closing += (_, _) => Save(window, name, lastNormal);
+    }
+
+    /// <summary>
+    /// Moves a window that is partly off screen (dragged past an edge, grown with the monitor's
+    /// scaling, monitor gone) back inside the work area of the monitor showing most of it.
+    /// A maximized or minimized window is left alone.
+    /// </summary>
+    public static void KeepOnScreen(Window window)
+    {
+        var handle = Handle(window);
+        if (!window.IsVisible
+            || window.WindowState != WindowState.Normal
+            || NativeWindows.WindowBounds(handle) is not { } bounds
+            || NativeWindows.VisibleBounds(handle) is not { } frame
+            || PlacementRules.KeepVisible(frame, NativeWindows.Monitors()) is not { } visible
+            || visible == frame)
+        {
+            return;
+        }
+
+        // The check is on the visible frame (a window snapped to an edge is fine); the move is
+        // on the whole window, invisible borders included.
+        NativeWindows.SetWindowBounds(handle, new ScreenRect(
+            bounds.Left + (visible.Left - frame.Left),
+            bounds.Top + (visible.Top - frame.Top),
+            bounds.Width + (visible.Width - frame.Width),
+            bounds.Height + (visible.Height - frame.Height)));
     }
 
     private void Restore(Window window, string name, WindowPlacement saved, bool keepSize)

@@ -19,6 +19,7 @@ public static class NativeWindows
     private const int GwlStyle = -16;
     private const long WsMaximizeBox = 0x00010000;
     private const long WsMinimizeBox = 0x00020000;
+    private const int DwmExtendedFrameBounds = 9;
 
     /// <summary>The monitors connected now, with their work area (without the taskbar).</summary>
     public static IReadOnlyList<MonitorInfo> Monitors()
@@ -41,6 +42,16 @@ public static class NativeWindows
     /// <summary>The window's outer rectangle, or null when it has no handle.</summary>
     public static ScreenRect? WindowBounds(IntPtr window) =>
         window != IntPtr.Zero && GetWindowRect(window, out var rect) ? ToScreenRect(rect) : null;
+
+    /// <summary>
+    /// The part of the window that can be seen: without the invisible resize borders Windows
+    /// adds around it. Falls back to <see cref="WindowBounds"/>.
+    /// </summary>
+    public static ScreenRect? VisibleBounds(IntPtr window) =>
+        window != IntPtr.Zero
+        && DwmGetWindowAttribute(window, DwmExtendedFrameBounds, out var rect, Marshal.SizeOf<NativeRect>()) == 0
+            ? ToScreenRect(rect)
+            : WindowBounds(window);
 
     /// <summary>Moves and resizes the window without activating it.</summary>
     public static void SetWindowBounds(IntPtr window, ScreenRect bounds) =>
@@ -95,6 +106,9 @@ public static class NativeWindows
 
     [DllImport("user32.dll")]
     private static extern bool GetWindowRect(IntPtr window, out NativeRect rect);
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmGetWindowAttribute(IntPtr window, int attribute, out NativeRect value, int size);
 
     [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
     private static extern IntPtr GetWindowLongPtr(IntPtr window, int index);

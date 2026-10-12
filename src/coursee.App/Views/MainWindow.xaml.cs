@@ -9,6 +9,7 @@ using Coursee.Core.Resources;
 using Coursee.Core.Search;
 using Coursee.Core.Settings;
 using Coursee.Core.Sources;
+using Coursee.UI.Platform;
 
 namespace Coursee.UI.Views;
 
@@ -501,6 +502,9 @@ public partial class MainWindow : Window
         if (e.ButtonState == MouseButtonState.Pressed)
         {
             DragMove();
+
+            // Windows lets a window be dragged past the screen edge; the launcher must stay whole.
+            WindowPlacer.KeepOnScreen(this);
         }
     }
 
