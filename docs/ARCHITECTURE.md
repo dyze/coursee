@@ -32,13 +32,14 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `Sources/` | `IResourceSource`, `SourceLoader`, `SourceMonitor`, and each source with the interface it needs from `App` |
 | `Platform/` | The other interfaces `App` implements (`IAutoStart`, `IHotkeyRegistrar`) and their rules (`AutoStartCommand`, `HotkeyGesture`) |
 | `Logging/` | `ILog`, `LogEntry`, `RingLog`, `CompositeLog`, `FilteredLog` |
+| `Placement/` | Window positions: `WindowPlacement`, `PlacementRules`, `PlacementStore` (see [Window positions](#window-positions)) |
 
 | `coursee.App` | Content |
 | --- | --- |
 | *(root)* | `App.xaml`: startup and wiring |
 | `Views/` | Windows: `MainWindow` (the launcher), `SettingsWindow`, `LogWindow`; `AppTheme` |
 | `Tray/` | `TrayIcon` |
-| `Platform/` | Implementations of the `Core` interfaces, and `SingleInstance` |
+| `Platform/` | Implementations of the `Core` interfaces, `SingleInstance`, and window placement (`NativeWindows`, `WindowPlacer`) |
 | `Logging/` | `LogHub`, `SerilogFileLog` |
 | `Assets/` | `coursee.ico` |
 
@@ -86,6 +87,13 @@ Results are sorted by total score, then by name, and capped at 50. Matching igno
 5. Update `README.md` and [ROADMAP.md](ROADMAP.md).
 
 `GetResources()` runs on a background thread, at each launcher opening. It must not block for long, and may throw: `SourceLoader` catches the error, the window logs it and keeps the other sources.
+
+## Window positions
+- Saved in `windows.json` by window name (`Launcher`, `Settings`, `Log`) when a window is hidden or closed, restored when it is first shown. Kept out of `settings.json`: it is state, not a setting.
+- Stored in screen pixels (WPF units change with each monitor's scaling), as the monitor's device name (`\.\DISPLAY2`, steadier than a monitor number) and the position relative to its work area.
+- `PlacementRules.Fit` (in `Core`, tested) makes a saved position visible again: back on its monitor, or on the primary one if it is gone, then shrunk to the work area and moved inside it.
+- `App` reads the monitors and window rectangles through Win32 (`NativeWindows`); WinForms' `Screen` is not used, so WinForms stays limited to the tray.
+- A maximized window keeps its normal size, to be restored to it.
 
 ## Logging
 - `Core` writes through `ILog` (`log.Info(category, message)`); only `App` knows Serilog.

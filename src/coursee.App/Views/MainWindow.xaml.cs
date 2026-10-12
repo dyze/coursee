@@ -411,6 +411,15 @@ public partial class MainWindow : Window
         SearchBox.Focus();
     }
 
+    /// <summary>The launcher has no title bar: it is moved by dragging its empty area.</summary>
+    private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ButtonState == MouseButtonState.Pressed)
+        {
+            DragMove();
+        }
+    }
+
     private void Window_Deactivated(object? sender, EventArgs e)
     {
         if (_showingDialog)

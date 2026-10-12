@@ -18,6 +18,7 @@
     <!-- The tests cover all of Core, so every Core namespace is imported once here. -->
     <Using Include="Coursee.Core" />
     <Using Include="Coursee.Core.Logging" />
+    <Using Include="Coursee.Core.Placement" />
     <Using Include="Coursee.Core.Platform" />
     <Using Include="Coursee.Core.Recents" />
     <Using Include="Coursee.Core.Resources" />

@@ -1,6 +1,7 @@
 using System.Windows;
 using Coursee.Core;
 using Coursee.Core.Logging;
+using Coursee.Core.Placement;
 using Coursee.Core.Platform;
 using Coursee.Core.Recents;
 using Coursee.Core.Settings;
@@ -97,22 +98,34 @@ public partial class App : Application
         var executablePath = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "coursee.exe");
 
         var autoStart = new RegistryAutoStart(executablePath);
+        var placer = new WindowPlacer(new PlacementStore(Path.Combine(dataDirectory, "windows.json")), log);
         var logHub = _logHub;
         _hotkey = new HotkeyService(() => _window?.Toggle());
         var hotkey = _hotkey;
         _window = new MainWindow(sources, recents, settings, log, openSettings: () => OpenSettings());
         var window = _window;
+        placer.Attach(window, "Launcher", keepSize: false);
 
-        _createSettingsWindow = () => new SettingsWindow(
-            sources,
-            settings,
-            recents,
-            autoStart,
-            hotkey,
-            logHub,
-            onSourceToggled: window.OnSourceToggled,
-            openLog: OpenLogWindow);
-        _createLogWindow = () => new LogWindow(logHub.Ring, logHub.Directory);
+        _createSettingsWindow = () =>
+        {
+            var created = new SettingsWindow(
+                sources,
+                settings,
+                recents,
+                autoStart,
+                hotkey,
+                logHub,
+                onSourceToggled: window.OnSourceToggled,
+                openLog: OpenLogWindow);
+            placer.Attach(created, "Settings", keepSize: true);
+            return created;
+        };
+        _createLogWindow = () =>
+        {
+            var created = new LogWindow(logHub.Ring, logHub.Directory);
+            placer.Attach(created, "Log", keepSize: true);
+            return created;
+        };
 
         // Load the sources now, in the background, so the first hotkey press shows a full list.
         _window.RefreshResources();

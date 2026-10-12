@@ -65,6 +65,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#search).
 
 ## Behavior notes
 
+- **Windows stay where you put them.** The launcher (drag its empty area to move it), Settings and the log window reopen at their last place, on the same monitor; Settings and the log window also keep their size. If that monitor is gone, or a window no longer fits, it is moved back on screen.
 - **One copy at a time.** Starting coursee while it is already running shows the launcher of the running copy.
 - **Instant window.** Sources are reloaded in the background each time the launcher opens: it shows the previous list at once, and new or removed items appear a moment later.
 - **Desktop and Start Menu shortcuts** are searched by their target, but opened through the shortcut itself, so their arguments and working folder are kept. Uninstall shortcuts are skipped, and a program found in both places is listed once.
@@ -79,6 +80,7 @@ Everything stays on your computer, in `%LOCALAPPDATA%\coursee`:
 | --- | --- |
 | `settings.json` | Settings |
 | `recents.json` | Recent list |
+| `windows.json` | Where each window was left |
 | `logs\coursee.log` | Log, at most 3 files of 1 MB, oldest deleted |
 
 coursee logs start/stop, items added / removed in each source, every action you trigger (opened resource, typed command, settings change) and errors. What you type in the search box is not logged.

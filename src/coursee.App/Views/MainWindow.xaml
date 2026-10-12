@@ -9,6 +9,7 @@
         Topmost="True"
         WindowStartupLocation="CenterScreen"
         Deactivated="Window_Deactivated"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
         PreviewKeyDown="Window_PreviewKeyDown">
   <Grid Margin="12">
     <Grid.RowDefinitions>
