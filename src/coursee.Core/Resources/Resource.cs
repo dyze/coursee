@@ -28,11 +28,21 @@ public enum ResourceKind
 /// What is passed to the shell when it differs from <paramref name="Target"/>. A Desktop shortcut
 /// is opened through its .lnk file so that its arguments and working folder are kept.
 /// </param>
-public sealed record Resource(string Name, string Target, ResourceKind Kind, string Source, string? LaunchPath = null)
+/// <param name="Browser">
+/// For a URL from a browser's bookmarks, that browser (see <see cref="Browsers"/>): the URL opens
+/// in it rather than in the default browser. Null for everything else.
+/// </param>
+public sealed record Resource(
+    string Name,
+    string Target,
+    ResourceKind Kind,
+    string Source,
+    string? LaunchPath = null,
+    string? Browser = null)
 {
     /// <summary>What pressing Enter will do, for display (for example "Open folder").</summary>
     [JsonIgnore]
-    public string ActionLabel => ActionLabels.For(Kind);
+    public string ActionLabel => ActionLabels.For(Kind, Browser);
 
     /// <summary>The path, URL or command line actually opened.</summary>
     [JsonIgnore]

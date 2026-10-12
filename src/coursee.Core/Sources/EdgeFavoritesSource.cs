@@ -50,7 +50,7 @@ public sealed class EdgeFavoritesSource : IResourceSource
 
         try
         {
-            _cached = ChromiumBookmarks.Parse(ChromiumBookmarks.ReadShared(file.FullName), Name);
+            _cached = ChromiumBookmarks.Parse(ChromiumBookmarks.ReadShared(file.FullName), Name, Browsers.Edge);
             _cachedStamp = stamp;
         }
         catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)

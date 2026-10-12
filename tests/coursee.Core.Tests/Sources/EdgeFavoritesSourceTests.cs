@@ -31,7 +31,7 @@ public sealed class EdgeFavoritesSourceTests : IDisposable
 
         var resource = Assert.Single(new EdgeFavoritesSource(_profile).GetResources());
 
-        Assert.Equal(new Resource("Example", "https://example.com/", ResourceKind.Url, "Edge"), resource);
+        Assert.Equal(new Resource("Example", "https://example.com/", ResourceKind.Url, "Edge", Browser: "Edge"), resource);
     }
 
     [Fact]

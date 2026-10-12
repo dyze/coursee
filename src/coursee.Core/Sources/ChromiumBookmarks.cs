@@ -18,7 +18,8 @@ public static class ChromiumBookmarks
     /// folders included, in file order. Only links that can be opened are kept, each URL once.
     /// Throws <see cref="JsonException"/> when the text is not JSON.
     /// </summary>
-    public static IReadOnlyList<Resource> Parse(string json, string sourceName)
+    /// <param name="browser">The browser the links open in (<see cref="Resource.Browser"/>).</param>
+    public static IReadOnlyList<Resource> Parse(string json, string sourceName, string? browser = null)
     {
         using var document = JsonDocument.Parse(json);
         var resources = new List<Resource>();
@@ -30,7 +31,7 @@ public static class ChromiumBookmarks
         {
             foreach (var root in roots.EnumerateObject())
             {
-                Collect(root.Value, sourceName, resources, seen);
+                Collect(root.Value, sourceName, browser, resources, seen);
             }
         }
 
@@ -104,7 +105,7 @@ public static class ChromiumBookmarks
         && name != "."
         && name != "..";
 
-    private static void Collect(JsonElement node, string sourceName, List<Resource> resources, HashSet<string> seen)
+    private static void Collect(JsonElement node, string sourceName, string? browser, List<Resource> resources, HashSet<string> seen)
     {
         if (node.ValueKind != JsonValueKind.Object)
         {
@@ -118,7 +119,7 @@ public static class ChromiumBookmarks
             if (BookmarkUrls.IsOpenable(url) && seen.Add(url!))
             {
                 var name = Text(node, "name");
-                resources.Add(new Resource(string.IsNullOrWhiteSpace(name) ? url! : name, url!, ResourceKind.Url, sourceName));
+                resources.Add(new Resource(string.IsNullOrWhiteSpace(name) ? url! : name, url!, ResourceKind.Url, sourceName, Browser: browser));
             }
 
             return;
@@ -128,7 +129,7 @@ public static class ChromiumBookmarks
         {
             foreach (var child in children.EnumerateArray())
             {
-                Collect(child, sourceName, resources, seen);
+                Collect(child, sourceName, browser, resources, seen);
             }
         }
     }

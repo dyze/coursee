@@ -54,6 +54,13 @@ public sealed class ChromiumBookmarksTests : IDisposable
     }
 
     [Fact]
+    public void Parse_TagsTheLinksWithTheBrowser()
+    {
+        Assert.All(ChromiumBookmarks.Parse(Sample, "Edge", Browsers.Edge), r => Assert.Equal("Edge", r.Browser));
+        Assert.All(ChromiumBookmarks.Parse(Sample, "Edge"), r => Assert.Null(r.Browser));
+    }
+
+    [Fact]
     public void Parse_UsesTheUrlWhenTheNameIsEmpty()
     {
         var resources = ChromiumBookmarks.Parse(Sample, "Edge");

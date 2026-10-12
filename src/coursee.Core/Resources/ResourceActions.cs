@@ -1,3 +1,5 @@
+using Coursee.Core.Platform;
+
 namespace Coursee.Core.Resources;
 
 /// <summary>
@@ -28,6 +30,16 @@ public static class ResourceActions
         ResourceKind.File or ResourceKind.NetworkPath => ExecutableExtensions.Contains(Extension(resource.Target)),
         _ => false,
     };
+
+    /// <summary>
+    /// Enter on a URL from a browser's bookmarks: the program of that browser, so the URL opens
+    /// where it was bookmarked. Null when the resource opens with the default handler: it is not
+    /// such a URL, or that browser is not installed (the default browser is then used).
+    /// </summary>
+    public static string? BrowserExecutable(Resource resource, IBrowserLocator locator) =>
+        resource.Kind == ResourceKind.Url && Browsers.ExecutableName(resource.Browser) is { } executable
+            ? locator.FindExecutable(executable)
+            : null;
 
     /// <summary>
     /// The line under the search box: what Enter does, then the other keys that apply.

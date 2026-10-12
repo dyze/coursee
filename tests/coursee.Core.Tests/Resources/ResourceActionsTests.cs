@@ -5,6 +5,55 @@ public class ResourceActionsTests
     private static Resource R(ResourceKind kind, string target, string source = "Desktop") =>
         new("item", target, kind, source);
 
+    private sealed class FakeLocator(params string[] installed) : IBrowserLocator
+    {
+        public List<string> Asked { get; } = [];
+
+        public string? FindExecutable(string executableName)
+        {
+            Asked.Add(executableName);
+            return installed.Contains(executableName) ? @"C:\Apps\" + executableName : null;
+        }
+    }
+
+    [Theory]
+    [InlineData("Firefox", @"C:\Apps\firefox.exe")]
+    [InlineData("Edge", @"C:\Apps\msedge.exe")]
+    [InlineData("edge", @"C:\Apps\msedge.exe")]
+    public void BrowserExecutable_IsTheBrowserTheBookmarkCameFrom(string browser, string expected)
+    {
+        var bookmark = new Resource("Docs", "https://example.com", ResourceKind.Url, browser, Browser: browser);
+
+        Assert.Equal(expected, ResourceActions.BrowserExecutable(bookmark, new FakeLocator("firefox.exe", "msedge.exe")));
+    }
+
+    [Fact]
+    public void BrowserExecutable_BrowserNotInstalled_IsNull()
+    {
+        var bookmark = new Resource("Docs", "https://example.com", ResourceKind.Url, "Edge", Browser: "Edge");
+
+        Assert.Null(ResourceActions.BrowserExecutable(bookmark, new FakeLocator()));
+    }
+
+    [Fact]
+    public void BrowserExecutable_NoBrowserOrUnknownOne_DoesNotLookForAny()
+    {
+        var locator = new FakeLocator("firefox.exe");
+
+        Assert.Null(ResourceActions.BrowserExecutable(R(ResourceKind.Url, "https://example.com", "Typed"), locator));
+        Assert.Null(ResourceActions.BrowserExecutable(new Resource("x", "https://x", ResourceKind.Url, "s", Browser: "Opera"), locator));
+        Assert.Null(ResourceActions.BrowserExecutable(new Resource("x", @"C:\x", ResourceKind.File, "s", Browser: "Firefox"), locator));
+        Assert.Empty(locator.Asked);
+    }
+
+    [Fact]
+    public void Hint_NamesTheBrowserOfABookmark()
+    {
+        var bookmark = new Resource("Docs", "https://example.com", ResourceKind.Url, "Firefox", Browser: "Firefox");
+
+        Assert.Equal("Enter: Open in Firefox", ResourceActions.Hint(bookmark, inRecents: false));
+    }
+
     [Theory]
     [InlineData(ResourceKind.File, true)]
     [InlineData(ResourceKind.Folder, true)]

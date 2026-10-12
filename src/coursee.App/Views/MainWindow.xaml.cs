@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Input;
 using Coursee.Core;
 using Coursee.Core.Logging;
+using Coursee.Core.Platform;
 using Coursee.Core.Recents;
 using Coursee.Core.Resources;
 using Coursee.Core.Search;
@@ -17,6 +18,7 @@ public partial class MainWindow : Window
     private readonly RecentStore _recents;
     private readonly SettingsStore _settings;
     private readonly ILog _log;
+    private readonly IBrowserLocator _browsers;
     private readonly Action _openSettings;
     private readonly SourceMonitor _monitor;
     private IReadOnlyList<Resource> _all = [];
@@ -24,15 +26,18 @@ public partial class MainWindow : Window
     private bool _refreshing;
     private bool _refreshAgain;
 
+    /// <param name="browsers">Finds the browser a bookmark came from, to open it there.</param>
     /// <param name="openSettings">Opens the Settings window (gear button).</param>
     public MainWindow(
         IReadOnlyList<IResourceSource> sources,
         RecentStore recents,
         SettingsStore settings,
         ILog log,
+        IBrowserLocator browsers,
         Action openSettings)
     {
         _log = log;
+        _browsers = browsers;
         _monitor = new SourceMonitor(_log);
         _sources = sources;
         _recents = recents;
@@ -202,8 +207,22 @@ public partial class MainWindow : Window
 
     private const int ErrorCancelled = 1223;
 
-    private static void Launch(Resource resource, bool asAdministrator)
+    private void Launch(Resource resource, bool asAdministrator)
     {
+        if (ResourceActions.BrowserExecutable(resource, _browsers) is { } browser)
+        {
+            // The URL is an argument of its own: nothing in it can change the command line.
+            var inBrowser = new ProcessStartInfo(browser) { UseShellExecute = false };
+            inBrowser.ArgumentList.Add(resource.Target);
+            Process.Start(inBrowser);
+            return;
+        }
+
+        if (resource.Kind == ResourceKind.Url && resource.Browser is not null)
+        {
+            _log.Warn("Action", $"{resource.Browser} not found; opening in the default browser");
+        }
+
         ProcessStartInfo start;
         if (resource.Kind == ResourceKind.Command)
         {

@@ -118,7 +118,7 @@ public partial class App : Application
         var logHub = _logHub;
         _hotkey = new HotkeyService(() => _window?.Toggle());
         var hotkey = _hotkey;
-        _window = new MainWindow(sources, recents, settings, log, openSettings: () => OpenSettings());
+        _window = new MainWindow(sources, recents, settings, log, new RegistryBrowserLocator(), openSettings: () => OpenSettings());
         var window = _window;
         placer.Attach(window, "Launcher", keepSize: false);
 

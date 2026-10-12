@@ -117,7 +117,7 @@ public sealed class FirefoxBookmarksSource : IResourceSource
                     reader.IsDBNull(1) ? null : reader.GetString(1),
                     url!);
 
-                resources.Add(new Resource(title, url!, ResourceKind.Url, Name));
+                resources.Add(new Resource(title, url!, ResourceKind.Url, Name, Browser: Browsers.Firefox));
             }
 
             return resources;

@@ -6,12 +6,14 @@
 coursee.App   (WPF, Windows only)
 │  launcher, settings window, log window, tray icon
 │  adapters: WshShortcutResolver, RegistryRunHistoryReader, RegistryAutoStart,
-│            HotkeyService, SerilogFileLog, SingleInstance
+│            RegistryBrowserLocator, HotkeyService, SerilogFileLog, SingleInstance,
+│            NativeWindows + WindowPlacer (window positions)
 │
-│  implements ▼  IShortcutResolver · IRunHistoryReader · IAutoStart · IHotkeyRegistrar · ILog
+│  implements ▼  IShortcutResolver · IRunHistoryReader · IAutoStart · IHotkeyRegistrar · IBrowserLocator · ILog
 │
 coursee.Core  (no Windows dependency, fully unit-tested on any OS)
    SearchEngine · RecentStore · SettingsStore · SettingsCatalog · SourceLoader · SourceMonitor · FallbackClassifier
+   ResourceActions · PlacementRules · PlacementStore
    sources (IResourceSource): ShortcutsSource (Desktop, Start Menu) · FirefoxBookmarksSource · EdgeFavoritesSource · RunHistorySource
 ```
 
@@ -25,12 +27,12 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `coursee.Core` | Content |
 | --- | --- |
 | *(root)* | `AppVersion` |
-| `Resources/` | `Resource` and what can be done with it: `ResourceActions`, `ActionLabels`, `FallbackClassifier`, `CommandLine` |
+| `Resources/` | `Resource` and what can be done with it: `ResourceActions`, `ActionLabels`, `FallbackClassifier`, `CommandLine`, `Browsers` |
 | `Search/` | `SearchEngine` |
 | `Recents/` | `RecentStore` |
 | `Settings/` | `SettingsStore`, `SettingsCatalog` (the entries of the Settings window, their tabs, and the search that finds them) |
 | `Sources/` | `IResourceSource`, `SourceLoader`, `SourceMonitor`, and each source with the interface it needs from `App`; `BookmarkUrls` and `ChromiumBookmarks` (Edge's file format, shared by Chrome) for the browser sources |
-| `Platform/` | The other interfaces `App` implements (`IAutoStart`, `IHotkeyRegistrar`) and their rules (`AutoStartCommand`, `HotkeyGesture`) |
+| `Platform/` | The other interfaces `App` implements (`IAutoStart`, `IHotkeyRegistrar`, `IBrowserLocator`) and their rules (`AutoStartCommand`, `HotkeyGesture`) |
 | `Logging/` | `ILog`, `LogEntry`, `RingLog`, `CompositeLog`, `FilteredLog` |
 | `Placement/` | Window positions: `WindowPlacement`, `PlacementRules`, `PlacementStore` (see [Window positions](#window-positions)) |
 
@@ -64,6 +66,7 @@ hotkey ─► window shows the cached list at once
                    └─ SourceLoader.Merge: same name + target listed once (first source wins)
 typing ─► SearchEngine.Search(resources, query)   (empty query: RecentStore list)
 Enter  ─► shell opens Resource.OpenTarget, RecentStore records it
+           (a bookmark with a Browser: that browser's .exe, found by IBrowserLocator; else the shell)
 ```
 
 ## Search

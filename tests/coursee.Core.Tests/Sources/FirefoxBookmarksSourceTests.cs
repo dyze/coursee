@@ -43,7 +43,7 @@ public sealed class FirefoxBookmarksSourceTests : IDisposable
         var result = new FirefoxBookmarksSource(_profile).GetResources();
 
         Assert.Equal(
-            new Resource("Docs", "https://example.com/docs", ResourceKind.Url, "Firefox"),
+            new Resource("Docs", "https://example.com/docs", ResourceKind.Url, "Firefox", Browser: "Firefox"),
             Assert.Single(result));
     }
 

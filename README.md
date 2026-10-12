@@ -69,8 +69,9 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#search).
 - **One copy at a time.** Starting coursee while it is already running shows the launcher of the running copy.
 - **Instant window.** Sources are reloaded in the background each time the launcher opens: it shows the previous list at once, and new or removed items appear a moment later.
 - **Desktop and Start Menu shortcuts** are searched by their target, but opened through the shortcut itself, so their arguments and working folder are kept. Uninstall shortcuts are skipped, and a program found in both places is listed once.
-- **Firefox**: default profile only, bookmarks only (no folders), opened in the default browser.
-- **Edge**: last used profile only, favorites only (no folders), opened in the default browser.
+- **Firefox**: default profile only, bookmarks only (no folders), opened in Firefox.
+- **Edge**: last used profile only, favorites only (no folders), opened in Edge.
+- **Right browser.** A bookmark opens in the browser it comes from, also from the recent list ("Open in Firefox"). If that browser cannot be found, the default browser is used. URLs you type open in the default browser.
 - **Hotkey already taken?** If another application (or Windows) holds the hotkey at start, coursee keeps running without one and opens Settings on it, so you can choose another; meanwhile the tray icon opens the launcher. Windows does not tell which application holds a hotkey, so coursee cannot name it.
 
 ## Data and logs

@@ -18,6 +18,38 @@ public class ResourceTests
         Assert.Equal(expected, ActionLabels.For(kind));
     }
 
+    [Theory]
+    [InlineData("Firefox", "Open in Firefox")]
+    [InlineData("Edge", "Open in Edge")]
+    [InlineData(null, "Open URL")]
+    [InlineData("", "Open URL")]
+    public void ActionLabel_NamesTheBrowserOfABookmark(string? browser, string expected)
+    {
+        Assert.Equal(expected, new Resource("x", "https://example.com", ResourceKind.Url, "test", Browser: browser).ActionLabel);
+    }
+
+    [Fact]
+    public void ActionLabel_IgnoresTheBrowserForOtherKinds()
+    {
+        Assert.Equal("Open file", new Resource("x", @"C:\x", ResourceKind.File, "test", Browser: "Firefox").ActionLabel);
+    }
+
+    [Fact]
+    public void Json_RoundTripsTheBrowser()
+    {
+        var original = new Resource("Docs", "https://example.com", ResourceKind.Url, "Firefox", Browser: "Firefox");
+
+        Assert.Equal(original, JsonSerializer.Deserialize<Resource>(JsonSerializer.Serialize(original)));
+    }
+
+    [Fact]
+    public void Json_FromBeforeTheBrowser_LoadsWithoutOne()
+    {
+        const string json = """{"Name":"Docs","Target":"https://example.com","Kind":2,"Source":"Firefox","LaunchPath":null}""";
+
+        Assert.Null(JsonSerializer.Deserialize<Resource>(json)!.Browser);
+    }
+
     [Fact]
     public void Json_RoundTripsWithoutTheDisplayLabel()
     {
