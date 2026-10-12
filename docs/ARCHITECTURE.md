@@ -19,6 +19,29 @@ coursee.Core  (no Windows dependency, fully unit-tested on any OS)
 - `App.xaml.cs` wires everything together at startup.
 - Tests: `tests/coursee.Core.Tests` (xUnit), `Core` only.
 
+### Folders
+One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The tests use the same folders as `Core`, and import every `Core` namespace once in their `.csproj`.
+
+| `coursee.Core` | Content |
+| --- | --- |
+| *(root)* | `AppVersion` |
+| `Resources/` | `Resource` and what can be done with it: `ResourceActions`, `ActionLabels`, `FallbackClassifier`, `CommandLine` |
+| `Search/` | `SearchEngine` |
+| `Recents/` | `RecentStore` |
+| `Settings/` | `SettingsStore` |
+| `Sources/` | `IResourceSource`, `SourceLoader`, `SourceMonitor`, and each source with the interface it needs from `App` |
+| `Platform/` | The other interfaces `App` implements (`IAutoStart`, `IHotkeyRegistrar`) and their rules (`AutoStartCommand`, `HotkeyGesture`) |
+| `Logging/` | `ILog`, `LogEntry`, `RingLog`, `CompositeLog`, `FilteredLog` |
+
+| `coursee.App` | Content |
+| --- | --- |
+| *(root)* | `App.xaml`: startup and wiring |
+| `Views/` | Windows: `MainWindow`, `LogWindow` |
+| `Tray/` | `TrayIcon` |
+| `Platform/` | Implementations of the `Core` interfaces, and `SingleInstance` |
+| `Logging/` | `LogHub`, `SerilogFileLog` |
+| `Assets/` | `coursee.ico` |
+
 ## Stack
 .NET 10, C#, WPF. WinForms only for the tray icon (`NotifyIcon`). xUnit for tests.
 
@@ -56,7 +79,7 @@ Enter  ─► shell opens Resource.OpenTarget, RecentStore records it
 Results are sorted by total score, then by name, and capped at 50. Matching ignores case.
 
 ## Adding a source
-1. In `Core`, implement `IResourceSource`: a stable `Name` (it is also the key stored in `settings.json`), and `GetResources()` returning `Resource` records. Take an optional `ILog`.
+1. In `Core/Sources`, implement `IResourceSource`: a stable `Name` (it is also the key stored in `settings.json`), and `GetResources()` returning `Resource` records. Take an optional `ILog`.
 2. If it needs Windows, define an interface in `Core` (like `IRunHistoryReader`) and implement it in `App`.
 3. Register it in the `sources` array in `App.xaml.cs`. Order matters for duplicates: the first source wins.
 4. Add xUnit tests in `tests/coursee.Core.Tests`, with a fake for any interface from step 2.

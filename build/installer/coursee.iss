@@ -33,7 +33,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 ; The app creates this mutex (SingleInstance.cs): setup and uninstall ask to quit coursee first.
 AppMutex=Local\coursee-single-instance
-SetupIconFile=..\..\src\coursee.App\coursee.ico
+SetupIconFile=..\..\src\coursee.App\Assets\coursee.ico
 UninstallDisplayIcon={app}\{#AppExe}
 OutputDir=..\..\artifacts\installer
 OutputBaseFilename=coursee-setup-{#AppVersion}

@@ -1,5 +1,5 @@
-# Regenerates src/coursee.App/coursee.ico (needs Python 3 and Pillow):
-#   python build/make_icon.py src/coursee.App/coursee.ico preview.png
+# Regenerates src/coursee.App/Assets/coursee.ico (needs Python 3 and Pillow):
+#   python build/make_icon.py src/coursee.App/Assets/coursee.ico preview.png
 """Draws coursee.ico: a white magnifier on a rounded blue square. Each size is drawn
 8x larger and scaled down; small sizes get thicker strokes so they stay readable."""
 import sys

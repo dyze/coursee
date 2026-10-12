@@ -15,6 +15,15 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <!-- The tests cover all of Core, so every Core namespace is imported once here. -->
+    <Using Include="Coursee.Core" />
+    <Using Include="Coursee.Core.Logging" />
+    <Using Include="Coursee.Core.Platform" />
+    <Using Include="Coursee.Core.Recents" />
+    <Using Include="Coursee.Core.Resources" />
+    <Using Include="Coursee.Core.Search" />
+    <Using Include="Coursee.Core.Settings" />
+    <Using Include="Coursee.Core.Sources" />
   </ItemGroup>
 
   <ItemGroup>

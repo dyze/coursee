@@ -6,7 +6,7 @@
     <UseWPF>true</UseWPF>
     <!-- Only for the tray icon (System.Windows.Forms.NotifyIcon): WPF has no notification-area control. -->
     <UseWindowsForms>true</UseWindowsForms>
-    <ApplicationIcon>coursee.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\coursee.ico</ApplicationIcon>
     <RootNamespace>Coursee.UI</RootNamespace>
     <AssemblyName>coursee</AssemblyName>
   </PropertyGroup>
@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <!-- Embedded so the tray and the log window can load it. -->
-    <Resource Include="coursee.ico" />
+    <Resource Include="Assets\coursee.ico" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,5 +1,14 @@
 using System.Windows;
 using Coursee.Core;
+using Coursee.Core.Logging;
+using Coursee.Core.Platform;
+using Coursee.Core.Recents;
+using Coursee.Core.Settings;
+using Coursee.Core.Sources;
+using Coursee.UI.Logging;
+using Coursee.UI.Platform;
+using Coursee.UI.Tray;
+using Coursee.UI.Views;
 
 namespace Coursee.UI;
 

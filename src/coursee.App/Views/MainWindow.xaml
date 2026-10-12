@@ -1,0 +1,163 @@
+<Window x:Class="Coursee.UI.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="coursee"
+        Width="640" Height="520"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Topmost="True"
+        WindowStartupLocation="CenterScreen"
+        Deactivated="Window_Deactivated"
+        PreviewKeyDown="Window_PreviewKeyDown">
+  <Grid Margin="12">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+
+      <TextBox x:Name="SearchBox"
+               FontSize="20"
+               Padding="8"
+               TextChanged="SearchBox_TextChanged" />
+
+      <Button x:Name="SettingsButton"
+              Grid.Column="1"
+              Width="44"
+              Margin="8,0,0,0"
+              Content="&#x2699;"
+              FontSize="20"
+              ToolTip="Settings"
+              Focusable="False"
+              Click="SettingsButton_Click" />
+    </Grid>
+
+    <TextBlock x:Name="ActionText"
+               Grid.Row="1"
+               Margin="4,6,0,0"
+               FontSize="12"
+               Opacity="0.7" />
+
+    <ListBox x:Name="ResultsList"
+             Grid.Row="2"
+             Margin="0,6,0,0"
+             MouseDoubleClick="ResultsList_MouseDoubleClick"
+             SelectionChanged="ResultsList_SelectionChanged">
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <Grid Margin="4">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+              <TextBlock Text="{Binding Name}" FontSize="15" TextTrimming="CharacterEllipsis" />
+              <TextBlock Text="{Binding Target}" FontSize="11" Opacity="0.6" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <TextBlock Grid.Column="1"
+                       Margin="12,0,0,0"
+                       VerticalAlignment="Center"
+                       FontSize="11"
+                       Opacity="0.6"
+                       Text="{Binding ActionLabel}" />
+          </Grid>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+
+    <StackPanel x:Name="SettingsPanel"
+                Grid.Row="2"
+                Margin="0,12,0,0"
+                Visibility="Collapsed">
+      <TextBlock Text="Settings" FontSize="20" FontWeight="SemiBold" />
+
+      <TextBlock Text="Windows integration"
+                 Margin="0,16,0,0"
+                 FontSize="15"
+                 FontWeight="SemiBold" />
+      <CheckBox x:Name="AutoStartCheckBox"
+                Margin="0,8,0,0"
+                Content="Start coursee when I sign in to Windows"
+                Click="AutoStartCheckBox_Click" />
+
+      <TextBlock Text="Sources"
+                 Margin="0,16,0,0"
+                 FontSize="15"
+                 FontWeight="SemiBold" />
+      <CheckBox x:Name="StartMenuCheckBox"
+                Margin="0,8,0,0"
+                Content="Start Menu shortcuts"
+                Tag="Start Menu"
+                Click="SourceCheckBox_Click" />
+      <CheckBox x:Name="FirefoxCheckBox"
+                Margin="0,8,0,0"
+                Content="Firefox bookmarks"
+                Tag="Firefox"
+                Click="SourceCheckBox_Click" />
+      <CheckBox x:Name="RunHistoryCheckBox"
+                Margin="0,8,0,0"
+                Content="Windows Run history (Win+R)"
+                Tag="Windows Run"
+                Click="SourceCheckBox_Click" />
+
+      <TextBlock Text="Launcher"
+                 Margin="0,16,0,0"
+                 FontSize="15"
+                 FontWeight="SemiBold" />
+      <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
+        <TextBlock Text="Hotkey" Width="140" VerticalAlignment="Center" />
+        <TextBox x:Name="HotkeyText"
+                 Width="260"
+                 IsReadOnly="True"
+                 Focusable="False" />
+        <Button x:Name="HotkeyButton"
+                Margin="8,0,0,0"
+                Padding="10,2"
+                Content="Change"
+                Focusable="False"
+                Click="HotkeyButton_Click" />
+      </StackPanel>
+      <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
+        <TextBlock Text="Recent items to keep" Width="140" VerticalAlignment="Center" />
+        <ComboBox x:Name="RecentsComboBox"
+                  Width="70"
+                  SelectionChanged="RecentsComboBox_SelectionChanged" />
+      </StackPanel>
+
+      <TextBlock Text="Logging"
+                 Margin="0,16,0,0"
+                 FontSize="15"
+                 FontWeight="SemiBold" />
+      <CheckBox x:Name="DebugLoggingCheckBox"
+                Margin="0,8,0,0"
+                Content="Detailed (debug) logging"
+                Click="DebugLoggingCheckBox_Click" />
+      <Button Margin="0,8,0,0"
+              Padding="10,2"
+              HorizontalAlignment="Left"
+              Content="Open log window"
+              Focusable="False"
+              Click="OpenLogButton_Click" />
+
+      <TextBlock Text="Esc or the gear button goes back to search."
+                 Margin="0,16,0,0"
+                 FontSize="11"
+                 Opacity="0.5" />
+    </StackPanel>
+
+    <TextBlock x:Name="VersionText"
+               Grid.Row="3"
+               Margin="0,6,0,0"
+               HorizontalAlignment="Right"
+               FontSize="10"
+               Opacity="0.5" />
+  </Grid>
+</Window>
