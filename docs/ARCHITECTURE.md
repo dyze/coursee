@@ -90,7 +90,7 @@ Results are sorted by total score, then by name, and capped at 50. Matching igno
 
 ## Window positions
 - Saved in `windows.json` by window name (`Launcher`, `Settings`, `Log`) when a window is hidden or closed, restored when it is first shown. Kept out of `settings.json`: it is state, not a setting.
-- Stored in screen pixels (WPF units change with each monitor's scaling), as the monitor's device name (`\.\DISPLAY2`, steadier than a monitor number) and the position relative to its work area.
+- Stored in screen pixels (WPF units change with each monitor's scaling), as the monitor's device name (`\\.\DISPLAY2`, steadier than a monitor number) and the position relative to its work area.
 - `PlacementRules.Fit` (in `Core`, tested) makes a saved position visible again: back on its monitor, or on the primary one if it is gone, then shrunk to the work area and moved inside it.
 - `App` reads the monitors and window rectangles through Win32 (`NativeWindows`); WinForms' `Screen` is not used, so WinForms stays limited to the tray.
 - A maximized window keeps its normal size, to be restored to it.
