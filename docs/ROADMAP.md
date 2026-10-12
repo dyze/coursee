@@ -7,7 +7,7 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 | 0.1 | Done | Hotkey, search, recents, Desktop, Firefox and Run history sources, settings, logging |
 | 0.2 | Done | Tray icon, Start Menu source, row actions, installer |
 | 0.3 | Done | Code layout, Edge source, right browser, window positions, theme, settings window |
-| 0.4 | In progress | Launcher position, list keys, Windows settings source, icons, keyboard-only Settings |
+| 0.4 | Done | Launcher position, list keys, Windows settings source, icons, keyboard-only Settings |
 
 ## 0.1
 1. **Hotkey and window.** A global hotkey toggles the compact window. Only one copy of coursee runs: starting it again shows the launcher of the running copy.
