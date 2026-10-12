@@ -19,7 +19,7 @@ public interface IResourceSource
 
     /// <summary>
     /// The icon of the source, shown on its rows and in Settings: a glyph of the Segoe Fluent Icons
-    /// font that comes with Windows (for example ""). See <see cref="SourceIcons"/>.
+    /// font that comes with Windows (for example "\uE728"). See <see cref="SourceIcons"/>.
     /// </summary>
     string Icon { get; }
 

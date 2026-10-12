@@ -17,15 +17,15 @@ public class SourceIconsTests
 
     private static SourceIcons Icons() => new(
     [
-        new IconSource("Firefox", "Firefox bookmarks", ""),
-        new IconSource("Edge", "Edge favorites", ""),
+        new IconSource("Firefox", "Firefox bookmarks", "\uE728"),
+        new IconSource("Edge", "Edge favorites", "\uE734"),
     ]);
 
     [Fact]
     public void IconOf_IsTheIconOfTheSource_IgnoringCase()
     {
-        Assert.Equal("", Icons().IconOf("Firefox"));
-        Assert.Equal("", Icons().IconOf("edge"));
+        Assert.Equal("\uE728", Icons().IconOf("Firefox"));
+        Assert.Equal("\uE734", Icons().IconOf("edge"));
     }
 
     [Fact]

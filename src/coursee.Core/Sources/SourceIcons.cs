@@ -9,15 +9,15 @@ namespace Coursee.Core.Sources;
 /// </summary>
 public sealed class SourceIcons
 {
-    public const string Desktop = "";        // TVMonitor
-    public const string StartMenu = "";      // Tiles
-    public const string Firefox = "";        // FavoriteList
-    public const string Edge = "";           // FavoriteStar
-    public const string RunHistory = "";     // History
-    public const string WindowsSettings = ""; // System
+    public const string Desktop = "\uE7F4";        // TVMonitor
+    public const string StartMenu = "\uECA5";      // Tiles
+    public const string Firefox = "\uE728";        // FavoriteList
+    public const string Edge = "\uE734";           // FavoriteStar
+    public const string RunHistory = "\uE81C";     // History
+    public const string WindowsSettings = "\uE770"; // System
 
     /// <summary>Text typed in the search box (Enter acts on it).</summary>
-    public const string Typed = "";          // KeyboardClassic
+    public const string Typed = "\uE765";          // KeyboardClassic
 
     private readonly Dictionary<string, (string Icon, string Label)> _bySource = new(StringComparer.OrdinalIgnoreCase);
 
