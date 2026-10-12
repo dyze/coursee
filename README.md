@@ -33,7 +33,7 @@ Upgrade: run a newer setup over the old one. Uninstall: *Settings > Apps*. Your 
 | Ctrl+Enter | Show the selected file or folder in Explorer, item selected |
 | Ctrl+Shift+Enter | Run the selected command or program as administrator (`.exe`, `.bat`, `.cmd`, `.com`, `.msc`) |
 | Del | Remove the selected item from recents (search box empty) |
-| Esc | Hide the launcher |
+| Esc | Clear the search box; when it is empty, hide the launcher |
 
 The line under the search box always says what Enter will do and which other keys apply.
 

@@ -379,7 +379,16 @@ public partial class MainWindow : Window
     {
         if (e.Key == Key.Escape)
         {
-            Hide();
+            // First Esc clears the search (the recent list is shown again), the next one hides.
+            if (SearchBox.Text.Length > 0)
+            {
+                SearchBox.Clear();
+            }
+            else
+            {
+                Hide();
+            }
+
             e.Handled = true;
             return;
         }
