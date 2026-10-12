@@ -1,12 +1,28 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.6.11819.183
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "coursee.Core", "src\coursee.Core\coursee.Core.csproj", "{5C1B7D1E-3A4F-4E8B-9B0A-1F2D3C4B5A61}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "coursee.App", "src\coursee.App\coursee.App.csproj", "{7E2A9C3D-6B8F-4D1A-A2C4-8E9F0A1B2C72}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "coursee.Core.Tests", "tests\coursee.Core.Tests\coursee.Core.Tests.csproj", "{9F3B0D4E-7C9A-4E2B-B3D5-9F0A1B2C3D83}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{D48AA18F-D564-42B4-8345-CB9A2DC7889F}"
+	ProjectSection(SolutionItems) = preProject
+		build.cmd = build.cmd
+		build.sh = build.sh
+		CLAUDE.md = CLAUDE.md
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{227C7373-6BE7-4BFA-A133-62B44AEBE677}"
+	ProjectSection(SolutionItems) = preProject
+		docs\ARCHITECTURE.md = docs\ARCHITECTURE.md
+		docs\GOAL.md = docs\GOAL.md
+		docs\ROADMAP.md = docs\ROADMAP.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,5 +45,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {292DFBEC-BE6E-415C-AF5D-C96BEF3CEA7B}
 	EndGlobalSection
 EndGlobal
