@@ -244,7 +244,8 @@ public partial class MainWindow : Window
         }
 
         ProcessStartInfo start;
-        if (resource.Kind == ResourceKind.Command)
+        // A Windows setting is a command too: an ms-settings: page, a console, or a program with arguments.
+        if (resource.Kind is ResourceKind.Command or ResourceKind.Setting)
         {
             var (fileName, arguments) = CommandLine.Split(resource.Target);
             start = new ProcessStartInfo(fileName, arguments);
@@ -283,9 +284,10 @@ public partial class MainWindow : Window
         {
             Launch(resource, asAdministrator);
         }
-        catch (System.ComponentModel.Win32Exception ex) when (asAdministrator && ex.NativeErrorCode == ErrorCancelled)
+        catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == ErrorCancelled)
         {
-            // The user said no to the Windows confirmation: nothing to report.
+            // The user said no to the Windows confirmation (Run as administrator, or a tool that
+            // always asks, such as the Registry Editor): nothing to report.
             _log.Info("Action", $"{label} cancelled: {resource.Target}");
             return;
         }

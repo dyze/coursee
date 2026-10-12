@@ -15,6 +15,7 @@ coursee.Core  (no Windows dependency, fully unit-tested on any OS)
    SearchEngine · RecentStore · SettingsStore · SettingsCatalog · SourceLoader · SourceMonitor · FallbackClassifier
    ResourceActions · PlacementRules · PlacementStore
    sources (IResourceSource): ShortcutsSource (Desktop, Start Menu) · FirefoxBookmarksSource · EdgeFavoritesSource · RunHistorySource
+                              · WindowsSettingsSource (fixed list, ResourceKind.Setting)
 ```
 
 - The sources live in `Core`. When one needs Windows (resolving `.lnk` files, reading the registry), it takes an interface defined in `Core`, and `App` supplies the implementation.

@@ -105,6 +105,7 @@ public partial class App : Application
             new FirefoxBookmarksSource(firefoxProfile, log),
             new EdgeFavoritesSource(edgeProfile, log),
             new RunHistorySource(new RegistryRunHistoryReader(), log),
+            new WindowsSettingsSource(),
         ];
 
         var recents = new RecentStore(Path.Combine(dataDirectory, "recents.json"), settings.RecentsCapacity);

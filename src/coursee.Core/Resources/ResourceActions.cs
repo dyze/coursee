@@ -23,11 +23,15 @@ public static class ResourceActions
     public static string ShowInFolderArguments(Resource resource) =>
         $"/select,\"{WithoutTrailingSlash(resource.Target)}\"";
 
-    /// <summary>Ctrl+Shift+Enter: commands and executable files can run as administrator.</summary>
+    /// <summary>
+    /// Ctrl+Shift+Enter: commands and executable files can run as administrator, and so can the
+    /// Windows tools that are consoles or programs (not the <c>ms-settings:</c> pages).
+    /// </summary>
     public static bool CanRunAsAdministrator(Resource resource) => resource.Kind switch
     {
         ResourceKind.Command => true,
         ResourceKind.File or ResourceKind.NetworkPath => ExecutableExtensions.Contains(Extension(resource.Target)),
+        ResourceKind.Setting => ExecutableExtensions.Contains(Extension(CommandLine.Split(resource.Target).FileName)),
         _ => false,
     };
 

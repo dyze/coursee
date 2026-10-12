@@ -17,9 +17,15 @@ public enum ResourceKind
     /// the check could block. The shell opens it either way.
     /// </summary>
     NetworkPath,
+
+    /// <summary>
+    /// A Windows settings page or tool (<c>ms-settings:</c> URI, <c>.msc</c> console, program
+    /// with its arguments), opened through the shell like a command.
+    /// </summary>
+    Setting,
 }
 
-/// <summary>Something the launcher can open: a file, a folder, a URL or a command.</summary>
+/// <summary>Something the launcher can open: a file, a folder, a URL, a command or a Windows setting.</summary>
 /// <param name="Name">Display name, matched first when searching.</param>
 /// <param name="Target">Path, URL or command line shown and searched (for a shortcut, what it points to).</param>
 /// <param name="Kind">What the target is.</param>

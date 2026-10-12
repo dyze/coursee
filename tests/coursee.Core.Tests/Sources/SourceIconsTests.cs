@@ -65,6 +65,7 @@ public class SourceIconsTests
             new FirefoxBookmarksSource(null),
             new EdgeFavoritesSource(null),
             new RunHistorySource(new NoRunHistory()),
+            new WindowsSettingsSource(),
         ];
 
         Assert.All(sources, source => Assert.False(string.IsNullOrEmpty(source.Icon)));

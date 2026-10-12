@@ -13,6 +13,7 @@ public enum ResourceAction
 
     /// <summary>A network path: the shell opens it, file or folder.</summary>
     Open,
+    OpenSetting,
 }
 
 /// <summary>The wording and the action shown to the user for what Enter will do with a resource.</summary>
@@ -27,6 +28,7 @@ public static class ActionLabels
         ResourceKind.Url => "Open URL",
         ResourceKind.Command => "Run command",
         ResourceKind.NetworkPath => "Open",
+        ResourceKind.Setting => "Open setting",
         _ => "Open",
     };
 
@@ -38,6 +40,7 @@ public static class ActionLabels
         ResourceKind.Url when !string.IsNullOrWhiteSpace(browser) => ResourceAction.OpenInBrowser,
         ResourceKind.Url => ResourceAction.OpenUrl,
         ResourceKind.Command => ResourceAction.RunCommand,
+        ResourceKind.Setting => ResourceAction.OpenSetting,
         _ => ResourceAction.Open,
     };
 }

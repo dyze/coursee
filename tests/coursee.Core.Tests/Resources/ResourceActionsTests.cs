@@ -95,6 +95,15 @@ public class ResourceActionsTests
         Assert.Equal(expected, ResourceActions.CanRunAsAdministrator(R(ResourceKind.File, target)));
     }
 
+    [Theory]
+    [InlineData("services.msc", true)]
+    [InlineData("SystemPropertiesAdvanced.exe", true)]
+    [InlineData("control.exe appwiz.cpl", true)]
+    [InlineData("rundll32.exe sysdm.cpl,EditEnvironmentVariables", true)]
+    [InlineData("ms-settings:appsfeatures", false)]
+    public void CanRunAsAdministrator_Settings_ConsolesAndProgramsOnly(string target, bool expected) =>
+        Assert.Equal(expected, ResourceActions.CanRunAsAdministrator(R(ResourceKind.Setting, target)));
+
     [Fact]
     public void CanRunAsAdministrator_CommandsYes_FoldersAndUrlsNo()
     {

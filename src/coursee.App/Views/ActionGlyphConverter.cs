@@ -9,12 +9,13 @@ public sealed class ActionGlyphConverter : IValueConverter
 {
     public static string Glyph(ResourceAction action) => action switch
     {
-        ResourceAction.OpenFile => "",      // Document
-        ResourceAction.OpenFolder => "",    // Folder
-        ResourceAction.OpenUrl => "",       // Globe
-        ResourceAction.OpenInBrowser => "", // OpenInNewWindow
-        ResourceAction.RunCommand => "",    // CommandPrompt
-        _ => "",                            // MapDrive
+        ResourceAction.OpenFile => "\uE8A5",      // Document
+        ResourceAction.OpenFolder => "\uE8B7",    // Folder
+        ResourceAction.OpenUrl => "\uE774",       // Globe
+        ResourceAction.OpenInBrowser => "\uE8A7", // OpenInNewWindow
+        ResourceAction.RunCommand => "\uE756",    // CommandPrompt
+        ResourceAction.OpenSetting => "\uE713",   // Setting
+        _ => "\uE8CE",                            // MapDrive
     };
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>

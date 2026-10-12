@@ -10,7 +10,7 @@ A personal Windows launcher. Press a global hotkey, type in the compact search w
 
 ## Status
 
-Searches Desktop and Start Menu shortcuts, Firefox bookmarks, Edge favorites and the Windows Run history. Also: recents, row actions, tray icon, settings, installer.
+Searches Desktop and Start Menu shortcuts, Firefox bookmarks, Edge favorites, the Windows Run history and Windows settings pages and tools. Also: recents, row actions, tray icon, settings, installer.
 
 ## Install
 
@@ -33,7 +33,7 @@ Upgrade: run a newer setup over the old one. Uninstall: *Settings > Apps*. Your 
 | Ctrl+Home / Ctrl+End | Select the first / last item (Home and End move in the search box) |
 | Enter | Open the selected resource, or act on the typed text if nothing matches (see below) |
 | Ctrl+Enter | Show the selected file or folder in Explorer, item selected |
-| Ctrl+Shift+Enter | Run the selected command or program as administrator (`.exe`, `.bat`, `.cmd`, `.com`, `.msc`) |
+| Ctrl+Shift+Enter | Run the selected command, program or Windows tool as administrator (`.exe`, `.bat`, `.cmd`, `.com`, `.msc`) |
 | Del | Remove the selected item from recents (search box empty) |
 | Esc | Clear the search box; when it is empty, hide the launcher |
 
@@ -51,7 +51,7 @@ Gear button in the launcher, or tray menu > Settings. A dialog over the launcher
 | --- | --- |
 | General | Hotkey (must include Ctrl, Alt or Win), number of recent items (default 20), start with Windows |
 | Appearance | Theme: follow Windows (default), light or dark. The tray menu follows at the next start |
-| Sources | Start Menu, Firefox bookmarks, Edge favorites, Windows Run history (on / off) |
+| Sources | Start Menu, Firefox bookmarks, Edge favorites, Windows Run history, Windows settings and tools (on / off) |
 | Logging | Detailed (debug) logging, open the log window |
 
 **Find a setting**: type in the box at the top (Ctrl+F) to see only the matching settings, from every tab. Esc clears it.
@@ -75,6 +75,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#search).
 - **Desktop and Start Menu shortcuts** are searched by their target, but opened through the shortcut itself, so their arguments and working folder are kept. Uninstall shortcuts are skipped, and a program found in both places is listed once.
 - **Firefox**: default profile only, bookmarks only (no folders), opened in Firefox.
 - **Edge**: last used profile only, favorites only (no folders), opened in Edge.
+- **Windows settings**: a fixed list of settings pages (Installed apps, Network, Display, Windows Update...), consoles (Services, Device Manager, Event Viewer...) and Control Panel items, opened directly. coursee never changes a setting. Names say what they are for, so "uninstall" finds *Installed apps*.
 - **Right browser.** A bookmark opens in the browser it comes from, also from the recent list ("Open in Firefox"). If that browser cannot be found, the default browser is used. URLs you type open in the default browser.
 - **Hotkey already taken?** If another application (or Windows) holds the hotkey at start, coursee keeps running without one and opens Settings on it, so you can choose another; meanwhile the tray icon opens the launcher. Windows does not tell which application holds a hotkey, so coursee cannot name it.
 
