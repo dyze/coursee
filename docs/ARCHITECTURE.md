@@ -28,7 +28,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | --- | --- |
 | *(root)* | `AppVersion` |
 | `Resources/` | `Resource` and what can be done with it: `ResourceActions`, `ActionLabels`, `FallbackClassifier`, `CommandLine`, `Browsers` |
-| `Search/` | `SearchEngine` |
+| `Search/` | `SearchEngine`, `ListNavigation` (moving the selection in the result list) |
 | `Recents/` | `RecentStore` |
 | `Settings/` | `SettingsStore`, `SettingsCatalog` (the entries of the Settings window, their tabs, and the search that finds them) |
 | `Sources/` | `IResourceSource`, `SourceLoader`, `SourceMonitor`, and each source with the interface it needs from `App`; `BookmarkUrls` and `ChromiumBookmarks` (Edge's file format, shared by Chrome) for the browser sources |

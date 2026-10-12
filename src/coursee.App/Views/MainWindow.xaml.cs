@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Coursee.Core;
 using Coursee.Core.Logging;
 using Coursee.Core.Platform;
@@ -363,16 +365,46 @@ public partial class MainWindow : Window
         }
     }
 
-    private void MoveSelection(int delta)
+    private void MoveSelection(int delta) =>
+        Select(ListNavigation.Move(ResultsList.SelectedIndex, ResultsList.Items.Count, delta));
+
+    private void Select(int index)
     {
-        var count = ResultsList.Items.Count;
-        if (count == 0)
+        if (index < 0)
         {
             return;
         }
 
-        ResultsList.SelectedIndex = Math.Clamp(ResultsList.SelectedIndex + delta, 0, count - 1);
+        ResultsList.SelectedIndex = index;
         ResultsList.ScrollIntoView(ResultsList.SelectedItem);
+    }
+
+    /// <summary>Page Up / Page Down: as many rows as the list shows.</summary>
+    private int PageSize()
+    {
+        // The list scrolls by item, so the height of its viewport is counted in rows.
+        var viewer = FindChild<ScrollViewer>(ResultsList);
+        return ListNavigation.PageSize(viewer?.ViewportHeight ?? 0);
+    }
+
+    private static T? FindChild<T>(DependencyObject parent)
+        where T : DependencyObject
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is T found)
+            {
+                return found;
+            }
+
+            if (FindChild<T>(child) is { } deeper)
+            {
+                return deeper;
+            }
+        }
+
+        return null;
     }
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -419,14 +451,32 @@ public partial class MainWindow : Window
                 MoveSelection(-1);
                 e.Handled = true;
                 break;
+            case Key.PageDown:
+                MoveSelection(PageSize());
+                e.Handled = true;
+                break;
+            case Key.PageUp:
+                MoveSelection(-PageSize());
+                e.Handled = true;
+                break;
+
+            // Home and End alone stay with the search box (start / end of the text).
+            case Key.Home when Keyboard.Modifiers == ModifierKeys.Control:
+                Select(ListNavigation.First(ResultsList.Items.Count));
+                e.Handled = true;
+                break;
+            case Key.End when Keyboard.Modifiers == ModifierKeys.Control:
+                Select(ListNavigation.Last(ResultsList.Items.Count));
+                e.Handled = true;
+                break;
         }
     }
 
-    private void SearchBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e) => Refresh();
+    private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) => Refresh();
 
     private void ResultsList_MouseDoubleClick(object sender, MouseButtonEventArgs e) => OpenSelected();
 
-    private void ResultsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e) => UpdateActionText();
+    private void ResultsList_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateActionText();
 
     private void SettingsButton_Click(object sender, RoutedEventArgs e) => ShowSettings();
 

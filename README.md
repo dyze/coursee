@@ -29,6 +29,8 @@ Upgrade: run a newer setup over the old one. Uninstall: *Settings > Apps*. Your 
 | Ctrl+Alt+Space | Show / hide the launcher (configurable in Settings) |
 | Type | Filter resources |
 | Up / Down | Move selection |
+| Page Up / Page Down | Move selection by one page |
+| Ctrl+Home / Ctrl+End | Select the first / last item (Home and End move in the search box) |
 | Enter | Open the selected resource, or act on the typed text if nothing matches (see below) |
 | Ctrl+Enter | Show the selected file or folder in Explorer, item selected |
 | Ctrl+Shift+Enter | Run the selected command or program as administrator (`.exe`, `.bat`, `.cmd`, `.com`, `.msc`) |
