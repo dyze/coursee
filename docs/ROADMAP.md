@@ -61,6 +61,17 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 8. **Keyboard only.** In the launcher, Tab moves the focus to the Settings button, Enter or Space opens Settings, Tab again goes back to the search box. In Settings: a logical Tab order, Ctrl+Tab / Ctrl+Shift+Tab switch tabs (arrows too, on the tab strip), Down in the Find box goes to the first setting shown, and the focused control is always visible.
 
 ## 0.5 (to define)
-1. **Give priority to already executed entries**. An entry that has been already executed should have a high matching score.
-2. **Pinning**. User is able to pin/unpin entries he likes. Such pinned entries appear on top in the list.
-3. 
+1. **Ignore accents.** Matching ignores accents: `evene` finds *Événements*, `parametres` finds *Paramètres*.
+2. **Copy the target.** Ctrl+C copies the selected entry's path, URL or command. If text is selected in the search box, Ctrl+C copies that text instead.
+3. **Priority to opened entries.** An entry opened through coursee gets a score bonus that grows with how often and how recently it was opened. The bonus is capped, so a strong name match still beats a weak match of an often opened entry. The recent list is ordered the same way (recency plus frequency).
+4. **Pinning.** Ctrl+P, or the pin icon at the right of the action icon, pins or unpins the selected entry. Pinned entries that match the query are listed first. With an empty search box, pinned entries are not shown (the recent list is).
+5. **Aliases.** F2, or the alias icon at the right of the action icon, sets a short name of your own for the selected entry (`ff` for Firefox). Typing the exact alias lists that entry first. An alias belongs to one entry: setting it on another entry moves it. F2 with an empty alias removes it.
+
+   The pin and alias icons are shown on the selected row only.
+
+## 0.6 (to define)
+1. **Hide an entry.** Ctrl+H hides the selected entry from results and recents, to remove noise such as duplicate shortcuts or old bookmarks. Hidden entries can be restored in the **Entries** tab.
+2. **Custom entries.** Your own name and target (a URL, folder or command), as a new **Custom** source.
+   - When nothing matches, a **+** button at the right of the search box creates a custom entry, with the typed text as its target.
+   - Custom entries are edited and deleted in the **Entries** tab.
+3. **Entries tab.** A new Settings tab listing hidden entries (to restore), custom entries (to edit or delete) and aliases (to edit or remove).
