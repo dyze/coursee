@@ -34,6 +34,8 @@ public sealed class FirefoxBookmarksSource : IResourceSource
 
     public bool CanBeDisabled => true;
 
+    public string Icon => SourceIcons.Firefox;
+
     public IReadOnlyList<Resource> GetResources()
     {
         if (string.IsNullOrEmpty(_profileDirectory))

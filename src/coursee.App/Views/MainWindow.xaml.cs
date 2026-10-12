@@ -51,6 +51,9 @@ public partial class MainWindow : Window
         _settings = settings;
         _createSettings = createSettings;
         _openLog = openLog;
+
+        // Before the XAML, which uses it in the rows of the list.
+        Resources.Add("SourceIcon", new SourceIconConverter(new SourceIcons(sources)));
         InitializeComponent();
         VersionText.Text = $"coursee {AppVersion.Of(typeof(MainWindow).Assembly)}";
     }

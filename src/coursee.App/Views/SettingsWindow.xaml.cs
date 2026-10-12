@@ -71,7 +71,7 @@ public partial class SettingsWindow : Window
             var name = source.Name;
             var checkBox = new CheckBox
             {
-                Content = source.DisplayName,
+                Content = SourceLabel(source),
                 Tag = SettingsCatalog.SourceId(name),
                 Margin = new Thickness(0, 10, 0, 0),
             };
@@ -86,6 +86,22 @@ public partial class SettingsWindow : Window
 
         Loaded += (_, _) => (_focusHotkey ? (UIElement)HotkeyButton : FindBox).Focus();
         Closed += (_, _) => StopCapturingHotkey();
+    }
+
+    /// <summary>The name of a source after its icon, the one its rows show in the launcher.</summary>
+    private static StackPanel SourceLabel(IResourceSource source)
+    {
+        var label = new StackPanel { Orientation = Orientation.Horizontal };
+        label.Children.Add(new TextBlock
+        {
+            Text = source.Icon,
+            FontFamily = new System.Windows.Media.FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"),
+            Width = 22,
+            VerticalAlignment = VerticalAlignment.Center,
+            Opacity = 0.7,
+        });
+        label.Children.Add(new TextBlock { Text = source.DisplayName, VerticalAlignment = VerticalAlignment.Center });
+        return label;
     }
 
     /// <summary>True when the window was closed by "Open log window": the caller then opens it.</summary>

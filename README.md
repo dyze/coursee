@@ -37,7 +37,7 @@ Upgrade: run a newer setup over the old one. Uninstall: *Settings > Apps*. Your 
 | Del | Remove the selected item from recents (search box empty) |
 | Esc | Clear the search box; when it is empty, hide the launcher |
 
-The line under the search box always says what Enter will do and which other keys apply. In the list, an icon on the right of each row shows the same action (hover it for the wording).
+The line under the search box always says what Enter will do and which other keys apply. In the list, an icon on the right of each row shows the same action, and an icon on the left the source the item comes from (hover them for the wording); Settings > Sources shows the same source icons.
 
 **Tray icon.** Click: show the launcher. Menu: Show, Settings, Log window, Quit.
 

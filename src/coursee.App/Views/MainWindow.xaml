@@ -69,15 +69,28 @@
         <DataTemplate>
           <Grid Margin="4">
             <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
               <ColumnDefinition Width="*" />
               <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <StackPanel>
+
+            <!-- Where the item comes from (the same icon as in Settings > Sources). Its converter is
+                 added by the window, from the list of sources. -->
+            <TextBlock Width="18"
+                       Margin="0,0,10,0"
+                       VerticalAlignment="Center"
+                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                       FontSize="14"
+                       Opacity="0.6"
+                       Text="{Binding Source, Converter={StaticResource SourceIcon}}"
+                       ToolTip="{Binding Source, Converter={StaticResource SourceIcon}, ConverterParameter=Label}" />
+
+            <StackPanel Grid.Column="1">
               <TextBlock Text="{Binding Name}" FontSize="15" TextTrimming="CharacterEllipsis" />
               <TextBlock Text="{Binding Target}" FontSize="11" Opacity="0.6" TextTrimming="CharacterEllipsis" />
             </StackPanel>
             <!-- What Enter does, as an icon; its wording is the tooltip (and the line under the search box). -->
-            <TextBlock Grid.Column="1"
+            <TextBlock Grid.Column="2"
                        Margin="12,0,4,0"
                        VerticalAlignment="Center"
                        FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"

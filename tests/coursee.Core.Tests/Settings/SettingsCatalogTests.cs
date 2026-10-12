@@ -10,6 +10,8 @@ public class SettingsCatalogTests
 
         public bool CanBeDisabled => canBeDisabled;
 
+        public string Icon => string.Empty;
+
         public IReadOnlyList<Resource> GetResources() => [];
     }
 

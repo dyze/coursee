@@ -29,6 +29,8 @@ public sealed class EdgeFavoritesSource : IResourceSource
 
     public bool CanBeDisabled => true;
 
+    public string Icon => SourceIcons.Edge;
+
     public IReadOnlyList<Resource> GetResources()
     {
         if (string.IsNullOrEmpty(_profileDirectory))

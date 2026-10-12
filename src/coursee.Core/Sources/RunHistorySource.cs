@@ -38,6 +38,8 @@ public sealed class RunHistorySource : IResourceSource
 
     public bool CanBeDisabled => true;
 
+    public string Icon => SourceIcons.RunHistory;
+
     public IReadOnlyList<Resource> GetResources()
     {
         IReadOnlyDictionary<string, string> values;

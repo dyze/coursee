@@ -17,5 +17,11 @@ public interface IResourceSource
     /// <summary>True when Settings offers a checkbox to switch the source off.</summary>
     bool CanBeDisabled { get; }
 
+    /// <summary>
+    /// The icon of the source, shown on its rows and in Settings: a glyph of the Segoe Fluent Icons
+    /// font that comes with Windows (for example ""). See <see cref="SourceIcons"/>.
+    /// </summary>
+    string Icon { get; }
+
     IReadOnlyList<Resource> GetResources();
 }

@@ -10,6 +10,8 @@ public class SourceLoaderTests
 
         public bool CanBeDisabled => true;
 
+        public string Icon => string.Empty;
+
         public IReadOnlyList<Resource> GetResources() => resources;
     }
 
@@ -20,6 +22,8 @@ public class SourceLoaderTests
         public string DisplayName => name;
 
         public bool CanBeDisabled => true;
+
+        public string Icon => string.Empty;
 
         public IReadOnlyList<Resource> GetResources() => throw new InvalidOperationException("boom");
     }

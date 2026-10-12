@@ -32,6 +32,7 @@ public sealed class ShortcutsSource : IResourceSource
     private ShortcutsSource(
         string name,
         string displayName,
+        string icon,
         bool canBeDisabled,
         IEnumerable<string> folders,
         IShortcutResolver resolver,
@@ -40,6 +41,7 @@ public sealed class ShortcutsSource : IResourceSource
     {
         Name = name;
         DisplayName = displayName;
+        Icon = icon;
         CanBeDisabled = canBeDisabled;
         _folders = folders.ToList();
         _resolver = resolver;
@@ -49,17 +51,19 @@ public sealed class ShortcutsSource : IResourceSource
 
     /// <summary>The user's Desktop folders (personal and common), top level only. Always on.</summary>
     public static ShortcutsSource Desktop(IEnumerable<string> folders, IShortcutResolver resolver, ILog? log = null) =>
-        new(DesktopName, "Desktop shortcuts", canBeDisabled: false, folders, resolver, includeSubfolders: false, log);
+        new(DesktopName, "Desktop shortcuts", SourceIcons.Desktop, canBeDisabled: false, folders, resolver, includeSubfolders: false, log);
 
     /// <summary>The Start Menu folders (personal and common), subfolders included.</summary>
     public static ShortcutsSource StartMenu(IEnumerable<string> folders, IShortcutResolver resolver, ILog? log = null) =>
-        new(StartMenuName, "Start Menu shortcuts", canBeDisabled: true, folders, resolver, includeSubfolders: true, log);
+        new(StartMenuName, "Start Menu shortcuts", SourceIcons.StartMenu, canBeDisabled: true, folders, resolver, includeSubfolders: true, log);
 
     public string Name { get; }
 
     public string DisplayName { get; }
 
     public bool CanBeDisabled { get; }
+
+    public string Icon { get; }
 
     public IReadOnlyList<Resource> GetResources()
     {
