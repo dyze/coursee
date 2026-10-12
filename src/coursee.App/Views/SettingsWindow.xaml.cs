@@ -72,6 +72,7 @@ public partial class SettingsWindow : Window
         TabList.ItemsSource = _catalog.Tabs;
         TabList.SelectedIndex = 0;
 
+        Loaded += (_, _) => FindBox.Focus();
         Closed += (_, _) => StopCapturingHotkey();
     }
 
@@ -96,19 +97,42 @@ public partial class SettingsWindow : Window
     /// <summary>The panel of each tab; its Tag is the tab name.</summary>
     private IEnumerable<StackPanel> Sections => SectionsPanel.Children.OfType<StackPanel>();
 
-    /// <summary>Shows the panel of the selected tab only.</summary>
+    /// <summary>
+    /// Without a search, shows the panel of the selected tab only. With one, hides the tab strip
+    /// and shows the matching rows of every tab, under the name of their tab.
+    /// </summary>
     private void UpdateSections()
     {
+        var query = FindBox.Text;
+        var searching = !string.IsNullOrWhiteSpace(query);
+        var matches = _catalog.Find(query).Select(entry => entry.Id).ToHashSet();
         var tab = TabList.SelectedItem as string;
+
+        FindPlaceholder.Visibility = query.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+        TabList.Visibility = searching ? Visibility.Collapsed : Visibility.Visible;
+
         foreach (var section in Sections)
         {
-            section.Visibility = Equals(section.Tag, tab) ? Visibility.Visible : Visibility.Collapsed;
+            var anyShown = false;
             foreach (UIElement child in section.Children)
             {
-                // A tab shows its rows under the tab strip: the section title would repeat the tab name.
-                child.Visibility = IsHeader(child) ? Visibility.Collapsed : Visibility.Visible;
+                if (IsHeader(child))
+                {
+                    // Under the tab strip, the section title would repeat the tab name.
+                    child.Visibility = searching ? Visibility.Visible : Visibility.Collapsed;
+                    continue;
+                }
+
+                var shown = !searching || (child is FrameworkElement { Tag: string id } && matches.Contains(id));
+                child.Visibility = shown ? Visibility.Visible : Visibility.Collapsed;
+                anyShown |= shown;
             }
+
+            var visible = searching ? anyShown : Equals(section.Tag, tab);
+            section.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
         }
+
+        NoMatchText.Visibility = searching && matches.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
     /// <summary>A section title: the only child of a section without a setting id.</summary>
@@ -127,6 +151,14 @@ public partial class SettingsWindow : Window
     }
 
     private void TabList_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateSections();
+
+    private void FindBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (IsLoaded)
+        {
+            UpdateSections();
+        }
+    }
 
     private void StopCapturingHotkey()
     {
@@ -198,7 +230,22 @@ public partial class SettingsWindow : Window
 
         if (e.Key == Key.Escape)
         {
-            Close();
+            // First Esc clears the search, the next one closes the window.
+            if (FindBox.Text.Length > 0)
+            {
+                FindBox.Clear();
+            }
+            else
+            {
+                Close();
+            }
+
+            e.Handled = true;
+        }
+        else if (e.Key == Key.F && Keyboard.Modifiers == ModifierKeys.Control)
+        {
+            FindBox.Focus();
+            FindBox.SelectAll();
             e.Handled = true;
         }
     }

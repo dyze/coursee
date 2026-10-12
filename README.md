@@ -51,6 +51,8 @@ Gear button in the launcher, or tray menu > Settings. A window of its own: chang
 | Sources | Start Menu, Firefox bookmarks, Windows Run history (on / off) |
 | Logging | Detailed (debug) logging, open the log window |
 
+**Find a setting**: type in the box at the top (Ctrl+F) to see only the matching settings, from every tab. Esc clears it.
+
 ## Search
 
 - Matches the name and the target (path, URL, command), never file contents.
