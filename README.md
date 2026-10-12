@@ -35,6 +35,7 @@ Upgrade: run a newer setup over the old one. Uninstall: *Settings > Apps*. Your 
 | Ctrl+Enter | Show the selected file or folder in Explorer, item selected |
 | Ctrl+Shift+Enter | Run the selected command, program or Windows tool as administrator (`.exe`, `.bat`, `.cmd`, `.com`, `.msc`) |
 | Del | Remove the selected item from recents (search box empty) |
+| Tab | Move the focus to the Settings button (Enter or Space opens Settings), and back |
 | Esc | Clear the search box; when it is empty, hide the launcher |
 
 The line under the search box always says what Enter will do and which other keys apply. In the list, an icon on the right of each row shows the same action, and an icon on the left the source the item comes from (hover them for the wording); Settings > Sources shows the same source icons.
@@ -55,6 +56,8 @@ Gear button in the launcher, or tray menu > Settings. A dialog over the launcher
 | Logging | Detailed (debug) logging, open the log window |
 
 **Find a setting**: type in the box at the top (Ctrl+F) to see only the matching settings, from every tab. Esc clears it.
+
+**Keyboard only**: Down in the Find box goes to the first setting shown, Tab and Shift+Tab move between settings, Ctrl+Tab / Ctrl+Shift+Tab change tab (Left / Right too, on the tab strip). Space ticks a box, arrows change a list's choice.
 
 ## Search
 

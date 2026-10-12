@@ -431,6 +431,14 @@ public partial class MainWindow : Window
             return;
         }
 
+        // Reached with Tab: Enter opens Settings rather than the selected item.
+        if (SettingsButton.IsKeyboardFocused && e.Key == Key.Enter && Keyboard.Modifiers == ModifierKeys.None)
+        {
+            e.Handled = true;
+            ShowSettings();
+            return;
+        }
+
         switch (e.Key)
         {
             case Key.Enter when Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift):

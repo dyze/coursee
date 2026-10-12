@@ -331,6 +331,39 @@ public partial class SettingsWindow : Window
             FindBox.SelectAll();
             e.Handled = true;
         }
+        else if (e.Key == Key.Tab && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+        {
+            SwitchTab(Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? -1 : 1);
+            e.Handled = true;
+        }
+    }
+
+    /// <summary>
+    /// Ctrl+Tab / Ctrl+Shift+Tab: the next or previous tab, wrapping around. A search in progress
+    /// is cleared, so that the tab is shown. The focus goes to the tab strip, since the control
+    /// that had it may now be hidden.
+    /// </summary>
+    private void SwitchTab(int step)
+    {
+        FindBox.Clear();
+
+        var count = _catalog.Tabs.Count;
+        var index = (Math.Max(TabList.SelectedIndex, 0) + step + count) % count;
+        TabList.SelectedIndex = index;
+        if (TabList.ItemContainerGenerator.ContainerFromIndex(index) is UIElement tab)
+        {
+            tab.Focus();
+        }
+    }
+
+    /// <summary>Down in the Find box: to the first setting shown (of the tab, or of the search results).</summary>
+    private void FindBox_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Down && Keyboard.Modifiers == ModifierKeys.None)
+        {
+            SectionsPanel.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
+            e.Handled = true;
+        }
     }
 
     private void HotkeyButton_Click(object sender, RoutedEventArgs e)

@@ -9,6 +9,7 @@
         ShowInTaskbar="False"
         Topmost="True"
         WindowStartupLocation="CenterScreen"
+        KeyboardNavigation.TabNavigation="Cycle"
         Deactivated="Window_Deactivated"
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
         PreviewKeyDown="Window_PreviewKeyDown">
@@ -35,7 +36,8 @@
                Padding="8"
                TextChanged="SearchBox_TextChanged" />
 
-      <!-- The Windows settings icon. No padding: the Fluent theme's default one leaves too little room and cuts it. -->
+      <!-- The Windows settings icon. No padding: the Fluent theme's default one leaves too little room and cuts it.
+           Tab moves the focus between the search box and this button only; Enter or Space opens Settings. -->
       <Button x:Name="SettingsButton"
               Grid.Column="1"
               Width="48"
@@ -45,8 +47,7 @@
               Content="&#xE713;"
               FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
               FontSize="18"
-              ToolTip="Settings"
-              Focusable="False"
+              ToolTip="Settings (Tab, then Enter)"
               Click="SettingsButton_Click" />
     </Grid>
 
@@ -60,6 +61,8 @@
              Grid.Row="2"
              Margin="0,6,0,0"
              HorizontalContentAlignment="Stretch"
+             IsTabStop="False"
+             KeyboardNavigation.TabNavigation="None"
              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
              MouseDoubleClick="ResultsList_MouseDoubleClick"
              SelectionChanged="ResultsList_SelectionChanged">
