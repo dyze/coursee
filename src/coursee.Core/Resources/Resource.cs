@@ -44,6 +44,10 @@ public sealed record Resource(
     [JsonIgnore]
     public string ActionLabel => ActionLabels.For(Kind, Browser);
 
+    /// <summary>What pressing Enter will do, for its icon.</summary>
+    [JsonIgnore]
+    public ResourceAction Action => ActionLabels.ActionFor(Kind, Browser);
+
     /// <summary>The path, URL or command line actually opened.</summary>
     [JsonIgnore]
     public string OpenTarget => string.IsNullOrWhiteSpace(LaunchPath) ? Target : LaunchPath;

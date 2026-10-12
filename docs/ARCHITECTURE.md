@@ -27,7 +27,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `coursee.Core` | Content |
 | --- | --- |
 | *(root)* | `AppVersion` |
-| `Resources/` | `Resource` and what can be done with it: `ResourceActions`, `ActionLabels`, `FallbackClassifier`, `CommandLine`, `Browsers` |
+| `Resources/` | `Resource` and what can be done with it: `ResourceActions`, `ActionLabels` (the wording, and the `ResourceAction` behind the row icon), `FallbackClassifier`, `CommandLine`, `Browsers` |
 | `Search/` | `SearchEngine`, `ListNavigation` (moving the selection in the result list) |
 | `Recents/` | `RecentStore` |
 | `Settings/` | `SettingsStore`, `SettingsCatalog` (the entries of the Settings window, their tabs, and the search that finds them) |
@@ -39,7 +39,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `coursee.App` | Content |
 | --- | --- |
 | *(root)* | `App.xaml`: startup and wiring |
-| `Views/` | Windows: `MainWindow` (the launcher), `SettingsWindow`, `LogWindow`; `AppTheme` |
+| `Views/` | Windows: `MainWindow` (the launcher), `SettingsWindow`, `LogWindow`; `AppTheme`; `ActionGlyphConverter` (the Segoe Fluent glyph of each `ResourceAction`) |
 | `Tray/` | `TrayIcon` |
 | `Platform/` | Implementations of the `Core` interfaces, `SingleInstance`, and window placement (`NativeWindows`, `WindowPlacer`) |
 | `Logging/` | `LogHub`, `SerilogFileLog` |

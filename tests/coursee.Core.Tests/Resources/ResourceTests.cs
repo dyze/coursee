@@ -34,6 +34,29 @@ public class ResourceTests
         Assert.Equal("Open file", new Resource("x", @"C:\x", ResourceKind.File, "test", Browser: "Firefox").ActionLabel);
     }
 
+    [Theory]
+    [InlineData(ResourceKind.File, null, ResourceAction.OpenFile)]
+    [InlineData(ResourceKind.Folder, null, ResourceAction.OpenFolder)]
+    [InlineData(ResourceKind.Url, null, ResourceAction.OpenUrl)]
+    [InlineData(ResourceKind.Url, "", ResourceAction.OpenUrl)]
+    [InlineData(ResourceKind.Url, "Firefox", ResourceAction.OpenInBrowser)]
+    [InlineData(ResourceKind.Command, null, ResourceAction.RunCommand)]
+    [InlineData(ResourceKind.NetworkPath, null, ResourceAction.Open)]
+    [InlineData(ResourceKind.File, "Firefox", ResourceAction.OpenFile)]
+    public void Action_MatchesTheLabel(ResourceKind kind, string? browser, ResourceAction expected)
+    {
+        Assert.Equal(expected, new Resource("x", "y", kind, "test", Browser: browser).Action);
+        Assert.Equal(expected, ActionLabels.ActionFor(kind, browser));
+    }
+
+    [Fact]
+    public void Json_LeavesOutTheAction()
+    {
+        var json = JsonSerializer.Serialize(new Resource("x", @"C:\x", ResourceKind.File, "test"));
+
+        Assert.DoesNotContain("\"Action\"", json);
+    }
+
     [Fact]
     public void Json_RoundTripsTheBrowser()
     {
