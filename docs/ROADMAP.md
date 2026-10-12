@@ -2,12 +2,12 @@
 
 Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.md).
 
-| Version | Status | Theme |
-| --- | --- | --- |
-| 0.1 | Done | Hotkey, search, recents, Desktop, Firefox and Run history sources, settings, logging |
-| 0.2 | Done | Tray icon, Start Menu source, row actions, installer |
-| 0.3 | Done | Code layout, Edge source, right browser, window positions, theme, settings window |
-| 0.4 | Done | Launcher position, list keys, Windows settings source, icons, keyboard-only Settings |
+| Version | Status      | Theme                                                                                |
+| ------- | ----------- | ------------------------------------------------------------------------------------ |
+| 0.1     | Done        | Hotkey, search, recents, Desktop, Firefox and Run history sources, settings, logging |
+| 0.2     | Done        | Tray icon, Start Menu source, row actions, installer                                 |
+| 0.3     | Done        | Code layout, Edge source, right browser, window positions, theme, settings window    |
+| 0.4     | Done        | Launcher position, list keys, Windows settings source, icons, keyboard-only Settings |
 
 ## 0.1
 1. **Hotkey and window.** A global hotkey toggles the compact window. Only one copy of coursee runs: starting it again shows the launcher of the running copy.
@@ -59,3 +59,8 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 6. **Action icons.** Each row shows its action (open file, open folder, open URL, open in a browser, run command, open setting) as an icon, with the wording as tooltip. The line under the search box is unchanged.
 7. **Source icons.** Each row shows a small icon of the source it comes from (typed text has its own). The **Sources** tab shows the same icon next to each source.
 8. **Keyboard only.** In the launcher, Tab moves the focus to the Settings button, Enter or Space opens Settings, Tab again goes back to the search box. In Settings: a logical Tab order, Ctrl+Tab / Ctrl+Shift+Tab switch tabs (arrows too, on the tab strip), Down in the Find box goes to the first setting shown, and the focused control is always visible.
+
+## 0.5 (to define)
+1. **Give priority to already executed entries**. An entry that has been already executed should have a high matching score.
+2. **Pinning**. User is able to pin/unpin entries he likes. Such pinned entries appear on top in the list.
+3. 
