@@ -49,7 +49,7 @@ Gear button in the launcher, or tray menu > Settings. A dialog over the launcher
 
 | Tab | Options |
 | --- | --- |
-| General | Hotkey (must include Ctrl, Alt or Win), number of recent items (default 20), start with Windows |
+| General | Hotkey (must include Ctrl, Alt or Win), number of recent items (default 20), launcher position, start with Windows |
 | Appearance | Theme: follow Windows (default), light or dark. The tray menu follows at the next start |
 | Sources | Start Menu, Firefox bookmarks, Edge favorites, Windows Run history, Windows settings and tools (on / off) |
 | Logging | Detailed (debug) logging, open the log window |
@@ -67,7 +67,8 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#search).
 
 ## Behavior notes
 
-- **Windows stay where you put them.** The launcher (drag its empty area to move it) and the log window reopen at their last place, on the same monitor; the log window also keeps its size. Settings opens centered on the launcher, at its last size. A window partly off screen (monitor gone, screen smaller, launcher dragged past an edge) is moved back on screen when it is shown, and the launcher also when you stop dragging it.
+- **Where the launcher appears** (Settings > General > Launcher position): in the middle of the monitor under the mouse (default), centered on the mouse, or where you left it. It can always be moved by dragging its empty area, but only *Where I left it* remembers the place.
+- **Windows stay where you put them.** With *Where I left it*, the launcher reopens at its last place, on the same monitor; so does the log window, which also keeps its size. Settings opens centered on the launcher, at its last size. A window partly off screen (monitor gone, screen smaller, launcher dragged past an edge) is moved back on screen when it is shown, and the launcher also when you stop dragging it.
 - **Start.** Started by you (Start Menu, desktop shortcut, end of setup), coursee shows the launcher. Started at sign-in, it stays in the notification area: the auto start entry runs `coursee.exe --hidden`. An entry written by an older version (without `--hidden`) is updated at the next start.
 - **Start with Windows** is ticked only when Windows starts *this* copy. If it starts another one (say the installed copy, while you run a build), Settings shows its path; ticking the box switches auto start to this copy.
 - **One copy at a time.** Starting coursee while it is already running shows the launcher of the running copy.

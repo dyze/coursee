@@ -92,6 +92,16 @@ public class SettingsCatalogTests
         Assert.Equal(SettingsCatalog.ThemeId, Assert.Single(Catalog().Find("dark")).Id);
     }
 
+    [Theory]
+    [InlineData("mouse")]
+    [InlineData("launcher position")]
+    [InlineData("centre")]
+    public void Find_FindsTheLauncherPosition(string query)
+    {
+        Assert.Contains(Catalog().Find(query), entry => entry.Id == SettingsCatalog.LauncherPositionId);
+        Assert.Equal(SettingsCatalog.GeneralTab, Catalog().All.Single(entry => entry.Id == SettingsCatalog.LauncherPositionId).Tab);
+    }
+
     [Fact]
     public void Find_KeepsTheCatalogOrder()
     {

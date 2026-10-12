@@ -17,17 +17,24 @@ namespace Coursee.UI.Views;
 /// </summary>
 public partial class SettingsWindow : Window
 {
-    /// <summary>A choice of the Theme box; the box shows <see cref="ToString"/>.</summary>
-    private sealed record ThemeOption(ThemeChoice Value, string Label)
+    /// <summary>A choice of a combo box; the box shows <see cref="ToString"/>.</summary>
+    private sealed record Option<T>(T Value, string Label)
     {
         public override string ToString() => Label;
     }
 
-    private static readonly ThemeOption[] ThemeOptions =
+    private static readonly Option<ThemeChoice>[] ThemeOptions =
     [
         new(ThemeChoice.System, "Follow Windows"),
         new(ThemeChoice.Light, "Light"),
         new(ThemeChoice.Dark, "Dark"),
+    ];
+
+    private static readonly Option<LauncherPosition>[] PositionOptions =
+    [
+        new(LauncherPosition.Centered, "Centered on the mouse's monitor"),
+        new(LauncherPosition.AtMouse, "At the mouse"),
+        new(LauncherPosition.LastPosition, "Where I left it"),
     ];
 
     private readonly SettingsStore _settings;
@@ -66,6 +73,7 @@ public partial class SettingsWindow : Window
 
         RecentsComboBox.ItemsSource = SettingsStore.RecentsCapacityChoices;
         ThemeComboBox.ItemsSource = ThemeOptions;
+        LauncherPositionComboBox.ItemsSource = PositionOptions;
         foreach (var source in sources.Where(s => s.CanBeDisabled))
         {
             var name = source.Name;
@@ -117,6 +125,7 @@ public partial class SettingsWindow : Window
         RecentsComboBox.SelectedItem = _settings.RecentsCapacity;
         DebugLoggingCheckBox.IsChecked = _settings.DebugLogging;
         ThemeComboBox.SelectedItem = ThemeOptions.First(option => option.Value == _settings.Theme);
+        LauncherPositionComboBox.SelectedItem = PositionOptions.First(option => option.Value == _settings.LauncherPosition);
         foreach (var (name, checkBox) in _sourceCheckBoxes)
         {
             checkBox.IsChecked = _settings.IsSourceEnabled(name);
@@ -389,7 +398,7 @@ public partial class SettingsWindow : Window
 
     private void ThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_loading || ThemeComboBox.SelectedItem is not ThemeOption option || option.Value == _settings.Theme)
+        if (_loading || ThemeComboBox.SelectedItem is not Option<ThemeChoice> option || option.Value == _settings.Theme)
         {
             return;
         }
@@ -403,6 +412,27 @@ public partial class SettingsWindow : Window
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
         {
             _log.Error("Settings", "Cannot change the theme", ex);
+            ShowMessage(ex.Message);
+        }
+    }
+
+    private void LauncherPositionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_loading
+            || LauncherPositionComboBox.SelectedItem is not Option<LauncherPosition> option
+            || option.Value == _settings.LauncherPosition)
+        {
+            return;
+        }
+
+        try
+        {
+            _settings.SetLauncherPosition(option.Value);
+            _log.Info("Settings", $"Launcher position: {option.Value}");
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            _log.Error("Settings", "Cannot change the launcher position", ex);
             ShowMessage(ex.Message);
         }
     }

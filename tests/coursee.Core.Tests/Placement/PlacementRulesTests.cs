@@ -161,4 +161,59 @@ public class PlacementRulesTests
 
         Assert.Equal(bounds, PlacementRules.Fit(PlacementRules.Capture(bounds, Both)!, Both));
     }
+
+    [Fact]
+    public void MonitorAt_IsTheMonitorUnderThePoint()
+    {
+        Assert.Equal(Second, PlacementRules.MonitorAt(new ScreenPoint(2500, 300), Both));
+        Assert.Equal(Primary, PlacementRules.MonitorAt(new ScreenPoint(10, 10), Both));
+    }
+
+    [Fact]
+    public void MonitorAt_OnATaskbar_IsTheNearestMonitor()
+    {
+        // The primary taskbar: below the primary work area (1040 px high).
+        Assert.Equal(Primary, PlacementRules.MonitorAt(new ScreenPoint(500, 1060), Both));
+        Assert.Equal(Second, PlacementRules.MonitorAt(new ScreenPoint(2500, 1000), Both));
+    }
+
+    [Fact]
+    public void MonitorAt_NoMonitor_IsNull() =>
+        Assert.Null(PlacementRules.MonitorAt(new ScreenPoint(0, 0), []));
+
+    [Fact]
+    public void CenterOnMonitorAt_IsTheMiddleOfTheMonitorUnderThePointer()
+    {
+        Assert.Equal(new ScreenRect(640, 260, 640, 520), PlacementRules.CenterOnMonitorAt(new ScreenPoint(5, 5), 640, 520, Both));
+        Assert.Equal(new ScreenRect(2240, 232, 640, 520), PlacementRules.CenterOnMonitorAt(new ScreenPoint(3000, 900), 640, 520, Both));
+    }
+
+    [Fact]
+    public void CenterOnMonitorAt_LargerThanTheMonitor_IsShrunk() =>
+        Assert.Equal(new ScreenRect(1920, 0, 1280, 984), PlacementRules.CenterOnMonitorAt(new ScreenPoint(2500, 300), 2000, 1200, Both));
+
+    [Fact]
+    public void CenterOnMonitorAt_NoMonitor_IsNull() =>
+        Assert.Null(PlacementRules.CenterOnMonitorAt(new ScreenPoint(0, 0), 640, 520, []));
+
+    [Fact]
+    public void CenterOnPoint_IsCenteredOnThePointer() =>
+        Assert.Equal(new ScreenRect(680, 240, 640, 520), PlacementRules.CenterOnPoint(new ScreenPoint(1000, 500), 640, 520, Both));
+
+    [Fact]
+    public void CenterOnPoint_NearAnEdge_StaysOnTheMonitorOfThePointer()
+    {
+        // Near the top-left corner of the primary monitor.
+        Assert.Equal(new ScreenRect(0, 0, 640, 520), PlacementRules.CenterOnPoint(new ScreenPoint(20, 20), 640, 520, Both));
+
+        // Near the edge between both monitors: kept whole on the primary one, not across.
+        Assert.Equal(new ScreenRect(1280, 300, 640, 520), PlacementRules.CenterOnPoint(new ScreenPoint(1900, 560), 640, 520, Both));
+
+        // Bottom right of the second monitor.
+        Assert.Equal(new ScreenRect(2560, 464, 640, 520), PlacementRules.CenterOnPoint(new ScreenPoint(3190, 980), 640, 520, Both));
+    }
+
+    [Fact]
+    public void CenterOnPoint_NoMonitor_IsNull() =>
+        Assert.Null(PlacementRules.CenterOnPoint(new ScreenPoint(0, 0), 640, 520, []));
 }

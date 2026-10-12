@@ -11,9 +11,22 @@ public enum ThemeChoice
     Dark,
 }
 
+/// <summary>Where the launcher appears each time it is shown. Always kept fully on screen.</summary>
+public enum LauncherPosition
+{
+    /// <summary>In the middle of the monitor under the mouse.</summary>
+    Centered,
+
+    /// <summary>Centered on the mouse pointer.</summary>
+    AtMouse,
+
+    /// <summary>Where it was left (dragged), on the same monitor.</summary>
+    LastPosition,
+}
+
 /// <summary>
 /// User settings persisted as JSON: which sources are disabled (every source is on by default),
-/// the global hotkey, how many recent items to keep and the theme. A missing, corrupt or partial file
+/// the global hotkey, how many recent items to keep, the theme and where the launcher appears. A missing, corrupt or partial file
 /// means defaults for whatever cannot be read.
 /// </summary>
 public sealed class SettingsStore
@@ -39,6 +52,9 @@ public sealed class SettingsStore
         Theme = Enum.TryParse<ThemeChoice>(data?.Theme, ignoreCase: true, out var theme) && Enum.IsDefined(theme)
             ? theme
             : ThemeChoice.System;
+        LauncherPosition = Enum.TryParse<LauncherPosition>(data?.LauncherPosition, ignoreCase: true, out var position) && Enum.IsDefined(position)
+            ? position
+            : LauncherPosition.Centered;
     }
 
     /// <summary>The values offered in Settings for the number of recent items to keep.</summary>
@@ -52,6 +68,8 @@ public sealed class SettingsStore
     public bool DebugLogging { get; private set; }
 
     public ThemeChoice Theme { get; private set; }
+
+    public LauncherPosition LauncherPosition { get; private set; }
 
     public bool IsSourceEnabled(string sourceName) => !_disabledSources.Contains(sourceName);
 
@@ -93,6 +111,12 @@ public sealed class SettingsStore
         Save();
     }
 
+    public void SetLauncherPosition(LauncherPosition position)
+    {
+        LauncherPosition = position;
+        Save();
+    }
+
     private void Save()
     {
         var directory = Path.GetDirectoryName(_path);
@@ -106,7 +130,8 @@ public sealed class SettingsStore
             Hotkey.ToString(),
             RecentsCapacity,
             DebugLogging,
-            Theme.ToString());
+            Theme.ToString(),
+            LauncherPosition.ToString());
         File.WriteAllText(_path, JsonSerializer.Serialize(data));
     }
 
@@ -129,5 +154,6 @@ public sealed class SettingsStore
         string? Hotkey,
         int? RecentsCapacity,
         bool? DebugLogging = null,
-        string? Theme = null);
+        string? Theme = null,
+        string? LauncherPosition = null);
 }

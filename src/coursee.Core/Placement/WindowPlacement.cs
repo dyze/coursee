@@ -22,6 +22,9 @@ public sealed record ScreenRect(int Left, int Top, int Width, int Height)
     public bool Contains(int x, int y) => x >= Left && x < Right && y >= Top && y < Bottom;
 }
 
+/// <summary>A point in screen pixels, such as the mouse pointer.</summary>
+public sealed record ScreenPoint(int X, int Y);
+
 /// <summary>A monitor as Windows describes it.</summary>
 /// <param name="DeviceName">Such as <c>\\.\DISPLAY2</c>: stays the same while the monitor is plugged in the same port.</param>
 /// <param name="WorkArea">The monitor without the taskbar, in screen pixels.</param>

@@ -100,6 +100,7 @@ public partial class MainWindow : Window
         // Show the list from the last refresh at once; the fresh one replaces it when ready.
         SearchBox.Text = string.Empty;
         Refresh();
+        WindowPlacer.PlaceLauncher(this, _settings.LauncherPosition, _log);
         Show();
         Activate();
         SearchBox.Focus();

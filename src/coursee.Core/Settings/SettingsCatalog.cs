@@ -23,6 +23,7 @@ public sealed class SettingsCatalog
     public const string HotkeyId = "Hotkey";
     public const string RecentsCapacityId = "RecentsCapacity";
     public const string AutoStartId = "AutoStart";
+    public const string LauncherPositionId = "LauncherPosition";
     public const string ThemeId = "Theme";
     public const string DebugLoggingId = "DebugLogging";
     public const string LogWindowId = "LogWindow";
@@ -37,6 +38,7 @@ public sealed class SettingsCatalog
             new(HotkeyId, GeneralTab, "Hotkey", ["shortcut", "key", "keyboard", "show", "launcher"]),
             new(RecentsCapacityId, GeneralTab, "Recent items to keep", ["recents", "history", "count", "number"]),
             new(AutoStartId, GeneralTab, "Start coursee when I sign in to Windows", ["auto", "startup", "boot", "login"]),
+            new(LauncherPositionId, GeneralTab, "Launcher position", ["place", "where", "mouse", "center", "centre", "monitor", "screen", "window"]),
             new(ThemeId, AppearanceTab, "Theme", ["dark", "light", "mode", "color", "colour"]),
         };
 

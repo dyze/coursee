@@ -73,6 +73,36 @@ public sealed class SettingsStoreOptionsTests : IDisposable
     }
 
     [Fact]
+    public void LauncherPosition_IsCenteredByDefault()
+    {
+        Assert.Equal(LauncherPosition.Centered, new SettingsStore(FilePath).LauncherPosition);
+    }
+
+    [Theory]
+    [InlineData(LauncherPosition.Centered)]
+    [InlineData(LauncherPosition.AtMouse)]
+    [InlineData(LauncherPosition.LastPosition)]
+    public void LauncherPosition_IsPersisted(LauncherPosition position)
+    {
+        new SettingsStore(FilePath).SetLauncherPosition(position);
+
+        Assert.Equal(position, new SettingsStore(FilePath).LauncherPosition);
+    }
+
+    [Theory]
+    [InlineData("{\"LauncherPosition\":\"Somewhere\"}", LauncherPosition.Centered)]
+    [InlineData("{\"LauncherPosition\":\"9\"}", LauncherPosition.Centered)]
+    [InlineData("{\"LauncherPosition\":\"atmouse\"}", LauncherPosition.AtMouse)]
+    [InlineData("{\"Theme\":\"Dark\"}", LauncherPosition.Centered)]
+    public void StoredLauncherPosition_UnknownIsCentered_CaseIgnored(string json, LauncherPosition expected)
+    {
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(FilePath, json);
+
+        Assert.Equal(expected, new SettingsStore(FilePath).LauncherPosition);
+    }
+
+    [Fact]
     public void RecentsCapacity_IsPersisted()
     {
         new SettingsStore(FilePath).SetRecentsCapacity(10);
@@ -125,9 +155,11 @@ public sealed class SettingsStoreOptionsTests : IDisposable
         store.SetSourceEnabled("Firefox", false);
         store.SetRecentsCapacity(30);
         store.SetHotkey(new HotkeyGesture(false, true, false, false, "F2"));
+        store.SetLauncherPosition(LauncherPosition.AtMouse);
 
         var reloaded = new SettingsStore(FilePath);
 
+        Assert.Equal(LauncherPosition.AtMouse, reloaded.LauncherPosition);
         Assert.False(reloaded.IsSourceEnabled("Firefox"));
         Assert.Equal(30, reloaded.RecentsCapacity);
         Assert.Equal("Alt+F2", reloaded.Hotkey.ToString());

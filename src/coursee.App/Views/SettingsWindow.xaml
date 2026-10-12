@@ -112,6 +112,15 @@
                       SelectionChanged="RecentsComboBox_SelectionChanged" />
           </StackPanel>
 
+          <StackPanel Tag="{x:Static settings:SettingsCatalog.LauncherPositionId}"
+                      Margin="0,10,0,0"
+                      Orientation="Horizontal">
+            <TextBlock Text="Launcher position" Width="150" VerticalAlignment="Center" />
+            <ComboBox x:Name="LauncherPositionComboBox"
+                      Width="230"
+                      SelectionChanged="LauncherPositionComboBox_SelectionChanged" />
+          </StackPanel>
+
           <StackPanel Tag="{x:Static settings:SettingsCatalog.AutoStartId}" Margin="0,10,0,0">
             <CheckBox x:Name="AutoStartCheckBox"
                       Content="Start coursee when I sign in to Windows"

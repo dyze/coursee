@@ -40,12 +40,7 @@ public static class PlacementRules
 
         var work = monitor.WorkArea;
         var saved = placement.Bounds;
-        var width = Math.Clamp(saved.Width, 1, Math.Max(1, work.Width));
-        var height = Math.Clamp(saved.Height, 1, Math.Max(1, work.Height));
-        var left = Math.Clamp(work.Left + saved.Left, work.Left, Math.Max(work.Left, work.Right - width));
-        var top = Math.Clamp(work.Top + saved.Top, work.Top, Math.Max(work.Top, work.Bottom - height));
-
-        return new ScreenRect(left, top, width, height);
+        return Inside(work, saved with { Left = work.Left + saved.Left, Top = work.Top + saved.Top });
     }
 
     /// <summary>
@@ -59,6 +54,61 @@ public static class PlacementRules
     /// <summary>A rectangle of the given size, centered on <paramref name="owner"/> (a dialog over its window).</summary>
     public static ScreenRect CenterOn(ScreenRect owner, int width, int height) =>
         new(owner.Left + ((owner.Width - width) / 2), owner.Top + ((owner.Height - height) / 2), width, height);
+
+    /// <summary>
+    /// A window of the given size in the middle of the monitor under <paramref name="pointer"/>
+    /// (the launcher's "Centered" position), shrunk if larger. Null when there is no monitor.
+    /// </summary>
+    public static ScreenRect? CenterOnMonitorAt(ScreenPoint pointer, int width, int height, IReadOnlyList<MonitorInfo> monitors)
+    {
+        if (MonitorAt(pointer, monitors) is not { } monitor)
+        {
+            return null;
+        }
+
+        var work = monitor.WorkArea;
+        return Inside(work, CenterOn(work, width, height));
+    }
+
+    /// <summary>
+    /// A window of the given size centered on <paramref name="pointer"/> (the launcher's "At the
+    /// mouse" position), then moved inside the monitor under the pointer. Null when there is no monitor.
+    /// </summary>
+    public static ScreenRect? CenterOnPoint(ScreenPoint pointer, int width, int height, IReadOnlyList<MonitorInfo> monitors)
+    {
+        if (MonitorAt(pointer, monitors) is not { } monitor)
+        {
+            return null;
+        }
+
+        return Inside(monitor.WorkArea, new ScreenRect(pointer.X - (width / 2), pointer.Y - (height / 2), width, height));
+    }
+
+    /// <summary>
+    /// The monitor whose work area holds <paramref name="point"/>, else the nearest one (the
+    /// pointer can be on a taskbar, outside every work area), else null when there is no monitor.
+    /// </summary>
+    public static MonitorInfo? MonitorAt(ScreenPoint point, IReadOnlyList<MonitorInfo> monitors) =>
+        monitors.FirstOrDefault(m => m.WorkArea.Contains(point.X, point.Y))
+            ?? monitors.MinBy(m => DistanceSquared(m.WorkArea, point));
+
+    /// <summary><paramref name="bounds"/> made to fit <paramref name="work"/>: no larger, and moved inside it.</summary>
+    private static ScreenRect Inside(ScreenRect work, ScreenRect bounds)
+    {
+        var width = Math.Clamp(bounds.Width, 1, Math.Max(1, work.Width));
+        var height = Math.Clamp(bounds.Height, 1, Math.Max(1, work.Height));
+        var left = Math.Clamp(bounds.Left, work.Left, Math.Max(work.Left, work.Right - width));
+        var top = Math.Clamp(bounds.Top, work.Top, Math.Max(work.Top, work.Bottom - height));
+
+        return new ScreenRect(left, top, width, height);
+    }
+
+    private static long DistanceSquared(ScreenRect area, ScreenPoint point)
+    {
+        long dx = Math.Max(Math.Max(area.Left - point.X, 0), point.X - (area.Right - 1));
+        long dy = Math.Max(Math.Max(area.Top - point.Y, 0), point.Y - (area.Bottom - 1));
+        return (dx * dx) + (dy * dy);
+    }
 
     /// <summary>The monitor holding the window's center, else the one it overlaps most, else the primary one.</summary>
     private static MonitorInfo? MonitorOf(ScreenRect bounds, IReadOnlyList<MonitorInfo> monitors)
