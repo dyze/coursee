@@ -45,5 +45,23 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 8. **Find a setting.** A search box at the top of Settings: while it has text, only the matching settings are shown, from every tab.
 9. **Start hidden.** `coursee.exe --hidden` starts in the notification area only; the auto start entry uses it. Started without it (by the user or the installer), coursee shows the launcher.
 
+## 0.5
+1. **Different kinds of positioning.** Today, Main window is shown using last known position. Allow the user to chose between those options:
+	* Last known position (as today)
+	* At mouse position
+	* Centred, using the monitor on which the mouse is. Set it as default behaviour
+2. **Page Up, Page Down. Home, End** Keys can be used to navigate into the list of entries.
+3. **Windows settings source.** Give user quick access to windows settings as
+	* Installed apps
+	* Advanced network settings
+	* services.msc
+	* Advanced system settings
+	* ...
+4. **First esc clear text.** Today esc on main window closes the window. If user presses esc when there is text, the text should be cleared. if no text, close as today.
+5. **Make action always visible.** Today, action is at right of the entry. but if text is long, the action is hidden. Make it always visible.
+6. **Use icons for actions.** Today, in the list of entries, a text are shown. Use meaningful icons instead. Warning: Keep available actions below edit box as is.
+7. **Identify source.** In the list of entries, for each show with a small icon what is the source. Show same icons in sources tab to make the relationship easier.
+8. **Settings with keyboard.** Make access, navigation and change inside settings possible with use of keyboard only.
+
 ## 0.4
 Not defined yet.
