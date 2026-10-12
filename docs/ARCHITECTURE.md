@@ -12,7 +12,7 @@ coursee.App   (WPF, Windows only)
 │
 coursee.Core  (no Windows dependency, fully unit-tested on any OS)
    SearchEngine · RecentStore · SettingsStore · SettingsCatalog · SourceLoader · SourceMonitor · FallbackClassifier
-   sources (IResourceSource): ShortcutsSource (Desktop, Start Menu) · FirefoxBookmarksSource · RunHistorySource
+   sources (IResourceSource): ShortcutsSource (Desktop, Start Menu) · FirefoxBookmarksSource · EdgeFavoritesSource · RunHistorySource
 ```
 
 - The sources live in `Core`. When one needs Windows (resolving `.lnk` files, reading the registry), it takes an interface defined in `Core`, and `App` supplies the implementation.
@@ -29,7 +29,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `Search/` | `SearchEngine` |
 | `Recents/` | `RecentStore` |
 | `Settings/` | `SettingsStore`, `SettingsCatalog` (the entries of the Settings window, their tabs, and the search that finds them) |
-| `Sources/` | `IResourceSource`, `SourceLoader`, `SourceMonitor`, and each source with the interface it needs from `App` |
+| `Sources/` | `IResourceSource`, `SourceLoader`, `SourceMonitor`, and each source with the interface it needs from `App`; `BookmarkUrls` and `ChromiumBookmarks` (Edge's file format, shared by Chrome) for the browser sources |
 | `Platform/` | The other interfaces `App` implements (`IAutoStart`, `IHotkeyRegistrar`) and their rules (`AutoStartCommand`, `HotkeyGesture`) |
 | `Logging/` | `ILog`, `LogEntry`, `RingLog`, `CompositeLog`, `FilteredLog` |
 | `Placement/` | Window positions: `WindowPlacement`, `PlacementRules`, `PlacementStore` (see [Window positions](#window-positions)) |

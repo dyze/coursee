@@ -17,9 +17,6 @@ public sealed class FirefoxBookmarksSource : IResourceSource
     private const string DatabaseFile = "places.sqlite";
     private const string WalFile = "places.sqlite-wal";
 
-    private static readonly HashSet<string> AllowedSchemes =
-        new(StringComparer.OrdinalIgnoreCase) { "http", "https", "ftp", "file" };
-
     private readonly string? _profileDirectory;
     private readonly ILog _log;
     private string? _cachedStamp;
@@ -110,7 +107,7 @@ public sealed class FirefoxBookmarksSource : IResourceSource
             while (reader.Read())
             {
                 var url = reader.IsDBNull(2) ? null : reader.GetString(2);
-                if (!IsOpenable(url) || !seen.Add(url!))
+                if (!BookmarkUrls.IsOpenable(url) || !seen.Add(url!))
                 {
                     continue;
                 }
@@ -137,11 +134,6 @@ public sealed class FirefoxBookmarksSource : IResourceSource
             }
         }
     }
-
-    private static bool IsOpenable(string? url) =>
-        !string.IsNullOrWhiteSpace(url)
-        && Uri.TryCreate(url, UriKind.Absolute, out var uri)
-        && AllowedSchemes.Contains(uri.Scheme);
 
     private static string FirstNonEmpty(params string?[] values) =>
         values.First(v => !string.IsNullOrWhiteSpace(v))!;

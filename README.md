@@ -10,7 +10,7 @@ A personal Windows launcher. Press a global hotkey, type in the compact search w
 
 ## Status
 
-Searches Desktop and Start Menu shortcuts, Firefox bookmarks and the Windows Run history. Also: recents, row actions, tray icon, settings, installer.
+Searches Desktop and Start Menu shortcuts, Firefox bookmarks, Edge favorites and the Windows Run history. Also: recents, row actions, tray icon, settings, installer.
 
 ## Install
 
@@ -49,7 +49,7 @@ Gear button in the launcher, or tray menu > Settings. A window of its own: chang
 | --- | --- |
 | General | Hotkey (must include Ctrl, Alt or Win), number of recent items (default 20), start with Windows |
 | Appearance | Theme: follow Windows (default), light or dark. The tray menu follows at the next start |
-| Sources | Start Menu, Firefox bookmarks, Windows Run history (on / off) |
+| Sources | Start Menu, Firefox bookmarks, Edge favorites, Windows Run history (on / off) |
 | Logging | Detailed (debug) logging, open the log window |
 
 **Find a setting**: type in the box at the top (Ctrl+F) to see only the matching settings, from every tab. Esc clears it.
@@ -70,6 +70,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#search).
 - **Instant window.** Sources are reloaded in the background each time the launcher opens: it shows the previous list at once, and new or removed items appear a moment later.
 - **Desktop and Start Menu shortcuts** are searched by their target, but opened through the shortcut itself, so their arguments and working folder are kept. Uninstall shortcuts are skipped, and a program found in both places is listed once.
 - **Firefox**: default profile only, bookmarks only (no folders), opened in the default browser.
+- **Edge**: last used profile only, favorites only (no folders), opened in the default browser.
 - **Hotkey already taken?** If another application (or Windows) holds the hotkey at start, coursee keeps running without one and opens Settings on it, so you can choose another; meanwhile the tray icon opens the launcher. Windows does not tell which application holds a hotkey, so coursee cannot name it.
 
 ## Data and logs

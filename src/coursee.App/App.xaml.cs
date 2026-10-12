@@ -84,12 +84,28 @@ public partial class App : Application
             log.Debug("Firefox", $"Profile: {firefoxProfile}");
         }
 
+        var edgeUserData = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Microsoft",
+            "Edge",
+            "User Data");
+        var edgeProfile = ChromiumBookmarks.FindProfile(edgeUserData);
+        if (edgeProfile is null)
+        {
+            log.Info("Edge", "No Edge profile found");
+        }
+        else
+        {
+            log.Debug("Edge", $"Profile: {edgeProfile}");
+        }
+
         IResourceSource[] sources =
         [
             // Order matters: an item on both the Desktop and the Start Menu is listed once, as the Desktop one.
             ShortcutsSource.Desktop(desktops, shortcutResolver, log),
             ShortcutsSource.StartMenu(startMenus, shortcutResolver, log),
             new FirefoxBookmarksSource(firefoxProfile, log),
+            new EdgeFavoritesSource(edgeProfile, log),
             new RunHistorySource(new RegistryRunHistoryReader(), log),
         ];
 
