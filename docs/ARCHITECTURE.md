@@ -36,14 +36,14 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `coursee.App` | Content |
 | --- | --- |
 | *(root)* | `App.xaml`: startup and wiring |
-| `Views/` | Windows: `MainWindow` (the launcher), `SettingsWindow`, `LogWindow` |
+| `Views/` | Windows: `MainWindow` (the launcher), `SettingsWindow`, `LogWindow`; `AppTheme` |
 | `Tray/` | `TrayIcon` |
 | `Platform/` | Implementations of the `Core` interfaces, and `SingleInstance` |
 | `Logging/` | `LogHub`, `SerilogFileLog` |
 | `Assets/` | `coursee.ico` |
 
 ## Stack
-.NET 10, C#, WPF. WinForms only for the tray icon (`NotifyIcon`). xUnit for tests.
+.NET 10, C#, WPF with its built-in Fluent theme for light and dark (`Application.ThemeMode`, `AppTheme`). WinForms only for the tray icon (`NotifyIcon`). xUnit for tests.
 
 | Package | Project | Use |
 | --- | --- | --- |

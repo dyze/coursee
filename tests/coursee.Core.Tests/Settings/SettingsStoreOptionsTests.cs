@@ -34,6 +34,45 @@ public sealed class SettingsStoreOptionsTests : IDisposable
     }
 
     [Fact]
+    public void Theme_FollowsWindowsByDefault()
+    {
+        Assert.Equal(ThemeChoice.System, new SettingsStore(FilePath).Theme);
+    }
+
+    [Theory]
+    [InlineData(ThemeChoice.Light)]
+    [InlineData(ThemeChoice.Dark)]
+    [InlineData(ThemeChoice.System)]
+    public void Theme_IsPersisted(ThemeChoice theme)
+    {
+        new SettingsStore(FilePath).SetTheme(theme);
+
+        Assert.Equal(theme, new SettingsStore(FilePath).Theme);
+    }
+
+    [Theory]
+    [InlineData("{\"Theme\":\"Purple\"}")]
+    [InlineData("{\"Theme\":\"7\"}")]
+    [InlineData("{\"Theme\":null}")]
+    [InlineData("{}")]
+    public void UnknownOrMissingTheme_FollowsWindows(string json)
+    {
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(FilePath, json);
+
+        Assert.Equal(ThemeChoice.System, new SettingsStore(FilePath).Theme);
+    }
+
+    [Fact]
+    public void StoredTheme_IgnoresCase()
+    {
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(FilePath, "{\"Theme\":\"dark\"}");
+
+        Assert.Equal(ThemeChoice.Dark, new SettingsStore(FilePath).Theme);
+    }
+
+    [Fact]
     public void RecentsCapacity_IsPersisted()
     {
         new SettingsStore(FilePath).SetRecentsCapacity(10);

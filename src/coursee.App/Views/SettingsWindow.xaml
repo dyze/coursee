@@ -104,6 +104,19 @@
                     Click="AutoStartCheckBox_Click" />
         </StackPanel>
 
+        <StackPanel Tag="{x:Static settings:SettingsCatalog.AppearanceTab}">
+          <TextBlock Text="{x:Static settings:SettingsCatalog.AppearanceTab}" Style="{StaticResource SectionHeader}" />
+
+          <StackPanel Tag="{x:Static settings:SettingsCatalog.ThemeId}"
+                      Margin="0,10,0,0"
+                      Orientation="Horizontal">
+            <TextBlock Text="Theme" Width="150" VerticalAlignment="Center" />
+            <ComboBox x:Name="ThemeComboBox"
+                      Width="160"
+                      SelectionChanged="ThemeComboBox_SelectionChanged" />
+          </StackPanel>
+        </StackPanel>
+
         <!-- The checkboxes are added from the list of sources. -->
         <StackPanel x:Name="SourcesSection" Tag="{x:Static settings:SettingsCatalog.SourcesTab}">
           <TextBlock Text="{x:Static settings:SettingsCatalog.SourcesTab}" Style="{StaticResource SectionHeader}" />

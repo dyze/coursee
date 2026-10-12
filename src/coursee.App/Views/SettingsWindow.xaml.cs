@@ -16,6 +16,19 @@ namespace Coursee.UI.Views;
 /// </summary>
 public partial class SettingsWindow : Window
 {
+    /// <summary>A choice of the Theme box; the box shows <see cref="ToString"/>.</summary>
+    private sealed record ThemeOption(ThemeChoice Value, string Label)
+    {
+        public override string ToString() => Label;
+    }
+
+    private static readonly ThemeOption[] ThemeOptions =
+    [
+        new(ThemeChoice.System, "Follow Windows"),
+        new(ThemeChoice.Light, "Light"),
+        new(ThemeChoice.Dark, "Dark"),
+    ];
+
     private readonly SettingsStore _settings;
     private readonly RecentStore _recents;
     private readonly IAutoStart _autoStart;
@@ -54,6 +67,7 @@ public partial class SettingsWindow : Window
         InitializeComponent();
 
         RecentsComboBox.ItemsSource = SettingsStore.RecentsCapacityChoices;
+        ThemeComboBox.ItemsSource = ThemeOptions;
         foreach (var source in sources.Where(s => s.CanBeDisabled))
         {
             var name = source.Name;
@@ -85,6 +99,7 @@ public partial class SettingsWindow : Window
         AutoStartCheckBox.IsChecked = ReadAutoStart();
         RecentsComboBox.SelectedItem = _settings.RecentsCapacity;
         DebugLoggingCheckBox.IsChecked = _settings.DebugLogging;
+        ThemeComboBox.SelectedItem = ThemeOptions.First(option => option.Value == _settings.Theme);
         foreach (var (name, checkBox) in _sourceCheckBoxes)
         {
             checkBox.IsChecked = _settings.IsSourceEnabled(name);
@@ -308,6 +323,26 @@ public partial class SettingsWindow : Window
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
         {
             _log.Error("Settings", "Cannot change recent items", ex);
+            ShowMessage(ex.Message);
+        }
+    }
+
+    private void ThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_loading || ThemeComboBox.SelectedItem is not ThemeOption option || option.Value == _settings.Theme)
+        {
+            return;
+        }
+
+        try
+        {
+            _settings.SetTheme(option.Value);
+            AppTheme.Apply(option.Value);
+            _log.Info("Settings", $"Theme: {option.Value}");
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            _log.Error("Settings", "Cannot change the theme", ex);
             ShowMessage(ex.Message);
         }
     }

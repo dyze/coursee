@@ -85,6 +85,12 @@ public class SettingsCatalogTests
     }
 
     [Fact]
+    public void Find_DarkFindsTheTheme()
+    {
+        Assert.Equal(SettingsCatalog.ThemeId, Assert.Single(Catalog().Find("dark")).Id);
+    }
+
+    [Fact]
     public void Find_KeepsTheCatalogOrder()
     {
         var found = Catalog().Find("source");

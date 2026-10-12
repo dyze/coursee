@@ -48,6 +48,7 @@ Gear button in the launcher, or tray menu > Settings. A window of its own: chang
 | Tab | Options |
 | --- | --- |
 | General | Hotkey (must include Ctrl, Alt or Win), number of recent items (default 20), start with Windows |
+| Appearance | Theme: follow Windows (default), light or dark. The tray menu follows at the next start |
 | Sources | Start Menu, Firefox bookmarks, Windows Run history (on / off) |
 | Logging | Detailed (debug) logging, open the log window |
 

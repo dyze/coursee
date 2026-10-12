@@ -3,9 +3,17 @@ using Coursee.Core.Platform;
 
 namespace Coursee.Core.Settings;
 
+/// <summary>The look of the windows. Follows the Windows setting by default.</summary>
+public enum ThemeChoice
+{
+    System,
+    Light,
+    Dark,
+}
+
 /// <summary>
 /// User settings persisted as JSON: which sources are disabled (every source is on by default),
-/// the global hotkey and how many recent items to keep. A missing, corrupt or partial file
+/// the global hotkey, how many recent items to keep and the theme. A missing, corrupt or partial file
 /// means defaults for whatever cannot be read.
 /// </summary>
 public sealed class SettingsStore
@@ -28,6 +36,9 @@ public sealed class SettingsStore
             ? capacity
             : DefaultRecentsCapacity;
         DebugLogging = data?.DebugLogging ?? false;
+        Theme = Enum.TryParse<ThemeChoice>(data?.Theme, ignoreCase: true, out var theme) && Enum.IsDefined(theme)
+            ? theme
+            : ThemeChoice.System;
     }
 
     /// <summary>The values offered in Settings for the number of recent items to keep.</summary>
@@ -39,6 +50,8 @@ public sealed class SettingsStore
 
     /// <summary>When on, the log also records detailed (debug) entries. Off by default.</summary>
     public bool DebugLogging { get; private set; }
+
+    public ThemeChoice Theme { get; private set; }
 
     public bool IsSourceEnabled(string sourceName) => !_disabledSources.Contains(sourceName);
 
@@ -74,6 +87,12 @@ public sealed class SettingsStore
         Save();
     }
 
+    public void SetTheme(ThemeChoice theme)
+    {
+        Theme = theme;
+        Save();
+    }
+
     private void Save()
     {
         var directory = Path.GetDirectoryName(_path);
@@ -86,7 +105,8 @@ public sealed class SettingsStore
             _disabledSources.Order(StringComparer.OrdinalIgnoreCase).ToList(),
             Hotkey.ToString(),
             RecentsCapacity,
-            DebugLogging);
+            DebugLogging,
+            Theme.ToString());
         File.WriteAllText(_path, JsonSerializer.Serialize(data));
     }
 
@@ -104,5 +124,10 @@ public sealed class SettingsStore
         }
     }
 
-    internal sealed record SettingsData(List<string>? DisabledSources, string? Hotkey, int? RecentsCapacity, bool? DebugLogging = null);
+    internal sealed record SettingsData(
+        List<string>? DisabledSources,
+        string? Hotkey,
+        int? RecentsCapacity,
+        bool? DebugLogging = null,
+        string? Theme = null);
 }

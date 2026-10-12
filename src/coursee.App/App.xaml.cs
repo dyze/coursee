@@ -42,10 +42,15 @@ public partial class App : Application
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "coursee");
         var settings = new SettingsStore(Path.Combine(dataDirectory, "settings.json"));
+
+        // Before any window or the tray menu is created.
+        AppTheme.ApplyToTrayMenu(settings.Theme);
+        AppTheme.Apply(settings.Theme);
         _logHub = new LogHub(Path.Combine(dataDirectory, "logs"), settings.DebugLogging);
         var log = _logHub.Filter;
         log.Info("App", $"coursee {AppVersion.Of(typeof(App).Assembly)} started"
             + (settings.DebugLogging ? " (debug logging on)" : string.Empty));
+        log.Debug("App", $"Theme: {settings.Theme}");
 
         DispatcherUnhandledException += (_, args) =>
             log.Error("App", "Unhandled error", args.Exception);
