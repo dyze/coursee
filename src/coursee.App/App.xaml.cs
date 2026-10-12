@@ -126,17 +126,17 @@ public partial class App : Application
             createSettings: () =>
             {
                 var created = new SettingsWindow(sources, settings, recents, autoStart, hotkey, logHub, onSourceToggled: OnSourceToggled);
-                placer.Attach(created, "Settings", keepSize: true);
+                placer.Attach(created, "Settings", RestoreMode.SizeOverOwner);
                 return created;
             },
             openLog: OpenLogWindow);
         var window = _window;
-        placer.Attach(window, "Launcher", keepSize: false);
+        placer.Attach(window, "Launcher", RestoreMode.Position);
 
         _createLogWindow = () =>
         {
             var created = new LogWindow(logHub.Ring, logHub.Directory);
-            placer.Attach(created, "Log", keepSize: true);
+            placer.Attach(created, "Log", RestoreMode.PositionAndSize);
             return created;
         };
 

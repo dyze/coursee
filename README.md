@@ -65,7 +65,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#search).
 
 ## Behavior notes
 
-- **Windows stay where you put them.** The launcher (drag its empty area to move it), Settings and the log window reopen at their last place, on the same monitor; Settings and the log window also keep their size. A window partly off screen (monitor gone, screen smaller, launcher dragged past an edge) is moved back on screen when it is shown, and the launcher also when you stop dragging it.
+- **Windows stay where you put them.** The launcher (drag its empty area to move it) and the log window reopen at their last place, on the same monitor; the log window also keeps its size. Settings opens centered on the launcher, at its last size. A window partly off screen (monitor gone, screen smaller, launcher dragged past an edge) is moved back on screen when it is shown, and the launcher also when you stop dragging it.
 - **Start.** Started by you (Start Menu, desktop shortcut, end of setup), coursee shows the launcher. Started at sign-in, it stays in the notification area: the auto start entry runs `coursee.exe --hidden`. An entry written by an older version (without `--hidden`) is updated at the next start.
 - **Start with Windows** is ticked only when Windows starts *this* copy. If it starts another one (say the installed copy, while you run a build), Settings shows its path; ticking the box switches auto start to this copy.
 - **One copy at a time.** Starting coursee while it is already running shows the launcher of the running copy.

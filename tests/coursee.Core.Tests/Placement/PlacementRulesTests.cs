@@ -143,6 +143,18 @@ public class PlacementRulesTests
     }
 
     [Fact]
+    public void CenterOn_PutsTheDialogInTheMiddleOfItsOwner()
+    {
+        Assert.Equal(new ScreenRect(140, 140, 560, 440), PlacementRules.CenterOn(new ScreenRect(100, 100, 640, 520), 560, 440));
+    }
+
+    [Fact]
+    public void CenterOn_ALargerDialogOverlapsItsOwnerEvenly()
+    {
+        Assert.Equal(new ScreenRect(50, 50, 300, 300), PlacementRules.CenterOn(new ScreenRect(100, 100, 200, 200), 300, 300));
+    }
+
+    [Fact]
     public void CaptureThenFit_GivesTheSameRectangle()
     {
         var bounds = new ScreenRect(300, 200, 900, 500);

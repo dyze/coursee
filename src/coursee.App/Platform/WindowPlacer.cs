@@ -6,6 +6,19 @@ using Coursee.Core.Placement;
 
 namespace Coursee.UI.Platform;
 
+/// <summary>What <see cref="WindowPlacer"/> gives back to a window when it is shown again.</summary>
+public enum RestoreMode
+{
+    /// <summary>Its place only (a window of fixed size, such as the launcher).</summary>
+    Position,
+
+    /// <summary>Its place and size, maximized or not.</summary>
+    PositionAndSize,
+
+    /// <summary>Its size only; it opens centered on its owner window (a dialog).</summary>
+    SizeOverOwner,
+}
+
 /// <summary>
 /// Puts windows back where they were left (same monitor, same place) and remembers where they
 /// are when they are hidden or closed. A window without a saved position opens as its XAML says.
@@ -25,18 +38,22 @@ public sealed class WindowPlacer
 
     /// <summary>
     /// Call before the window is first shown. <paramref name="name"/> is its key in windows.json.
-    /// With <paramref name="keepSize"/> false only the position is restored (fixed-size windows).
     /// </summary>
-    public void Attach(Window window, string name, bool keepSize)
+    public void Attach(Window window, string name, RestoreMode mode)
     {
         ScreenRect? lastNormal = null;
 
         var saved = _store.Get(name);
-        if (saved is not null)
+        if (mode == RestoreMode.SizeOverOwner)
+        {
+            window.WindowStartupLocation = WindowStartupLocation.Manual;
+            window.SourceInitialized += (_, _) => PlaceOverOwner(window, name, saved);
+        }
+        else if (saved is not null)
         {
             // Otherwise WPF centers the window once it is shown, over the restored position.
             window.WindowStartupLocation = WindowStartupLocation.Manual;
-            window.SourceInitialized += (_, _) => Restore(window, name, saved, keepSize);
+            window.SourceInitialized += (_, _) => Restore(window, name, saved, keepSize: mode == RestoreMode.PositionAndSize);
         }
 
         // A maximized window is saved with its normal size, so it can be restored to it later.
@@ -91,6 +108,32 @@ public sealed class WindowPlacer
             bounds.Top + (visible.Top - frame.Top),
             bounds.Width + (visible.Width - frame.Width),
             bounds.Height + (visible.Height - frame.Height)));
+    }
+
+    /// <summary>
+    /// Opens a dialog centered on its owner, at its saved size (else its XAML size), and fully on
+    /// screen. Without an owner, it is centered on the screen like any window.
+    /// </summary>
+    private void PlaceOverOwner(Window window, string name, WindowPlacement? saved)
+    {
+        var handle = Handle(window);
+        if (window.Owner is not { } owner
+            || NativeWindows.VisibleBounds(Handle(owner)) is not { } ownerBounds
+            || NativeWindows.WindowBounds(handle) is not { } current)
+        {
+            window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            return;
+        }
+
+        var width = saved?.Bounds.Width ?? current.Width;
+        var height = saved?.Bounds.Height ?? current.Height;
+        var centered = PlacementRules.CenterOn(ownerBounds, width, height);
+        var bounds = PlacementRules.KeepVisible(centered, NativeWindows.Monitors()) ?? centered;
+
+        // Set twice: on a monitor with another scaling, the first move makes WPF resize the window.
+        NativeWindows.SetWindowBounds(handle, bounds);
+        NativeWindows.SetWindowBounds(handle, bounds);
+        _log.Debug("Window", $"{name} opened over its owner at {bounds.Left},{bounds.Top} ({bounds.Width}x{bounds.Height})");
     }
 
     private void Restore(Window window, string name, WindowPlacement saved, bool keepSize)

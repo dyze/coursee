@@ -56,6 +56,10 @@ public static class PlacementRules
     public static ScreenRect? KeepVisible(ScreenRect bounds, IReadOnlyList<MonitorInfo> monitors) =>
         Capture(bounds, monitors) is { } placement ? Fit(placement, monitors) : null;
 
+    /// <summary>A rectangle of the given size, centered on <paramref name="owner"/> (a dialog over its window).</summary>
+    public static ScreenRect CenterOn(ScreenRect owner, int width, int height) =>
+        new(owner.Left + ((owner.Width - width) / 2), owner.Top + ((owner.Height - height) / 2), width, height);
+
     /// <summary>The monitor holding the window's center, else the one it overlaps most, else the primary one.</summary>
     private static MonitorInfo? MonitorOf(ScreenRect bounds, IReadOnlyList<MonitorInfo> monitors)
     {
