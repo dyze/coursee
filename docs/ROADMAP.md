@@ -6,7 +6,8 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 | --- | --- | --- |
 | 0.1 | Done | Hotkey, search, recents, Desktop, Firefox and Run history sources, settings, logging |
 | 0.2 | Done | Tray icon, Start Menu source, row actions, installer |
-| 0.3 | Not defined | |
+| 0.3 | In progress | Code layout, Edge source, right browser, window positions, theme, settings window |
+| 0.4 | Not defined | |
 
 ## 0.1
 1. **Hotkey and window.** A global hotkey toggles the compact window. Only one copy of coursee runs: starting it again shows the launcher of the running copy.
@@ -34,15 +35,14 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 5. **Installer.** A per-user setup (no administrator rights), self-contained (no .NET runtime needed). It adds a Start Menu shortcut, optionally a desktop shortcut and auto start, and an entry in *Apps & features* to uninstall. Setup and uninstall ask to quit coursee if it is running. Uninstalling keeps the user data.
 
 ## 0.3
-1. **File reorganisation.** In App & Core, all files are in root of project. Define a suitable structure and move files. Adapt namespaces.
-2. **Add Edge browser source.** Retrieve links from Edge browser.
-3. **Use right web browser.** If a link comes from a specific browser database, when opening url the source browser is used.
-4. **Save & restore Windows positions.** Save position of Main, Log windows... including Monitor index. And restore them when windows are shown again. Ensure positions are valid. 
-5. **Hot key conflict.** If hot key is not available at registration, show settings window directly to let user change it. Can we say who is taking the lead of the hot key? if yes, show info to user.
-6. **Dark mode.** Allow user to choose between light and dark mode. By default, sync with system setting, but user can override.
-7. **Group settings.** App will have more and more settings. Add tabs to group them.
-8. **Search for setting.** An edit box can be used to locate a setting quicker.
-9. In settings window, Main window fields must not be shown.
+1. **Code layout.** `Core` and `App` files are grouped in folders, one namespace per folder (see [ARCHITECTURE.md](ARCHITECTURE.md#projects)).
+2. **Source: Edge favorites.** Bookmarks of the last used Edge profile, real links only (no folders). Switchable in **Sources**.
+3. **Open in the right browser.** A Firefox bookmark opens in Firefox, an Edge favorite in Edge, also from recents. If that browser is not found, the default browser is used. The row label says which one ("Open in Firefox").
+4. **Window positions.** The launcher, Settings and log windows reopen where they were left, on the same monitor; Settings and the log window also keep their size. The launcher is moved by dragging its empty area. A position that no longer fits (monitor unplugged, resolution changed) is moved back inside a visible screen.
+5. **Hotkey conflict.** When the hotkey cannot be registered at start, Settings opens on it and explains that another application (or Windows) uses it. There is no silent switch to the default hotkey any more. Windows does not tell which application holds a hotkey, so coursee cannot name it.
+6. **Theme.** Light, dark, or follow Windows (default), in Settings > Appearance.
+7. **Settings window.** Settings is its own window instead of a panel of the launcher: it can be moved and stays open when it loses the focus. Settings are grouped in tabs: General, Appearance, Sources, Logging. The source checkboxes are built from the list of sources.
+8. **Find a setting.** A search box at the top of Settings: while it has text, only the matching settings are shown, from every tab.
 
 ## 0.4
 Not defined yet.
