@@ -30,12 +30,16 @@
                Padding="8"
                TextChanged="SearchBox_TextChanged" />
 
+      <!-- The Windows settings icon. No padding: the Fluent theme's default one leaves too little room and cuts it. -->
       <Button x:Name="SettingsButton"
               Grid.Column="1"
-              Width="44"
+              Width="48"
               Margin="8,0,0,0"
-              Content="&#x2699;"
-              FontSize="20"
+              Padding="0"
+              VerticalAlignment="Stretch"
+              Content="&#xE713;"
+              FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+              FontSize="18"
               ToolTip="Settings"
               Focusable="False"
               Click="SettingsButton_Click" />
