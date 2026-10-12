@@ -41,8 +41,9 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 4. **Window positions.** The launcher, Settings and log windows reopen where they were left, on the same monitor; Settings and the log window also keep their size. The launcher is moved by dragging its empty area. A position that no longer fits (monitor unplugged, resolution changed) is moved back inside a visible screen.
 5. **Hotkey conflict.** When the hotkey cannot be registered at start, Settings opens on it and explains that another application (or Windows) uses it. There is no silent switch to the default hotkey any more. Windows does not tell which application holds a hotkey, so coursee cannot name it.
 6. **Theme.** Light, dark, or follow Windows (default), in Settings > Appearance.
-7. **Settings window.** Settings is its own window instead of a panel of the launcher: it can be moved and stays open when it loses the focus. Settings are grouped in tabs: General, Appearance, Sources, Logging. The source checkboxes are built from the list of sources.
+7. **Settings window.** Settings is its own window instead of a panel of the launcher: a dialog over the launcher (closing it goes back to the launcher), which can be moved and resized. Settings are grouped in tabs: General, Appearance, Sources, Logging. The source checkboxes are built from the list of sources.
 8. **Find a setting.** A search box at the top of Settings: while it has text, only the matching settings are shown, from every tab.
+9. **Start hidden.** `coursee.exe --hidden` starts in the notification area only; the auto start entry uses it. Started without it (by the user or the installer), coursee shows the launcher.
 
 ## 0.4
 Not defined yet.

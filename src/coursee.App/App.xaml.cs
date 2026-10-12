@@ -19,12 +19,10 @@ public partial class App : Application
     private LogHub? _logHub;
     private SingleInstance? _singleInstance;
     private MainWindow? _window;
-    private SettingsWindow? _settingsWindow;
     private LogWindow? _logWindow;
     private TrayIcon? _tray;
 
     // Set at startup; a closed window cannot be shown again, so each opening creates a new one.
-    private Func<SettingsWindow>? _createSettingsWindow;
     private Func<LogWindow>? _createLogWindow;
 
     protected override void OnStartup(StartupEventArgs e)
@@ -114,28 +112,27 @@ public partial class App : Application
         var executablePath = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "coursee.exe");
 
         var autoStart = new RegistryAutoStart(executablePath);
+        UpgradeAutoStart(autoStart, log);
         var placer = new WindowPlacer(new PlacementStore(Path.Combine(dataDirectory, "windows.json")), log);
         var logHub = _logHub;
         _hotkey = new HotkeyService(() => _window?.Toggle());
         var hotkey = _hotkey;
-        _window = new MainWindow(sources, recents, settings, log, new RegistryBrowserLocator(), openSettings: () => OpenSettings());
+        _window = new MainWindow(
+            sources,
+            recents,
+            settings,
+            log,
+            new RegistryBrowserLocator(),
+            createSettings: () =>
+            {
+                var created = new SettingsWindow(sources, settings, recents, autoStart, hotkey, logHub, onSourceToggled: OnSourceToggled);
+                placer.Attach(created, "Settings", keepSize: true);
+                return created;
+            },
+            openLog: OpenLogWindow);
         var window = _window;
         placer.Attach(window, "Launcher", keepSize: false);
 
-        _createSettingsWindow = () =>
-        {
-            var created = new SettingsWindow(
-                sources,
-                settings,
-                recents,
-                autoStart,
-                hotkey,
-                logHub,
-                onSourceToggled: window.OnSourceToggled,
-                openLog: OpenLogWindow);
-            placer.Attach(created, "Settings", keepSize: true);
-            return created;
-        };
         _createLogWindow = () =>
         {
             var created = new LogWindow(logHub.Ring, logHub.Directory);
@@ -150,7 +147,8 @@ public partial class App : Application
             AppVersion.Of(typeof(App).Assembly),
             () => hotkey.Current?.ToString() ?? "no hotkey",
             show: () => window.ShowFromOutside(),
-            showSettings: () => OpenSettings(),
+            // After the menu has closed: Settings is a dialog, it waits until closed.
+            showSettings: () => Dispatcher.BeginInvoke(() => window.ShowSettings()),
             showLog: OpenLogWindow,
             quit: () =>
             {
@@ -167,29 +165,40 @@ public partial class App : Application
             // Windows does not tell which application holds a hotkey. The tray icon still gives
             // access to the launcher; Settings opens so that another hotkey can be chosen.
             log.Warn("Hotkey", $"Could not register {settings.Hotkey} (used by another application or by Windows); no hotkey");
-            OpenSettings(SettingsCatalog.GeneralTab);
-            _settingsWindow?.ShowHotkeyProblem();
-        }
-    }
-
-    /// <summary>Opens the Settings window, or brings it to the front, on the given tab if any.</summary>
-    private void OpenSettings(string? tab = null)
-    {
-        if (_settingsWindow is null && _createSettingsWindow is not null)
-        {
-            _settingsWindow = _createSettingsWindow();
-            _settingsWindow.Closed += (_, _) => _settingsWindow = null;
-        }
-
-        if (_settingsWindow is null)
-        {
+            Dispatcher.BeginInvoke(() => window.ShowSettings(SettingsCatalog.GeneralTab, hotkeyProblem: true));
             return;
         }
 
-        BringToFront(_settingsWindow);
-        if (tab is not null)
+        // Started by the user or by the installer: show the launcher. At sign-in, stay in the tray.
+        if (AutoStartCommand.StartsHidden(e.Args))
         {
-            _settingsWindow.ShowTab(tab);
+            log.Debug("App", "Started hidden");
+        }
+        else
+        {
+            Dispatcher.BeginInvoke(() => window.ShowFromOutside());
+        }
+    }
+
+    private void OnSourceToggled(string sourceName) => _window?.OnSourceToggled(sourceName);
+
+    /// <summary>
+    /// An auto start entry written by an older version starts this copy without <see cref="AutoStartCommand.HiddenArgument"/>,
+    /// so the launcher would pop up at each sign-in: rewrite it.
+    /// </summary>
+    private static void UpgradeAutoStart(IAutoStart autoStart, ILog log)
+    {
+        try
+        {
+            if (autoStart.Status == AutoStartStatus.ThisCopyOutdated)
+            {
+                autoStart.SetEnabled(true);
+                log.Info("App", "Auto start entry updated to start hidden");
+            }
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
+        {
+            log.Warn("App", $"Cannot update the auto start entry: {ex.GetType().Name}: {ex.Message}");
         }
     }
 

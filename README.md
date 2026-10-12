@@ -43,7 +43,7 @@ The line under the search box always says what Enter will do and which other key
 
 ## Settings
 
-Gear button in the launcher, or tray menu > Settings. A window of its own: changes are saved at once, Esc closes it.
+Gear button in the launcher, or tray menu > Settings. A dialog over the launcher: changes are saved at once, Esc (or closing it) goes back to the launcher. It can be moved and resized.
 
 | Tab | Options |
 | --- | --- |
@@ -66,6 +66,8 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#search).
 ## Behavior notes
 
 - **Windows stay where you put them.** The launcher (drag its empty area to move it), Settings and the log window reopen at their last place, on the same monitor; Settings and the log window also keep their size. If that monitor is gone, or a window no longer fits, it is moved back on screen.
+- **Start.** Started by you (Start Menu, desktop shortcut, end of setup), coursee shows the launcher. Started at sign-in, it stays in the notification area: the auto start entry runs `coursee.exe --hidden`. An entry written by an older version (without `--hidden`) is updated at the next start.
+- **Start with Windows** is ticked only when Windows starts *this* copy. If it starts another one (say the installed copy, while you run a build), Settings shows its path; ticking the box switches auto start to this copy.
 - **One copy at a time.** Starting coursee while it is already running shows the launcher of the running copy.
 - **Instant window.** Sources are reloaded in the background each time the launcher opens: it shows the previous list at once, and new or removed items appear a moment later.
 - **Desktop and Start Menu shortcuts** are searched by their target, but opened through the shortcut itself, so their arguments and working folder are kept. Uninstall shortcuts are skipped, and a program found in both places is listed once.
@@ -87,7 +89,7 @@ Everything stays on your computer, in `%LOCALAPPDATA%\coursee`:
 
 coursee logs start/stop, items added / removed in each source, every action you trigger (opened resource, typed command, settings change) and errors. What you type in the search box is not logged.
 
-**Log window**: tray menu > *Log window*, or Settings > Logging. Live view of the last 1000 entries, level and text filters, Copy, Clear (window only), Open log folder.
+**Log window**: tray menu > *Log window*, or Settings > Logging (this closes Settings and the launcher, so the log window stays open on its own). Live view of the last 1000 entries, level and text filters, Copy, Clear (window only), Open log folder.
 
 ## Build
 

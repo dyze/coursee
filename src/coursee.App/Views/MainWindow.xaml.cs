@@ -19,22 +19,26 @@ public partial class MainWindow : Window
     private readonly SettingsStore _settings;
     private readonly ILog _log;
     private readonly IBrowserLocator _browsers;
-    private readonly Action _openSettings;
+    private readonly Func<SettingsWindow> _createSettings;
+    private readonly Action _openLog;
     private readonly SourceMonitor _monitor;
     private IReadOnlyList<Resource> _all = [];
+    private SettingsWindow? _settingsDialog;
     private bool _showingDialog;
     private bool _refreshing;
     private bool _refreshAgain;
 
     /// <param name="browsers">Finds the browser a bookmark came from, to open it there.</param>
-    /// <param name="openSettings">Opens the Settings window (gear button).</param>
+    /// <param name="createSettings">Creates the Settings window, shown as a dialog over the launcher.</param>
+    /// <param name="openLog">Opens the log window.</param>
     public MainWindow(
         IReadOnlyList<IResourceSource> sources,
         RecentStore recents,
         SettingsStore settings,
         ILog log,
         IBrowserLocator browsers,
-        Action openSettings)
+        Func<SettingsWindow> createSettings,
+        Action openLog)
     {
         _log = log;
         _browsers = browsers;
@@ -42,14 +46,20 @@ public partial class MainWindow : Window
         _sources = sources;
         _recents = recents;
         _settings = settings;
-        _openSettings = openSettings;
+        _createSettings = createSettings;
+        _openLog = openLog;
         InitializeComponent();
         VersionText.Text = $"coursee {AppVersion.Of(typeof(MainWindow).Assembly)}";
     }
 
     public void Toggle()
     {
-        if (IsVisible)
+        if (_settingsDialog is not null)
+        {
+            // Settings is open over the launcher: the hotkey brings it to the front.
+            _settingsDialog.Activate();
+        }
+        else if (IsVisible)
         {
             Hide();
         }
@@ -62,7 +72,11 @@ public partial class MainWindow : Window
     /// <summary>Shows the launcher when asked by another copy of coursee (never hides it).</summary>
     public void ShowFromOutside()
     {
-        if (IsVisible)
+        if (_settingsDialog is not null)
+        {
+            _settingsDialog.Activate();
+        }
+        else if (IsVisible)
         {
             Activate();
             SearchBox.Focus();
@@ -404,10 +418,61 @@ public partial class MainWindow : Window
 
     private void ResultsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e) => UpdateActionText();
 
-    private void SettingsButton_Click(object sender, RoutedEventArgs e)
+    private void SettingsButton_Click(object sender, RoutedEventArgs e) => ShowSettings();
+
+    /// <summary>
+    /// Shows the launcher, then Settings as a dialog over it (gear button, tray menu, hotkey
+    /// problem at start). Closing Settings goes back to the launcher. Returns at once when
+    /// Settings is already open.
+    /// </summary>
+    /// <param name="tab">The tab to show, or null for the first one.</param>
+    /// <param name="hotkeyProblem">True when the hotkey could not be registered: Settings explains it.</param>
+    public void ShowSettings(string? tab = null, bool hotkeyProblem = false)
     {
-        Hide();
-        _openSettings();
+        if (_settingsDialog is not null)
+        {
+            _settingsDialog.Activate();
+            return;
+        }
+
+        ShowFromOutside();
+
+        var dialog = _createSettings();
+        dialog.Owner = this;
+        if (tab is not null)
+        {
+            dialog.ShowTab(tab);
+        }
+
+        if (hotkeyProblem)
+        {
+            dialog.ShowHotkeyProblem();
+        }
+
+        _log.Debug("Window", "Settings shown");
+
+        // The launcher hides when it loses the focus; not while its dialog is open.
+        _settingsDialog = dialog;
+        _showingDialog = true;
+        try
+        {
+            dialog.ShowDialog();
+        }
+        finally
+        {
+            _showingDialog = false;
+            _settingsDialog = null;
+        }
+
+        if (dialog.LogWindowRequested)
+        {
+            Hide();
+            _openLog();
+            return;
+        }
+
+        Activate();
+        SearchBox.Focus();
     }
 
     /// <summary>

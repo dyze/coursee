@@ -13,6 +13,12 @@ public static class NativeWindows
     private const uint MonitorInfoPrimary = 0x1;
     private const uint SwpNoZOrder = 0x0004;
     private const uint SwpNoActivate = 0x0010;
+    private const uint SwpNoMove = 0x0002;
+    private const uint SwpNoSize = 0x0001;
+    private const uint SwpFrameChanged = 0x0020;
+    private const int GwlStyle = -16;
+    private const long WsMaximizeBox = 0x00010000;
+    private const long WsMinimizeBox = 0x00020000;
 
     /// <summary>The monitors connected now, with their work area (without the taskbar).</summary>
     public static IReadOnlyList<MonitorInfo> Monitors()
@@ -39,6 +45,21 @@ public static class NativeWindows
     /// <summary>Moves and resizes the window without activating it.</summary>
     public static void SetWindowBounds(IntPtr window, ScreenRect bounds) =>
         SetWindowPos(window, IntPtr.Zero, bounds.Left, bounds.Top, bounds.Width, bounds.Height, SwpNoZOrder | SwpNoActivate);
+
+    /// <summary>Removes the minimize and maximize buttons from the title bar. The window can still be resized.</summary>
+    public static void RemoveMinimizeMaximizeButtons(IntPtr window)
+    {
+        if (window == IntPtr.Zero)
+        {
+            return;
+        }
+
+        var style = GetWindowLongPtr(window, GwlStyle).ToInt64();
+        SetWindowLongPtr(window, GwlStyle, new IntPtr(style & ~(WsMinimizeBox | WsMaximizeBox)));
+
+        // The title bar is redrawn only when told that the frame changed.
+        SetWindowPos(window, IntPtr.Zero, 0, 0, 0, 0, SwpNoMove | SwpNoSize | SwpNoZOrder | SwpNoActivate | SwpFrameChanged);
+    }
 
     private static ScreenRect ToScreenRect(NativeRect rect) =>
         new(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
@@ -74,6 +95,12 @@ public static class NativeWindows
 
     [DllImport("user32.dll")]
     private static extern bool GetWindowRect(IntPtr window, out NativeRect rect);
+
+    [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
+    private static extern IntPtr GetWindowLongPtr(IntPtr window, int index);
+
+    [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
+    private static extern IntPtr SetWindowLongPtr(IntPtr window, int index, IntPtr value);
 
     [DllImport("user32.dll")]
     private static extern bool SetWindowPos(IntPtr window, IntPtr insertAfter, int x, int y, int width, int height, uint flags);

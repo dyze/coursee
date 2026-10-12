@@ -7,12 +7,13 @@ using Coursee.Core.Recents;
 using Coursee.Core.Settings;
 using Coursee.Core.Sources;
 using Coursee.UI.Logging;
+using Coursee.UI.Platform;
 
 namespace Coursee.UI.Views;
 
 /// <summary>
-/// The settings, grouped in tabs. Each change is saved at once. A normal window: unlike the
-/// launcher, it stays open when it loses the focus.
+/// The settings, grouped in tabs. Each change is saved at once. Shown as a dialog over the
+/// launcher, which is still there when it closes.
 /// </summary>
 public partial class SettingsWindow : Window
 {
@@ -37,7 +38,6 @@ public partial class SettingsWindow : Window
     private readonly ILog _log;
     private readonly SettingsCatalog _catalog;
     private readonly Action<string> _onSourceToggled;
-    private readonly Action _openLog;
     private readonly Dictionary<string, CheckBox> _sourceCheckBoxes = [];
     private bool _capturingHotkey;
     private bool _focusHotkey;
@@ -45,7 +45,6 @@ public partial class SettingsWindow : Window
 
     /// <param name="sources">All the sources; those that can be switched off get a checkbox.</param>
     /// <param name="onSourceToggled">Called with the source name after it was switched on or off.</param>
-    /// <param name="openLog">Opens the log window.</param>
     public SettingsWindow(
         IReadOnlyList<IResourceSource> sources,
         SettingsStore settings,
@@ -53,8 +52,7 @@ public partial class SettingsWindow : Window
         IAutoStart autoStart,
         IHotkeyRegistrar hotkeys,
         LogHub logHub,
-        Action<string> onSourceToggled,
-        Action openLog)
+        Action<string> onSourceToggled)
     {
         _settings = settings;
         _recents = recents;
@@ -63,7 +61,6 @@ public partial class SettingsWindow : Window
         _logHub = logHub;
         _log = logHub.Filter;
         _onSourceToggled = onSourceToggled;
-        _openLog = openLog;
         _catalog = new SettingsCatalog(sources);
         InitializeComponent();
 
@@ -91,13 +88,16 @@ public partial class SettingsWindow : Window
         Closed += (_, _) => StopCapturingHotkey();
     }
 
+    /// <summary>True when the window was closed by "Open log window": the caller then opens it.</summary>
+    public bool LogWindowRequested { get; private set; }
+
     /// <summary>Selects a tab (one of <see cref="SettingsCatalog.Tabs"/>).</summary>
     public void ShowTab(string tab) => TabList.SelectedItem = tab;
 
     private void LoadValues()
     {
         _loading = true;
-        AutoStartCheckBox.IsChecked = ReadAutoStart();
+        ShowAutoStart();
         RecentsComboBox.SelectedItem = _settings.RecentsCapacity;
         DebugLoggingCheckBox.IsChecked = _settings.DebugLogging;
         ThemeComboBox.SelectedItem = ThemeOptions.First(option => option.Value == _settings.Theme);
@@ -179,17 +179,33 @@ public partial class SettingsWindow : Window
     /// <summary>A section title: the only child of a section without a setting id.</summary>
     private static bool IsHeader(UIElement element) => element is FrameworkElement { Tag: null };
 
-    private bool ReadAutoStart()
+    /// <summary>
+    /// Ticked when Windows starts this copy. When it starts another one, says which: ticking the
+    /// box then makes Windows start this copy instead.
+    /// </summary>
+    private void ShowAutoStart()
     {
+        AutoStartStatus status;
+        string? program;
         try
         {
-            return _autoStart.IsEnabled;
+            status = _autoStart.Status;
+            program = _autoStart.RegisteredProgram;
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
         {
-            return false;
+            status = AutoStartStatus.Off;
+            program = null;
         }
+
+        AutoStartCheckBox.IsChecked = status is AutoStartStatus.ThisCopy or AutoStartStatus.ThisCopyOutdated;
+        AutoStartNote.Text = $"Windows starts another copy: {program}. Tick the box to start this one instead.";
+        AutoStartNote.Visibility = status == AutoStartStatus.OtherCopy ? Visibility.Visible : Visibility.Collapsed;
     }
+
+    /// <summary>A dialog needs no minimize or maximize button; it can still be resized.</summary>
+    private void Window_SourceInitialized(object? sender, EventArgs e) =>
+        NativeWindows.RemoveMinimizeMaximizeButtons(new System.Windows.Interop.WindowInteropHelper(this).Handle);
 
     private void TabList_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateSections();
 
@@ -312,8 +328,9 @@ public partial class SettingsWindow : Window
         {
             _log.Error("Settings", "Cannot change start with Windows", ex);
             ShowMessage(ex.Message);
-            AutoStartCheckBox.IsChecked = !wanted;
         }
+
+        ShowAutoStart();
     }
 
     private void SourceCheckBox_Click(CheckBox checkBox, string sourceName)
@@ -392,7 +409,15 @@ public partial class SettingsWindow : Window
         }
     }
 
-    private void OpenLogButton_Click(object sender, RoutedEventArgs e) => _openLog();
+    /// <summary>
+    /// The log window would open behind this dialog and the launcher (both stay on top), and
+    /// would close with them. So the dialog closes, and the caller opens the log window.
+    /// </summary>
+    private void OpenLogButton_Click(object sender, RoutedEventArgs e)
+    {
+        LogWindowRequested = true;
+        Close();
+    }
 
     private void ShowMessage(string message) => MessageBox.Show(this, message, "coursee");
 }

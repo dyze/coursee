@@ -19,14 +19,9 @@ public sealed class RegistryAutoStart : IAutoStart
         _executablePath = executablePath;
     }
 
-    public bool IsEnabled
-    {
-        get
-        {
-            using var key = Registry.CurrentUser.OpenSubKey(RunKeyPath);
-            return AutoStartCommand.IsCurrent(key?.GetValue(ValueName) as string, _executablePath);
-        }
-    }
+    public AutoStartStatus Status => AutoStartCommand.Status(ReadCommand(), _executablePath);
+
+    public string? RegisteredProgram => AutoStartCommand.ProgramOf(ReadCommand());
 
     public void SetEnabled(bool enabled)
     {
@@ -40,5 +35,11 @@ public sealed class RegistryAutoStart : IAutoStart
         {
             key.DeleteValue(ValueName, throwOnMissingValue: false);
         }
+    }
+
+    private static string? ReadCommand()
+    {
+        using var key = Registry.CurrentUser.OpenSubKey(RunKeyPath);
+        return key?.GetValue(ValueName) as string;
     }
 }

@@ -53,24 +53,28 @@ Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExe}"
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
 
 [Registry]
-; Same quoted path the app writes from Settings, so the "Start with Windows" checkbox shows it as on.
+; Same command the app writes from Settings (AutoStartCommand.Build), so the "Start with Windows"
+; checkbox shows it as on. --hidden: at sign-in coursee stays in the notification area.
 Root: HKCU; Subkey: "{#RunKey}"; ValueType: string; ValueName: "{#AppName}"; \
-  ValueData: """{app}\{#AppExe}"""; Tasks: autostart
+  ValueData: """{app}\{#AppExe}"" --hidden"; Tasks: autostart
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "Start coursee now"; Flags: nowait postinstall skipifsilent
 
 [Code]
 // Auto start can also be switched on later from coursee's Settings, without this installer
-// knowing; remove the value on uninstall in every case, but only if it points at this copy.
+// knowing; remove the value on uninstall in every case, but only if it points at this copy
+// (with or without arguments: older versions wrote the quoted path alone).
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 var
   Command: String;
+  Quoted: String;
 begin
   if CurUninstallStep = usUninstall then
   begin
+    Quoted := '"' + ExpandConstant('{app}\{#AppExe}') + '"';
     if RegQueryStringValue(HKEY_CURRENT_USER, '{#RunKey}', '{#AppName}', Command)
-      and (CompareText(Trim(Command), '"' + ExpandConstant('{app}\{#AppExe}') + '"') = 0) then
+      and (CompareText(Copy(Trim(Command), 1, Length(Quoted)), Quoted) = 0) then
       RegDeleteValue(HKEY_CURRENT_USER, '{#RunKey}', '{#AppName}');
   end;
 end;
