@@ -164,10 +164,15 @@
 
             <StackPanel Grid.Column="4" Orientation="Horizontal" Style="{StaticResource SelectedRowOnly}">
               <Button Style="{StaticResource RowIconButton}"
-                      Content="{Binding PinGlyph}"
                       IsEnabled="{Binding CanPin}"
                       ToolTip="{Binding PinToolTip}"
-                      Click="PinButton_Click" />
+                      Click="PinButton_Click">
+                <!-- Pinned: the outline (E840) with its fill (E841) over it; the fill glyph alone is incomplete. -->
+                <Grid>
+                  <TextBlock Text="{Binding PinGlyph}" />
+                  <TextBlock Text="&#xE841;" Visibility="{Binding IsPinned, Converter={StaticResource VisibleWhen}}" />
+                </Grid>
+              </Button>
               <Button Style="{StaticResource RowIconButton}"
                       Content="&#xE8EC;"
                       IsEnabled="{Binding CanSetAlias}"

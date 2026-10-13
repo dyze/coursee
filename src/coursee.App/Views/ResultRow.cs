@@ -6,7 +6,7 @@ namespace Coursee.UI.Views;
 /// <summary>A row of the launcher's list: the resource, and what the user set on its entry.</summary>
 public sealed class ResultRow(Resource resource, bool isPinned, string? alias) : INotifyPropertyChanged
 {
-    private static readonly string PinnedGlyph = ((char)0xE841).ToString();
+    private static readonly string PinnedGlyph = ((char)0xE840).ToString();
     private static readonly string UnpinnedGlyph = ((char)0xE718).ToString();
 
     private bool _isEditingAlias;
@@ -25,7 +25,10 @@ public sealed class ResultRow(Resource resource, bool isPinned, string? alias) :
     /// <summary>Typed text has no entry of its own: no alias icon.</summary>
     public bool CanSetAlias => ResourceActions.CanSetAlias(Resource);
 
-    /// <summary>Segoe Fluent Icons: a filled pin when pinned.</summary>
+    /// <summary>
+    /// Segoe Fluent Icons: a tilted pin when pinned, an upright one otherwise. When pinned, the window
+    /// also fills it, with the PinnedFill glyph (E841) drawn over this one: alone it is incomplete.
+    /// </summary>
     public string PinGlyph => IsPinned ? PinnedGlyph : UnpinnedGlyph;
 
     public string PinToolTip => IsPinned ? "Unpin (Ctrl+P)" : "Pin: listed first when it matches (Ctrl+P)";
