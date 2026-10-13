@@ -35,7 +35,7 @@ Upgrade: run a newer setup over the old one. Uninstall: *Settings > Apps*. Your 
 | Ctrl+Enter | Show the selected file or folder in Explorer, item selected |
 | Ctrl+Shift+Enter | Run the selected command, program or Windows tool as administrator (`.exe`, `.bat`, `.cmd`, `.com`, `.msc`) |
 | Ctrl+C | Copy the selected item's path, URL or command; the launcher stays open. With text selected in the search box, copies that text |
-| Ctrl+P | Pin or unpin the selected item (also the pin icon on the selected row) |
+| Ctrl+P | Pin or unpin the selected item (also the pin icon on the selected row; a pinned item always shows it) |
 | F2 | Set the selected item's alias, in a box on its row (also the alias icon): Enter saves, Esc cancels, empty removes it |
 | Del | Remove the selected item from recents (search box empty) |
 | Tab | Move the focus to the Settings button (Enter or Space opens Settings), and back |

@@ -37,14 +37,27 @@
       </Style.Triggers>
     </Style>
 
-    <!-- Shown on the selected row, and on the row under the mouse. -->
-    <Style x:Key="SelectedRowOnly" TargetType="StackPanel">
+    <!-- The pin and alias icons: shown on the selected row, and on the row under the mouse. The last
+         matching trigger wins, so a disabled icon (typed text) stays hidden. -->
+    <Style x:Key="RevealedRowIconButton" TargetType="Button" BasedOn="{StaticResource RowIconButton}">
       <Setter Property="Visibility" Value="Hidden" />
       <Style.Triggers>
         <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
           <Setter Property="Visibility" Value="Visible" />
         </DataTrigger>
         <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+          <Setter Property="Visibility" Value="Visible" />
+        </DataTrigger>
+        <Trigger Property="IsEnabled" Value="False">
+          <Setter Property="Visibility" Value="Hidden" />
+        </Trigger>
+      </Style.Triggers>
+    </Style>
+
+    <!-- The pin icon of a pinned entry is always shown, so pinned rows can be told apart. -->
+    <Style x:Key="PinButton" TargetType="Button" BasedOn="{StaticResource RevealedRowIconButton}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsPinned}" Value="True">
           <Setter Property="Visibility" Value="Visible" />
         </DataTrigger>
       </Style.Triggers>
@@ -162,8 +175,8 @@
                     ToolTip="{Binding Resource.ActionLabel}"
                     Click="ActionButton_Click" />
 
-            <StackPanel Grid.Column="4" Orientation="Horizontal" Style="{StaticResource SelectedRowOnly}">
-              <Button Style="{StaticResource RowIconButton}"
+            <StackPanel Grid.Column="4" Orientation="Horizontal">
+              <Button Style="{StaticResource PinButton}"
                       IsEnabled="{Binding CanPin}"
                       ToolTip="{Binding PinToolTip}"
                       Click="PinButton_Click">
@@ -173,7 +186,7 @@
                   <TextBlock Text="&#xE841;" Visibility="{Binding IsPinned, Converter={StaticResource VisibleWhen}}" />
                 </Grid>
               </Button>
-              <Button Style="{StaticResource RowIconButton}"
+              <Button Style="{StaticResource RevealedRowIconButton}"
                       Content="&#xE8EC;"
                       IsEnabled="{Binding CanSetAlias}"
                       ToolTip="{Binding AliasToolTip}"
