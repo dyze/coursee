@@ -18,6 +18,7 @@ public sealed class SettingsCatalog
     public const string GeneralTab = "General";
     public const string AppearanceTab = "Appearance";
     public const string SourcesTab = "Sources";
+    public const string EntriesTab = "Entries";
     public const string LoggingTab = "Logging";
 
     public const string HotkeyId = "Hotkey";
@@ -26,6 +27,7 @@ public sealed class SettingsCatalog
     public const string LauncherPositionId = "LauncherPosition";
     public const string IgnoreAccentsId = "IgnoreAccents";
     public const string ThemeId = "Theme";
+    public const string EntriesId = "Entries";
     public const string DebugLoggingId = "DebugLogging";
     public const string LogWindowId = "LogWindow";
 
@@ -48,6 +50,11 @@ public sealed class SettingsCatalog
             .Where(source => source.CanBeDisabled)
             .Select(source => new SettingInfo(SourceId(source.Name), SourcesTab, source.DisplayName, ["source", "on", "off", source.Name])));
 
+        entries.Add(new(
+            EntriesId,
+            EntriesTab,
+            "Hidden entries, custom entries, aliases and pins",
+            ["hide", "restore", "show", "custom", "own", "edit", "delete", "rename", "alias", "pin", "unpin"]));
         entries.Add(new(DebugLoggingId, LoggingTab, "Detailed (debug) logging", ["log", "verbose", "trace"]));
         entries.Add(new(LogWindowId, LoggingTab, "Open log window", ["log", "view", "errors"]));
 
@@ -55,7 +62,7 @@ public sealed class SettingsCatalog
     }
 
     /// <summary>The tabs, in the order they are shown.</summary>
-    public IReadOnlyList<string> Tabs { get; } = [GeneralTab, AppearanceTab, SourcesTab, LoggingTab];
+    public IReadOnlyList<string> Tabs { get; } = [GeneralTab, AppearanceTab, SourcesTab, EntriesTab, LoggingTab];
 
     public IReadOnlyList<SettingInfo> All { get; }
 

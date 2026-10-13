@@ -48,6 +48,16 @@ public sealed class EntryStore
 
     public bool IsPinned(string target) => _pinned.Contains(target);
 
+    /// <summary>The targets of the pinned entries, in alphabetical order.</summary>
+    public IReadOnlyList<string> Pinned => _pinned.Order(StringComparer.OrdinalIgnoreCase).ToList();
+
+    /// <summary>Every alias with its target, in alphabetical order of the aliases.</summary>
+    public IReadOnlyList<EntryAlias> Aliases =>
+        _aliases
+            .Select(pair => new EntryAlias(pair.Value, pair.Key))
+            .OrderBy(alias => alias.Alias, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
     /// <summary>Pins the entry with this target, or unpins it. Returns true when it is now pinned.</summary>
     public bool TogglePin(string target)
     {
@@ -171,10 +181,8 @@ public sealed class EntryStore
         }
 
         var data = new EntryData(
-            _pinned.Order(StringComparer.OrdinalIgnoreCase).ToList(),
-            _aliases
-                .OrderBy(pair => pair.Value, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(pair => pair.Value, pair => pair.Key),
+            Pinned.ToList(),
+            Aliases.ToDictionary(alias => alias.Alias, alias => alias.Target),
             _hidden);
         File.WriteAllText(_path, JsonSerializer.Serialize(data));
     }

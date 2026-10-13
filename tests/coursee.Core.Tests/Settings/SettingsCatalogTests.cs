@@ -111,6 +111,26 @@ public class SettingsCatalogTests
         Assert.Equal(SettingsCatalog.GeneralTab, Catalog().All.Single(entry => entry.Id == SettingsCatalog.IgnoreAccentsId).Tab);
     }
 
+    [Theory]
+    [InlineData("hidden")]
+    [InlineData("restore")]
+    [InlineData("custom")]
+    [InlineData("alias")]
+    [InlineData("unpin")]
+    public void Find_FindsTheEntries(string query)
+    {
+        Assert.Contains(Catalog().Find(query), entry => entry.Id == SettingsCatalog.EntriesId);
+        Assert.Equal(SettingsCatalog.EntriesTab, Catalog().All.Single(entry => entry.Id == SettingsCatalog.EntriesId).Tab);
+    }
+
+    [Fact]
+    public void Tabs_EntriesComeAfterSources()
+    {
+        Assert.Equal(
+            new[] { SettingsCatalog.GeneralTab, SettingsCatalog.AppearanceTab, SettingsCatalog.SourcesTab, SettingsCatalog.EntriesTab, SettingsCatalog.LoggingTab },
+            Catalog().Tabs);
+    }
+
     [Fact]
     public void Find_KeepsTheCatalogOrder()
     {

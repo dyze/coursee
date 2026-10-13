@@ -164,6 +164,11 @@
           <TextBlock Text="{x:Static settings:SettingsCatalog.SourcesTab}" Style="{StaticResource SectionHeader}" />
         </StackPanel>
 
+        <!-- The entries panel is added by the window. -->
+        <StackPanel x:Name="EntriesSection" Tag="{x:Static settings:SettingsCatalog.EntriesTab}">
+          <TextBlock Text="{x:Static settings:SettingsCatalog.EntriesTab}" Style="{StaticResource SectionHeader}" />
+        </StackPanel>
+
         <StackPanel Tag="{x:Static settings:SettingsCatalog.LoggingTab}">
           <TextBlock Text="{x:Static settings:SettingsCatalog.LoggingTab}" Style="{StaticResource SectionHeader}" />
 

@@ -136,7 +136,18 @@ public partial class App : Application
             new RegistryBrowserLocator(),
             createSettings: () =>
             {
-                var created = new SettingsWindow(sources, settings, recents, autoStart, hotkey, logHub, onSourceToggled: OnSourceToggled, openLog: OpenLogWindow);
+                var created = new SettingsWindow(
+                    sources,
+                    settings,
+                    recents,
+                    entries,
+                    customEntries,
+                    customEntryEditor,
+                    autoStart,
+                    hotkey,
+                    logHub,
+                    onSourceToggled: OnSourceToggled,
+                    openLog: OpenLogWindow);
                 placer.Attach(created, "Settings", RestoreMode.SizeOverOwner);
                 return created;
             });

@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Coursee.Core.Entries;
 using Coursee.Core.Logging;
 using Coursee.Core.Platform;
 using Coursee.Core.Recents;
@@ -57,6 +58,9 @@ public partial class SettingsWindow : Window
         IReadOnlyList<IResourceSource> sources,
         SettingsStore settings,
         RecentStore recents,
+        EntryStore entries,
+        CustomEntryStore customEntries,
+        CustomEntryEditor customEntryEditor,
         IAutoStart autoStart,
         IHotkeyRegistrar hotkeys,
         LogHub logHub,
@@ -90,6 +94,11 @@ public partial class SettingsWindow : Window
             SourcesSection.Children.Add(checkBox);
             _sourceCheckBoxes[name] = checkBox;
         }
+
+        EntriesSection.Children.Add(new EntriesPanel(entries, customEntries, customEntryEditor, new SourceIcons(sources), _log, ShowMessage)
+        {
+            Tag = SettingsCatalog.EntriesId,
+        });
 
         LoadValues();
         TabList.ItemsSource = _catalog.Tabs;

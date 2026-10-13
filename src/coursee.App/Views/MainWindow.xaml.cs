@@ -675,6 +675,10 @@ public partial class MainWindow : Window
 
         Activate();
         SearchBox.Focus();
+
+        // Settings > Entries may have restored, changed or deleted entries.
+        Refresh(keepSelection: true);
+        RefreshResources();
     }
 
     /// <summary>
