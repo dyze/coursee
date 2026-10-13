@@ -90,3 +90,17 @@ All items are implemented, waiting for the owner's `build.cmd` run and test.
 5. **End user manual.** A html manual is shipped with installer and available thru a "?" icon from App.
 6. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
 7. **Paths.** Show in settings the paths to relevant files: user settings, entries... Add for each a button to "explore to".
+
+## 0.8 (to define)
+Game launcher sources. **Installed games only**; owned but not installed games are out of scope. coursee only reads local files and the registry: no sign-in, no API key. Signing in, when a game needs it, is left to the launcher.
+
+| Source | Read from | Opened with |
+| ------ | --------- | ----------- |
+| **Steam** | `SteamPath` (registry), `steamapps\libraryfolders.vdf` (every library), one `appmanifest_<appid>.acf` per game | `steam://rungameid/<appid>` |
+| **Epic Games** | `.item` manifests (JSON) in `%ProgramData%\Epic\EpicGamesLauncher\Data\Manifests` | `com.epicgames.launcher://apps/<AppName>?action=launch&silent=true` |
+| **GOG** | `HKLM\SOFTWARE\WOW6432Node\GOG.com\Games\<id>` | GOG Galaxy (`/command=runGame /gameId=<id>`) if installed, else the game's exe |
+
+1. **One source per launcher**, each an `IResourceSource`, switchable in **Sources**, with its own icon. A launcher that is not installed gives no entries, without error.
+2. **Tolerant reading.** These formats are not documented and may change: a file that cannot be read is logged (Warning) and skipped; the other games and sources are not affected.
+3. **Icons.** The game's exe icon when it can be found, else the source icon.
+4. **Open question.** Parse the files ourselves, or use the GameFinder NuGet package (covers all three; check its license). A new dependency needs the owner's approval.
