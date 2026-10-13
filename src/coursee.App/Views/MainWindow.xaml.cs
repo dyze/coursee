@@ -420,13 +420,20 @@ public partial class MainWindow : Window
         Refresh(keepSelection: true);
     }
 
-    /// <summary>The icons of a row act on that row: select it first (they are only shown on the selected row anyway).</summary>
+    /// <summary>The icons of a row act on that row: select it first.</summary>
     private void SelectRowOf(object sender)
     {
         if (sender is FrameworkElement { DataContext: ResultRow row })
         {
             ResultsList.SelectedItem = row;
         }
+    }
+
+    /// <summary>The action icon of a row: opens it, like Enter (also on a row that is not selected).</summary>
+    private void ActionButton_Click(object sender, RoutedEventArgs e)
+    {
+        SelectRowOf(sender);
+        OpenSelected();
     }
 
     private void PinButton_Click(object sender, RoutedEventArgs e)

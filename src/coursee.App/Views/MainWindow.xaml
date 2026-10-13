@@ -148,15 +148,16 @@
                      Visibility="{Binding IsEditingAlias, Converter={StaticResource VisibleWhen}}"
                      LostKeyboardFocus="AliasBox_LostKeyboardFocus" />
 
-            <!-- What Enter does, as an icon; its wording is the tooltip (and the line under the search box). -->
-            <TextBlock Grid.Column="3"
-                       Margin="12,0,4,0"
-                       VerticalAlignment="Center"
-                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                       FontSize="16"
-                       Opacity="0.7"
-                       Text="{Binding Resource.Action, Converter={StaticResource ActionGlyph}}"
-                       ToolTip="{Binding Resource.ActionLabel}" />
+            <!-- What Enter does, as an icon on every row; its wording is the tooltip (and the first line under
+                 the search box). Clicking it does the same as Enter on that row. -->
+            <Button Grid.Column="3"
+                    Margin="10,0,2,0"
+                    Style="{StaticResource RowIconButton}"
+                    FontSize="16"
+                    Opacity="0.7"
+                    Content="{Binding Resource.Action, Converter={StaticResource ActionGlyph}}"
+                    ToolTip="{Binding Resource.ActionLabel}"
+                    Click="ActionButton_Click" />
 
             <StackPanel Grid.Column="4" Orientation="Horizontal" Style="{StaticResource SelectedRowOnly}">
               <Button Style="{StaticResource RowIconButton}"

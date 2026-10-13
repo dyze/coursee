@@ -103,7 +103,7 @@ Results are sorted by total score, then by name, and capped at 50. Matching igno
 - An alias belongs to one entry and an entry has one alias: `SetAlias` replaces the entry's old alias, and moves an alias another entry had (it returns that entry, for the log). An empty alias removes it. Aliases are compared with `TextFolding.AreEqual` (case and accents ignored). It is kept out of the sources, so adding a source still does not touch it, and out of `settings.json`: it is about entries, not how coursee behaves.
 - An entry is known by its **target**, case-insensitive, as in recents. Two items with the same target (one program, two shortcut names) share their pin. A pin outlives a renamed shortcut and a source switched off.
 - Typed text (the fallback) cannot be pinned or given an alias (`ResourceActions.CanPin`, `CanSetAlias`): it is no entry, and would never be listed.
-- The launcher shows a `ResultRow` per item. The pin and alias icons are on the selected row only, hidden (not collapsed) where they do not apply, so the action icons stay aligned. They never take the focus.
+- The launcher shows a `ResultRow` per item. The pin and alias icons are on the selected row only, hidden (not collapsed) where they do not apply, so the action icons stay aligned. The action icon, on every row, is a button too: a click selects its row and opens it, like Enter. None of these buttons takes the focus, so it stays in the search box.
 - F2 opens a text box in the selected row. While it is open, the launcher's keys are off (Enter saves, Esc cancels, everything else is typed in the box), a background refresh does not rebuild the list under it, and losing the focus cancels.
 
 ## Adding a source
