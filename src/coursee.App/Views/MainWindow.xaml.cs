@@ -21,6 +21,7 @@ public partial class MainWindow : Window
     private readonly IReadOnlyList<IResourceSource> _sources;
     private readonly RecentStore _recents;
     private readonly EntryStore _entries;
+    private readonly CustomEntryEditor _customEntries;
     private readonly SettingsStore _settings;
     private readonly ILog _log;
     private readonly IBrowserLocator _browsers;
@@ -28,8 +29,8 @@ public partial class MainWindow : Window
     private readonly SourceMonitor _monitor;
     private IReadOnlyList<Resource> _all = [];
 
-    /// <summary>The row whose alias box is open (F2), or null.</summary>
-    private ResultRow? _aliasRow;
+    /// <summary>The row whose text box is open (alias, or name of a new custom entry), or null.</summary>
+    private ResultRow? _editingRow;
     private SettingsWindow? _settingsDialog;
     private bool _showingDialog;
     private bool _refreshing;
@@ -41,6 +42,7 @@ public partial class MainWindow : Window
         IReadOnlyList<IResourceSource> sources,
         RecentStore recents,
         EntryStore entries,
+        CustomEntryEditor customEntries,
         SettingsStore settings,
         ILog log,
         IBrowserLocator browsers,
@@ -52,6 +54,7 @@ public partial class MainWindow : Window
         _sources = sources;
         _recents = recents;
         _entries = entries;
+        _customEntries = customEntries;
         _settings = settings;
         _createSettings = createSettings;
 
@@ -175,8 +178,8 @@ public partial class MainWindow : Window
 
         _all = SourceLoader.Merge(lists);
 
-        // Not under an open alias box: the list is rebuilt when it closes.
-        if (IsVisible && !string.IsNullOrWhiteSpace(SearchBox.Text) && _aliasRow is null)
+        // Not under an open row box: the list is rebuilt when it closes.
+        if (IsVisible && !string.IsNullOrWhiteSpace(SearchBox.Text) && _editingRow is null)
         {
             Refresh(keepSelection: true);
         }
@@ -186,8 +189,8 @@ public partial class MainWindow : Window
     /// the selected row stays selected. Otherwise the best match is selected.</param>
     private void Refresh(bool keepSelection = false)
     {
-        // A new list has no alias box open.
-        _aliasRow = null;
+        // A new list has no row box open.
+        _editingRow = null;
 
         var selectedTarget = keepSelection ? Selected?.Target : null;
         var query = SearchBox.Text;
@@ -214,6 +217,11 @@ public partial class MainWindow : Window
                 items = [fallback];
             }
         }
+
+        // Nothing matched: the typed text can become a custom entry.
+        AddButton.Visibility = items is [var only] && ResourceActions.CanMakeCustomEntry(only)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
 
         ResultsList.ItemsSource = items
             .Select(r => new ResultRow(r, _entries.IsPinned(r.Target), _entries.AliasOf(r.Target)))
@@ -495,17 +503,17 @@ public partial class MainWindow : Window
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
     {
-        // The alias box is open: Enter saves, Esc cancels, every other key is typed in it.
-        if (_aliasRow is not null)
+        // A row box is open: Enter saves, Esc cancels, every other key is typed in it.
+        if (_editingRow is not null)
         {
             if (e.Key == Key.Enter)
             {
-                CommitAlias();
+                CommitEdit();
                 e.Handled = true;
             }
             else if (e.Key == Key.Escape)
             {
-                EndAliasEdit();
+                EndEdit();
                 e.Handled = true;
             }
 
@@ -569,6 +577,10 @@ public partial class MainWindow : Window
                 HideSelected();
                 e.Handled = true;
                 break;
+            case Key.N when Keyboard.Modifiers == ModifierKeys.Control:
+                StartCustomEntry();
+                e.Handled = true;
+                break;
             case Key.Delete when IsShowingRecents && ResultsList.SelectedItem is not null:
                 RemoveSelectedFromRecents();
                 e.Handled = true;
@@ -606,8 +618,8 @@ public partial class MainWindow : Window
 
     private void ResultsList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        // A double click in the alias box selects a word there.
-        if (_aliasRow is null)
+        // A double click in the row box selects a word there.
+        if (_editingRow is null)
         {
             OpenSelected();
         }

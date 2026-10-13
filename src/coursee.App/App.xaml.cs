@@ -69,6 +69,7 @@ public partial class App : Application
             Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu),
         };
         var shortcutResolver = new WshShortcutResolver();
+        var customEntries = new CustomEntryStore(Path.Combine(dataDirectory, "custom.json"));
 
         var firefoxRoot = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -101,6 +102,8 @@ public partial class App : Application
 
         IResourceSource[] sources =
         [
+            // The user's own entries first: one with the same name and target as a shortcut is listed as theirs.
+            new CustomSource(customEntries),
             // Order matters: an item on both the Desktop and the Start Menu is listed once, as the Desktop one.
             ShortcutsSource.Desktop(desktops, shortcutResolver, log),
             ShortcutsSource.StartMenu(startMenus, shortcutResolver, log),
@@ -113,6 +116,7 @@ public partial class App : Application
         var recents = new RecentStore(Path.Combine(dataDirectory, "recents.json"), settings.RecentsCapacity);
 
         var entries = new EntryStore(Path.Combine(dataDirectory, "entries.json"));
+        var customEntryEditor = new CustomEntryEditor(customEntries, entries, recents);
 
         var executablePath = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "coursee.exe");
 
@@ -126,6 +130,7 @@ public partial class App : Application
             sources,
             recents,
             entries,
+            customEntryEditor,
             settings,
             log,
             new RegistryBrowserLocator(),

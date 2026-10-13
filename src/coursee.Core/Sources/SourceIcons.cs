@@ -15,6 +15,7 @@ public sealed class SourceIcons
     public const string Edge = "\uE734";           // FavoriteStar
     public const string RunHistory = "\uE81C";     // History
     public const string WindowsSettings = "\uE770"; // System
+    public const string Custom = "\uE710";         // Add: made with the + button
 
     /// <summary>Text typed in the search box (Enter acts on it).</summary>
     public const string Typed = "\uE765";          // KeyboardClassic

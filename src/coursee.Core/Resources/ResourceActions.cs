@@ -47,6 +47,9 @@ public static class ResourceActions
     /// <summary>Ctrl+H: entries from a source can be hidden. Not what was typed: there is nothing to hide.</summary>
     public static bool CanHide(Resource resource) => IsEntry(resource);
 
+    /// <summary>Ctrl+N or the + button: what was typed (nothing matched) can become a custom entry, with it as target.</summary>
+    public static bool CanMakeCustomEntry(Resource resource) => !IsEntry(resource);
+
     private static bool IsEntry(Resource resource) => resource.Source != FallbackClassifier.SourceName;
 
     /// <summary>
@@ -103,6 +106,11 @@ public static class ResourceActions
         if (CanHide(resource))
         {
             parts.Add("Ctrl+H: Hide");
+        }
+
+        if (CanMakeCustomEntry(resource))
+        {
+            parts.Add("Ctrl+N: New custom entry");
         }
 
         if (inRecents)

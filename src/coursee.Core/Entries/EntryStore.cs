@@ -135,6 +135,33 @@ public sealed class EntryStore
         return true;
     }
 
+    /// <summary>
+    /// An entry changed (a custom entry was edited): what was set on <paramref name="from"/> moves
+    /// to <paramref name="to"/>. Its pin and alias follow its target, and it stays hidden if it was.
+    /// </summary>
+    public void Move(Resource from, Resource to)
+    {
+        if (!string.Equals(from.Target, to.Target, StringComparison.OrdinalIgnoreCase))
+        {
+            if (_pinned.Remove(from.Target))
+            {
+                _pinned.Add(to.Target);
+            }
+
+            if (_aliases.Remove(from.Target, out var alias))
+            {
+                _aliases[to.Target] = alias;
+            }
+        }
+
+        if (_hidden.RemoveAll(hidden => hidden.Matches(from)) > 0 && !IsHidden(to))
+        {
+            _hidden.Add(HiddenEntry.Of(to));
+        }
+
+        Save();
+    }
+
     private void Save()
     {
         var directory = Path.GetDirectoryName(_path);

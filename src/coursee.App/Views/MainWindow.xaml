@@ -77,6 +77,7 @@
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
 
       <TextBox x:Name="SearchBox"
@@ -86,8 +87,23 @@
 
       <!-- The Windows settings icon. No padding: the Fluent theme's default one leaves too little room and cuts it.
            Tab moves the focus between the search box and this button only; Enter or Space opens Settings. -->
-      <Button x:Name="SettingsButton"
+      <!-- Shown when nothing matches: makes the typed text a custom entry (Ctrl+N). Not a Tab stop. -->
+      <Button x:Name="AddButton"
               Grid.Column="1"
+              Width="48"
+              Margin="8,0,0,0"
+              Padding="0"
+              VerticalAlignment="Stretch"
+              Content="&#xE710;"
+              FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+              FontSize="18"
+              Focusable="False"
+              Visibility="Collapsed"
+              ToolTip="Make it a custom entry (Ctrl+N)"
+              Click="AddButton_Click" />
+
+      <Button x:Name="SettingsButton"
+              Grid.Column="2"
               Width="48"
               Margin="8,0,0,0"
               Padding="0"
@@ -153,16 +169,17 @@
               <TextBlock Text="{Binding Resource.Target}" FontSize="11" Opacity="0.6" TextTrimming="CharacterEllipsis" />
             </StackPanel>
 
-            <!-- The alias box (F2): Enter saves, Esc or leaving it cancels. Filled and focused by the window. -->
+            <!-- The row's box, for its alias (F2) or the name of a new custom entry (Ctrl+N): Enter saves,
+                 Esc or leaving it cancels. Filled and focused by the window. -->
             <TextBox Grid.Column="2"
-                     Width="120"
+                     Width="160"
                      Margin="8,0,0,0"
                      VerticalAlignment="Center"
                      FontSize="13"
-                     MaxLength="40"
-                     ToolTip="Alias: Enter saves, Esc cancels, empty removes it"
-                     Visibility="{Binding IsEditingAlias, Converter={StaticResource VisibleWhen}}"
-                     LostKeyboardFocus="AliasBox_LostKeyboardFocus" />
+                     MaxLength="{Binding EditMaxLength}"
+                     ToolTip="{Binding EditToolTip}"
+                     Visibility="{Binding IsEditing, Converter={StaticResource VisibleWhen}}"
+                     LostKeyboardFocus="EditBox_LostKeyboardFocus" />
 
             <!-- What Enter does, as an icon on every row; its wording is the tooltip (and the first line under
                  the search box). Clicking it does the same as Enter on that row. -->

@@ -149,10 +149,10 @@ public class ResourceActionsTests
     }
 
     [Fact]
-    public void KeysHint_ForTypedText_OnlyCopy()
+    public void KeysHint_ForTypedText_CopyAndNewCustomEntry()
     {
         Assert.Equal(
-            "Ctrl+C: Copy",
+            "Ctrl+C: Copy  ·  Ctrl+N: New custom entry",
             ResourceActions.KeysHint(R(ResourceKind.Command, "notepad", FallbackClassifier.SourceName), inRecents: false, isPinned: false));
     }
 
@@ -191,5 +191,12 @@ public class ResourceActionsTests
     {
         Assert.True(ResourceActions.CanHide(R(ResourceKind.Folder, @"C:\work")));
         Assert.False(ResourceActions.CanHide(R(ResourceKind.Command, "notepad", FallbackClassifier.SourceName)));
+    }
+
+    [Fact]
+    public void CanMakeCustomEntry_TypedTextOnly()
+    {
+        Assert.True(ResourceActions.CanMakeCustomEntry(R(ResourceKind.Command, "notepad", FallbackClassifier.SourceName)));
+        Assert.False(ResourceActions.CanMakeCustomEntry(R(ResourceKind.Folder, @"C:\work")));
     }
 }

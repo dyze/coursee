@@ -3,13 +3,25 @@ using Coursee.Core.Resources;
 
 namespace Coursee.UI.Views;
 
+/// <summary>What the text box of a row is open for.</summary>
+public enum RowEdit
+{
+    None,
+
+    /// <summary>F2: the alias of the entry.</summary>
+    Alias,
+
+    /// <summary>Ctrl+N or the + button, on typed text: the name of the custom entry it becomes.</summary>
+    CustomEntryName,
+}
+
 /// <summary>A row of the launcher's list: the resource, and what the user set on its entry.</summary>
 public sealed class ResultRow(Resource resource, bool isPinned, string? alias) : INotifyPropertyChanged
 {
     private static readonly string PinnedGlyph = ((char)0xE840).ToString();
     private static readonly string UnpinnedGlyph = ((char)0xE718).ToString();
 
-    private bool _isEditingAlias;
+    private RowEdit _edit;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -40,17 +52,29 @@ public sealed class ResultRow(Resource resource, bool isPinned, string? alias) :
         ? "Set an alias: a short name that lists this first (F2)"
         : $"Alias: {Alias} (F2 to change)";
 
-    /// <summary>True while the alias box of this row is open (F2).</summary>
-    public bool IsEditingAlias
+    /// <summary>What the text box of this row is open for, if anything.</summary>
+    public RowEdit Edit
     {
-        get => _isEditingAlias;
+        get => _edit;
         set
         {
-            if (_isEditingAlias != value)
+            if (_edit != value)
             {
-                _isEditingAlias = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsEditingAlias)));
+                _edit = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Edit)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsEditing)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(EditToolTip)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(EditMaxLength)));
             }
         }
     }
+
+    /// <summary>True while the text box of this row is open.</summary>
+    public bool IsEditing => Edit != RowEdit.None;
+
+    public string EditToolTip => Edit == RowEdit.CustomEntryName
+        ? "Name of the new custom entry: Enter saves, Esc cancels"
+        : "Alias: Enter saves, Esc cancels, empty removes it";
+
+    public int EditMaxLength => Edit == RowEdit.CustomEntryName ? 100 : 40;
 }

@@ -72,6 +72,32 @@ public sealed class RecentStore
         return true;
     }
 
+    /// <summary>
+    /// The entry with this target changed (a custom entry was edited): its item becomes
+    /// <paramref name="updated"/>, with its open history. An item that already had the new target
+    /// is merged into it. Returns false (and saves nothing) when no item has <paramref name="oldTarget"/>.
+    /// </summary>
+    public bool Move(string oldTarget, Resource updated)
+    {
+        var index = _items.FindIndex(r => SameTarget(r.Resource.Target, oldTarget));
+        if (index < 0)
+        {
+            return false;
+        }
+
+        var opens = _items[index].Opens;
+        if (!SameTarget(oldTarget, updated.Target) && Find(updated.Target) is { } other)
+        {
+            opens = [.. opens.Concat(other.Opens).Order().TakeLast(Frecency.MaxOpens)];
+            _items.Remove(other);
+            index = _items.FindIndex(r => SameTarget(r.Resource.Target, oldTarget));
+        }
+
+        _items[index] = new RecentItem(updated, opens);
+        Save();
+        return true;
+    }
+
     /// <summary>Changes how many items are kept; the least recently opened ones beyond the new limit are dropped.</summary>
     public void SetCapacity(int capacity)
     {
