@@ -122,4 +122,30 @@ public class SearchEngineTests
 
         Assert.Single(result);
     }
+
+    [Fact]
+    public void AccentsKept_UnaccentedQuery_DoesNotFindAccentedName()
+    {
+        var result = SearchEngine.Search([R("Événements")], "evene", ignoreAccents: false);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public void AccentsKept_AccentedQuery_FindsAccentedName_IgnoringCase()
+    {
+        var result = SearchEngine.Search([R("Événements"), R("Evenements")], "éVÉ", ignoreAccents: false);
+
+        Assert.Equal(new[] { "Événements" }, result.Select(r => r.Name));
+    }
+
+    [Fact]
+    public void AccentsKept_TargetIsMatchedAsIs()
+    {
+        var resources = new[] { R("Notes", @"C:\Users\René"), R("Other", @"C:\Users\Rene") };
+
+        var result = SearchEngine.Search(resources, "rené", ignoreAccents: false);
+
+        Assert.Equal(new[] { "Notes" }, result.Select(r => r.Name));
+    }
 }

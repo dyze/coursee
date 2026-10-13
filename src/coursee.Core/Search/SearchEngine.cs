@@ -5,7 +5,7 @@ namespace Coursee.Core.Search;
 /// <summary>
 /// In-memory search over resources. Every whitespace-separated token of the query
 /// must match; a higher score means a better match. Targets only, no content search.
-/// Matching ignores case and accents. <see cref="SearchBoosts"/> then raise some results.
+/// Matching ignores case, and accents unless asked not to. <see cref="SearchBoosts"/> then raise some results.
 /// </summary>
 public static class SearchEngine
 {
@@ -19,6 +19,7 @@ public static class SearchEngine
         IEnumerable<Resource> resources,
         string query,
         SearchBoosts? boosts = null,
+        bool ignoreAccents = true,
         int limit = 50)
     {
         if (string.IsNullOrWhiteSpace(query))
@@ -27,7 +28,8 @@ public static class SearchEngine
         }
 
         var boost = boosts ?? SearchBoosts.None;
-        var tokens = TextFolding.Fold(query).Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        Func<string, string> fold = ignoreAccents ? TextFolding.Fold : text => text;
+        var tokens = fold(query).Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         // Typing an entry's alias lists that entry first (every item with its target), match or not.
         var aliasTarget = boost.AliasTarget?.Invoke(query.Trim());
@@ -36,7 +38,7 @@ public static class SearchEngine
 
         var matches = all
             .Where(r => !IsTarget(r, aliasTarget))
-            .Select(resource => (Resource: resource, Score: Score(resource, tokens)))
+            .Select(resource => (Resource: resource, Score: Score(fold(resource.Name), fold(resource.Target), tokens)))
             .Where(x => x.Score > 0)
             .Select(x => (
                 x.Resource,
@@ -53,10 +55,9 @@ public static class SearchEngine
     private static bool IsTarget(Resource resource, string? target) =>
         target is not null && string.Equals(resource.Target, target, StringComparison.OrdinalIgnoreCase);
 
-    private static int Score(Resource resource, string[] tokens)
+    /// <param name="name">The name, without accents when they are ignored; the same for <paramref name="target"/>.</param>
+    private static int Score(string name, string target, string[] tokens)
     {
-        var name = TextFolding.Fold(resource.Name);
-        var target = TextFolding.Fold(resource.Target);
         var total = 0;
         foreach (var token in tokens)
         {

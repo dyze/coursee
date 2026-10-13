@@ -124,6 +124,7 @@ public partial class SettingsWindow : Window
         ShowAutoStart();
         RecentsComboBox.SelectedItem = _settings.RecentsCapacity;
         DebugLoggingCheckBox.IsChecked = _settings.DebugLogging;
+        IgnoreAccentsCheckBox.IsChecked = _settings.IgnoreAccents;
         ThemeComboBox.SelectedItem = ThemeOptions.First(option => option.Value == _settings.Theme);
         LauncherPositionComboBox.SelectedItem = PositionOptions.First(option => option.Value == _settings.LauncherPosition);
         foreach (var (name, checkBox) in _sourceCheckBoxes)
@@ -467,6 +468,23 @@ public partial class SettingsWindow : Window
         {
             _log.Error("Settings", "Cannot change the launcher position", ex);
             ShowMessage(ex.Message);
+        }
+    }
+
+    private void IgnoreAccentsCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        var wanted = IgnoreAccentsCheckBox.IsChecked == true;
+
+        try
+        {
+            _settings.SetIgnoreAccents(wanted);
+            _log.Info("Settings", $"Ignore accents when searching {(wanted ? "on" : "off")}");
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            _log.Error("Settings", "Cannot change ignoring accents", ex);
+            ShowMessage(ex.Message);
+            IgnoreAccentsCheckBox.IsChecked = !wanted;
         }
     }
 

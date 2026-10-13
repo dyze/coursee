@@ -102,6 +102,15 @@ public class SettingsCatalogTests
         Assert.Equal(SettingsCatalog.GeneralTab, Catalog().All.Single(entry => entry.Id == SettingsCatalog.LauncherPositionId).Tab);
     }
 
+    [Theory]
+    [InlineData("accents")]
+    [InlineData("diacritic")]
+    public void Find_FindsIgnoreAccents(string query)
+    {
+        Assert.Equal(SettingsCatalog.IgnoreAccentsId, Assert.Single(Catalog().Find(query)).Id);
+        Assert.Equal(SettingsCatalog.GeneralTab, Catalog().All.Single(entry => entry.Id == SettingsCatalog.IgnoreAccentsId).Tab);
+    }
+
     [Fact]
     public void Find_KeepsTheCatalogOrder()
     {

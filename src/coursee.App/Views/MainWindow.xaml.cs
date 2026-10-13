@@ -210,7 +210,8 @@ public partial class MainWindow : Window
                 new SearchBoosts(
                     UsageBonus: _recents.UsageBonus,
                     IsPinned: _entries.IsPinned,
-                    AliasTarget: _entries.TargetOfAlias));
+                    AliasTarget: _entries.TargetOfAlias),
+                ignoreAccents: _settings.IgnoreAccents);
 
             // Nothing matches: offer what the Windows Run dialog would do with the typed text.
             if (items.Count == 0 && FallbackClassifier.Classify(query) is { } fallback)

@@ -26,7 +26,8 @@ public enum LauncherPosition
 
 /// <summary>
 /// User settings persisted as JSON: which sources are disabled (every source is on by default),
-/// the global hotkey, how many recent items to keep, the theme and where the launcher appears. A missing, corrupt or partial file
+/// the global hotkey, how many recent items to keep, the theme, where the launcher appears and whether
+/// searching ignores accents. A missing, corrupt or partial file
 /// means defaults for whatever cannot be read.
 /// </summary>
 public sealed class SettingsStore
@@ -55,6 +56,7 @@ public sealed class SettingsStore
         LauncherPosition = Enum.TryParse<LauncherPosition>(data?.LauncherPosition, ignoreCase: true, out var position) && Enum.IsDefined(position)
             ? position
             : LauncherPosition.Centered;
+        IgnoreAccents = data?.IgnoreAccents ?? true;
     }
 
     /// <summary>The values offered in Settings for the number of recent items to keep.</summary>
@@ -70,6 +72,9 @@ public sealed class SettingsStore
     public ThemeChoice Theme { get; private set; }
 
     public LauncherPosition LauncherPosition { get; private set; }
+
+    /// <summary>When on, searching ignores accents (<c>evene</c> finds <c>Événements</c>). On by default.</summary>
+    public bool IgnoreAccents { get; private set; }
 
     public bool IsSourceEnabled(string sourceName) => !_disabledSources.Contains(sourceName);
 
@@ -117,6 +122,12 @@ public sealed class SettingsStore
         Save();
     }
 
+    public void SetIgnoreAccents(bool ignore)
+    {
+        IgnoreAccents = ignore;
+        Save();
+    }
+
     private void Save()
     {
         var directory = Path.GetDirectoryName(_path);
@@ -131,7 +142,8 @@ public sealed class SettingsStore
             RecentsCapacity,
             DebugLogging,
             Theme.ToString(),
-            LauncherPosition.ToString());
+            LauncherPosition.ToString(),
+            IgnoreAccents);
         File.WriteAllText(_path, JsonSerializer.Serialize(data));
     }
 
@@ -155,5 +167,6 @@ public sealed class SettingsStore
         int? RecentsCapacity,
         bool? DebugLogging = null,
         string? Theme = null,
-        string? LauncherPosition = null);
+        string? LauncherPosition = null,
+        bool? IgnoreAccents = null);
 }

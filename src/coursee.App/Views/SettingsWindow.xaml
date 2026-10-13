@@ -125,6 +125,13 @@
                       SelectionChanged="LauncherPositionComboBox_SelectionChanged" />
           </StackPanel>
 
+          <CheckBox x:Name="IgnoreAccentsCheckBox"
+                    Tag="{x:Static settings:SettingsCatalog.IgnoreAccentsId}"
+                    Margin="0,10,0,0"
+                    Content="Ignore accents when searching"
+                    ToolTip="On: &quot;parametres&quot; finds &quot;Paramètres&quot;"
+                    Click="IgnoreAccentsCheckBox_Click" />
+
           <StackPanel Tag="{x:Static settings:SettingsCatalog.AutoStartId}" Margin="0,10,0,0">
             <CheckBox x:Name="AutoStartCheckBox"
                       Content="Start coursee when I sign in to Windows"

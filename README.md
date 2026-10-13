@@ -53,7 +53,7 @@ Gear button in the launcher, or tray menu > Settings. A dialog over the launcher
 
 | Tab | Options |
 | --- | --- |
-| General | Hotkey (must include Ctrl, Alt or Win), number of recent items (default 20), launcher position, start with Windows |
+| General | Hotkey (must include Ctrl, Alt or Win), number of recent items (default 20), launcher position, ignore accents when searching (default on), start with Windows |
 | Appearance | Theme: follow Windows (default), light or dark. The tray menu follows at the next start |
 | Sources | Start Menu, Firefox bookmarks, Edge favorites, Windows Run history, Windows settings and tools (on / off) |
 | Logging | Detailed (debug) logging, open the log window |
@@ -65,7 +65,7 @@ Gear button in the launcher, or tray menu > Settings. A dialog over the launcher
 ## Search
 
 - Matches the name and the target (path, URL, command), never file contents.
-- Every word you type must match, in any order, ignoring case and accents (`parametres` finds *Paramètres*).
+- Every word you type must match, in any order, ignoring case and accents (`parametres` finds *Paramètres*). Settings > General > *Ignore accents when searching* (on by default) can make accents count.
 - Best matches first: name starts with the word, then a word inside the name, then anywhere in the name, then the target, then letters in order (`ffx` finds *Firefox*). Up to 50 results.
 - Typing an item's alias exactly (the whole search, ignoring case and accents) lists that item first, even if its name does not match. An alias belongs to one item: giving it to another one moves it.
 - Pinned items that match come next.

@@ -80,6 +80,29 @@ public sealed class SettingsStoreTests : IDisposable
     }
 
     [Fact]
+    public void IgnoreAccents_IsOnByDefault()
+    {
+        Assert.True(new SettingsStore(FilePath).IgnoreAccents);
+    }
+
+    [Fact]
+    public void IgnoreAccents_IsPersisted()
+    {
+        new SettingsStore(FilePath).SetIgnoreAccents(false);
+
+        Assert.False(new SettingsStore(FilePath).IgnoreAccents);
+    }
+
+    [Fact]
+    public void IgnoreAccents_AbsentFromAnOlderFile_MeansOn()
+    {
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(FilePath, """{"DebugLogging":true}""");
+
+        Assert.True(new SettingsStore(FilePath).IgnoreAccents);
+    }
+
+    [Fact]
     public void StoredShiftOnlyHotkey_FallsBackToTheDefault()
     {
         Directory.CreateDirectory(_directory);

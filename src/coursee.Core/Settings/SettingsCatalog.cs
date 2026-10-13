@@ -24,6 +24,7 @@ public sealed class SettingsCatalog
     public const string RecentsCapacityId = "RecentsCapacity";
     public const string AutoStartId = "AutoStart";
     public const string LauncherPositionId = "LauncherPosition";
+    public const string IgnoreAccentsId = "IgnoreAccents";
     public const string ThemeId = "Theme";
     public const string DebugLoggingId = "DebugLogging";
     public const string LogWindowId = "LogWindow";
@@ -39,6 +40,7 @@ public sealed class SettingsCatalog
             new(RecentsCapacityId, GeneralTab, "Recent items to keep", ["recents", "history", "count", "number"]),
             new(AutoStartId, GeneralTab, "Start coursee when I sign in to Windows", ["auto", "startup", "boot", "login"]),
             new(LauncherPositionId, GeneralTab, "Launcher position", ["place", "where", "mouse", "center", "centre", "monitor", "screen", "window"]),
+            new(IgnoreAccentsId, GeneralTab, "Ignore accents when searching", ["accent", "diacritic", "search", "match", "letters"]),
             new(ThemeId, AppearanceTab, "Theme", ["dark", "light", "mode", "color", "colour"]),
         };
 

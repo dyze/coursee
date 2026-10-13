@@ -87,7 +87,7 @@ An entry opened through coursee then gains a **usage bonus**, added once to its 
 2. **Pinned** entries that match come next, ordered by their own scores.
 3. Then all the others.
 
-Results are sorted by total score, then by name, and capped at 50. Matching ignores case, and accents: `TextFolding.Fold` removes them from the query, names and targets before comparing (`Événements` → `Evenements`; letters such as `ß` or `œ` are kept).
+Results are sorted by total score, then by name, and capped at 50. Matching ignores case, and accents: `TextFolding.Fold` removes them from the query, names and targets before comparing (`Événements` → `Evenements`; letters such as `ß` or `œ` are kept). The `IgnoreAccents` setting (on by default) is passed to `SearchEngine.Search`; off, the texts are compared as they are, still ignoring case. Aliases always ignore accents.
 
 ## Recents
 - `RecentStore` (`recents.json`) keeps the entries opened through coursee, by target, each with its last 10 open times (`Frecency.MaxOpens`). When full, the least recently opened entry goes first. Del on the recent list removes an entry with its history. The time comes from an injected `TimeProvider`, so tests move the clock.

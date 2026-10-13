@@ -61,7 +61,7 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 8. **Keyboard only.** In the launcher, Tab moves the focus to the Settings button, Enter or Space opens Settings, Tab again goes back to the search box. In Settings: a logical Tab order, Ctrl+Tab / Ctrl+Shift+Tab switch tabs (arrows too, on the tab strip), Down in the Find box goes to the first setting shown, and the focused control is always visible.
 
 ## 0.5
-1. **Ignore accents.** Matching ignores accents: `evene` finds *Événements*, `parametres` finds *Paramètres*.
+1. **Ignore accents.** Matching ignores accents: `evene` finds *Événements*, `parametres` finds *Paramètres*. A setting in Settings > General, on by default, switches it off. Aliases always ignore accents.
 2. **Copy the target.** Ctrl+C copies the selected entry's path, URL or command, and the launcher stays open (the second line under the search box says it was copied). If text is selected in the search box, Ctrl+C copies that text instead.
 3. **Priority to opened entries.** An entry opened through coursee gets a score bonus that grows with how often and how recently it was opened. The bonus is capped, so a strong name match still beats a weak match of an often opened entry. The recent list is ordered the same way (recency plus frequency).
 4. **Pinning.** Ctrl+P, or the pin icon at the right of the action icon, pins or unpins the selected entry. Pinned entries that match the query are listed first. With an empty search box, pinned entries are not shown (the recent list is).
