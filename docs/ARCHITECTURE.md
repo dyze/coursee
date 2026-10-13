@@ -12,9 +12,10 @@ coursee.App   (WPF, Windows only)
 │  implements ▼  IShortcutResolver · IRunHistoryReader · IAutoStart · IHotkeyRegistrar · IBrowserLocator · ILog
 │
 coursee.Core  (no Windows dependency, fully unit-tested on any OS)
-   SearchEngine · RecentStore · EntryStore · SettingsStore · SettingsCatalog · SourceLoader · SourceMonitor · FallbackClassifier
+   SearchEngine · RecentStore · EntryStore · CustomEntryStore · CustomEntryEditor · SettingsStore · SettingsCatalog · KeyBindings
+   SourceLoader · SourceMonitor · FallbackClassifier
    ResourceActions · PlacementRules · PlacementStore
-   sources (IResourceSource): ShortcutsSource (Desktop, Start Menu) · FirefoxBookmarksSource · EdgeFavoritesSource · RunHistorySource
+   sources (IResourceSource): CustomSource · ShortcutsSource (Desktop, Start Menu) · FirefoxBookmarksSource · EdgeFavoritesSource · RunHistorySource
                               · WindowsSettingsSource (fixed list, ResourceKind.Setting)
 ```
 
@@ -31,9 +32,9 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `Resources/` | `Resource` and what can be done with it: `ResourceActions`, `ActionLabels` (the wording, and the `ResourceAction` behind the row icon), `FallbackClassifier`, `CommandLine`, `Browsers` |
 | `Search/` | `SearchEngine`, `SearchBoosts` (what raises a result above its match), `TextFolding` (accents removed before matching), `ListNavigation` (moving the selection in the result list) |
 | `Recents/` | `RecentStore`, `Frecency` (recency plus frequency) |
-| `Entries/` | `EntryStore`: what the user set on entries (pins, aliases) |
-| `Settings/` | `SettingsStore`, `SettingsCatalog` (the entries of the Settings window, their tabs, and the search that finds them) |
-| `Sources/` | `IResourceSource`, `SourceLoader`, `SourceMonitor`, `SourceIcons` (the icon of each source, found by name for a row), and each source with the interface it needs from `App`; `BookmarkUrls` and `ChromiumBookmarks` (Edge's file format, shared by Chrome) for the browser sources |
+| `Entries/` | `EntryStore`: what the user set on entries (pins, aliases as `EntryAlias`, hidden entries as `HiddenEntry`); custom entries: `CustomEntry`, `CustomEntryStore`, `CustomEntryEditor` |
+| `Settings/` | `SettingsStore`, `SettingsCatalog` (the entries of the Settings window, their tabs, and the search that finds them), `KeyBindings` (the keys listed in Settings > Keys) |
+| `Sources/` | `IResourceSource`, `SourceLoader`, `SourceMonitor`, `SourceIcons` (the icon of each source, found by name for a row), and each source with the interface it needs from `App` (`CustomSource` reads `CustomEntryStore`); `BookmarkUrls` and `ChromiumBookmarks` (Edge's file format, shared by Chrome) for the browser sources |
 | `Platform/` | The other interfaces `App` implements (`IAutoStart`, `IHotkeyRegistrar`, `IBrowserLocator`) and their rules (`AutoStartCommand`, `HotkeyGesture`) |
 | `Logging/` | `ILog`, `LogEntry`, `RingLog`, `CompositeLog`, `FilteredLog` |
 | `Placement/` | Window positions: `WindowPlacement`, `PlacementRules`, `PlacementStore` (see [Window positions](#window-positions)) |
@@ -41,7 +42,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `coursee.App` | Content |
 | --- | --- |
 | *(root)* | `App.xaml`: startup and wiring |
-| `Views/` | Windows: `MainWindow` (the launcher), `SettingsWindow`, `LogWindow`; `ResultRow` (a row of the launcher: the resource, its pin and alias, and whether its alias box is open); `AppTheme`; `ActionGlyphConverter` (the Segoe Fluent glyph of each `ResourceAction`), `SourceIconConverter` (the icon of a row's source) |
+| `Views/` | Windows: `MainWindow` (the launcher; its entry actions in `MainWindow.Entries.cs`), `SettingsWindow`, `LogWindow`; `ResultRow` (a row of the launcher: the resource, its pin and alias, and what its box is open for: `RowEdit`); `EntriesPanel` and `EntryRows` (Settings > Entries); `AppTheme`; `ActionGlyphConverter` (the Segoe Fluent glyph of each `ResourceAction`), `SourceIconConverter` (the icon of a row's source) |
 | `Tray/` | `TrayIcon` |
 | `Platform/` | Implementations of the `Core` interfaces, `SingleInstance`, and window placement (`NativeWindows`, `WindowPlacer`) |
 | `Logging/` | `LogHub`, `SerilogFileLog` |
@@ -68,7 +69,8 @@ hotkey ─► window shows the cached list at once
                    ├─ a failing source is logged and skipped, the others still load
                    ├─ SourceMonitor logs items added / removed per source
                    └─ SourceLoader.Merge: same name + target listed once (first source wins)
-typing ─► SearchEngine.Search(resources, query)   (empty query: RecentStore list)
+typing ─► EntryStore.Visible (hidden entries left out) ─► SearchEngine.Search(resources, query)
+          (empty query: the RecentStore list, hidden entries left out too)
 Enter  ─► shell opens Resource.OpenTarget, RecentStore records it
            (a bookmark with a Browser: that browser's .exe, found by IBrowserLocator; else the shell)
 ```
@@ -104,9 +106,16 @@ Results are sorted by total score, then by name, and capped at 50. Matching igno
 - `EntryStore` (`entries.json`) keeps what the user set on entries: the pinned targets, and the aliases (stored as alias → target, as the user reads them).
 - An alias belongs to one entry and an entry has one alias: `SetAlias` replaces the entry's old alias, and moves an alias another entry had (it returns that entry, for the log). An empty alias removes it. Aliases are compared with `TextFolding.AreEqual` (case and accents ignored). It is kept out of the sources, so adding a source still does not touch it, and out of `settings.json`: it is about entries, not how coursee behaves.
 - An entry is known by its **target**, case-insensitive, as in recents. Two items with the same target (one program, two shortcut names) share their pin. A pin outlives a renamed shortcut and a source switched off.
-- Typed text (the fallback) cannot be pinned or given an alias (`ResourceActions.CanPin`, `CanSetAlias`): it is no entry, and would never be listed.
+- **Hidden entries** (Ctrl+H) are known by source, name and target (`HiddenEntry`, case-insensitive), not by target only: one of two shortcuts to the same program can be hidden. `EntryStore.Visible` leaves them out of the resources and of the recent list before searching, so a hidden entry's alias finds nothing.
+- Typed text (the fallback) cannot be pinned, given an alias or hidden (`ResourceActions.CanPin`, `CanSetAlias`, `CanHide`): it is no entry, and would never be listed. It can become a custom entry (`CanMakeCustomEntry`).
 - The launcher shows a `ResultRow` per item. The pin and alias icons are on the selected row and the row under the mouse (a click selects that row first), and the pin of a pinned entry is always shown; hidden (not collapsed) where they do not apply, so the action icons stay aligned. The action icon, on every row, is a button too: a click selects its row and opens it, like Enter. None of these buttons takes the focus, so it stays in the search box.
-- F2 opens a text box in the selected row. While it is open, the launcher's keys are off (Enter saves, Esc cancels, everything else is typed in the box), a background refresh does not rebuild the list under it, and losing the focus cancels.
+- F2 (alias) or Ctrl+N (name of a new custom entry) opens a text box in the selected row (`ResultRow.Edit`). While it is open, the launcher's keys are off (Enter saves, Esc cancels, everything else is typed in the box), a background refresh does not rebuild the list under it, and losing the focus cancels.
+- Settings > Entries (`EntriesPanel`) lists what `EntryStore` and `CustomEntryStore` hold, to undo or change it. The launcher reloads its list and its sources when Settings closes.
+
+### Custom entries
+- `CustomEntryStore` (`custom.json`) keeps the user's entries (name, target), in the order they were made, one per target (case-insensitive). `CustomSource`, first in the `sources` array (on a duplicate, the user's entry wins), lists them; it reads the store on the background thread, so the store locks its list.
+- What an entry is (URL, folder, file, network path, command) is not stored: `CustomEntry.ToResource` decides it at each load with `FallbackClassifier`, as for typed text. The stored target is the one that is opened (`www.x` is stored as `https://www.x`), so pins and aliases, keyed by target, match.
+- `CustomEntryEditor.Create` makes one from the typed text (the + button, Ctrl+N). `Edit` changes name and target, and moves what was set on the entry: pin, alias and hidden state (`EntryStore.Move`), recent history (`RecentStore.Move`, merged with an item that already had the new target). Deleting an entry leaves its pin and alias, like a shortcut removed from the Desktop.
 
 ## Adding a source
 1. In `Core/Sources`, implement `IResourceSource`: a stable `Name` (it is also the key stored in `settings.json`), a `DisplayName` for Settings, `CanBeDisabled` (true gives it a checkbox in **Sources**), an `Icon` (a Segoe Fluent Icons glyph, kept in `SourceIcons` with the others so each stays distinct; shown on its rows and next to its checkbox), and `GetResources()` returning `Resource` records. Take an optional `ILog`.

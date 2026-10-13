@@ -10,7 +10,7 @@ A personal Windows launcher. Press a global hotkey, type in the compact search w
 
 ## Status
 
-Searches Desktop and Start Menu shortcuts, Firefox bookmarks, Edge favorites, the Windows Run history and Windows settings pages and tools. Also: recents, row actions, tray icon, settings, installer.
+Searches your own custom entries, Desktop and Start Menu shortcuts, Firefox bookmarks, Edge favorites, the Windows Run history and Windows settings pages and tools. Also: recents, pins, aliases, hidden entries, row actions, tray icon, settings, installer.
 
 ## Install
 
@@ -26,7 +26,7 @@ Upgrade: run a newer setup over the old one. Uninstall: *Settings > Apps*. Your 
 
 | Key | Action |
 | --- | --- |
-| Ctrl+Alt+Space | Show / hide the launcher (configurable in Settings) |
+| Ctrl+Alt+Space | Show / hide the launcher (configurable in Settings > Keys) |
 | Type | Filter resources |
 | Up / Down | Move selection |
 | Page Up / Page Down | Move selection by one page |
@@ -37,11 +37,13 @@ Upgrade: run a newer setup over the old one. Uninstall: *Settings > Apps*. Your 
 | Ctrl+C | Copy the selected item's path, URL or command; the launcher stays open. With text selected in the search box, copies that text |
 | Ctrl+P | Pin or unpin the selected item (also the pin icon on the selected row; a pinned item always shows it) |
 | F2 | Set the selected item's alias, in a box on its row (also the alias icon): Enter saves, Esc cancels, empty removes it |
+| Ctrl+H | Hide the selected item from results and recents (also the hide icon); restore it in Settings > Entries |
+| Ctrl+N | When nothing matches: make the typed text a custom entry (also the **+** button right of the search box). A box on the row asks for its name: Enter saves, Esc cancels |
 | Del | Remove the selected item from recents (search box empty) |
 | Tab | Move the focus to the Settings button (Enter or Space opens Settings), and back |
 | Esc | Clear the search box; when it is empty, hide the launcher |
 
-Two lines under the search box say which keys apply to the selected item: what Enter does (with Ctrl and Shift) on the first, the other keys (Ctrl+C, Ctrl+P, F2, Del) on the second. In the list, an icon on the right of each row shows the same action (click it to do it, like Enter), and an icon on the left the source the item comes from (hover them for the wording); Settings > Sources shows the same source icons.
+Two lines under the search box say which keys apply to the selected item: what Enter does (with Ctrl and Shift) on the first, the other keys (Ctrl+C, Ctrl+P, F2, Ctrl+H, Ctrl+N, Del) on the second. Settings > Keys lists every key. In the list, an icon on the right of each row shows the same action (click it to do it, like Enter), and an icon on the left the source the item comes from (hover them for the wording); Settings > Sources shows the same source icons.
 
 **Tray icon.** Click: show the launcher. Menu: Show, Settings, Log window, Quit.
 
@@ -53,9 +55,11 @@ Gear button in the launcher, or tray menu > Settings. A dialog over the launcher
 
 | Tab | Options |
 | --- | --- |
-| General | Hotkey (must include Ctrl, Alt or Win), number of recent items (default 20), launcher position, ignore accents when searching (default on), start with Windows |
+| General | Number of recent items (default 20), launcher position, ignore accents when searching (default on), start with Windows |
 | Appearance | Theme: follow Windows (default), light or dark. The tray menu follows at the next start |
-| Sources | Start Menu, Firefox bookmarks, Edge favorites, Windows Run history, Windows settings and tools (on / off) |
+| Sources | Custom entries, Start Menu, Firefox bookmarks, Edge favorites, Windows Run history, Windows settings and tools (on / off) |
+| Entries | Hidden entries (restore), custom entries (edit name and target, delete), aliases (edit, remove), pins (unpin). Enter in a box saves its row |
+| Keys | Hotkey (must include Ctrl, Alt or Win), and the list of keys (read only) |
 | Logging | Detailed (debug) logging, open the log window |
 
 **Find a setting**: type in the box at the top (Ctrl+F) to see only the matching settings, from every tab. Esc clears it.
@@ -81,7 +85,9 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#search).
 - **Start.** Started by you (Start Menu, desktop shortcut, end of setup), coursee shows the launcher. Started at sign-in, it stays in the notification area: the auto start entry runs `coursee.exe --hidden`. An entry written by an older version (without `--hidden`) is updated at the next start.
 - **Start with Windows** is ticked only when Windows starts *this* copy. If it starts another one (say the installed copy, while you run a build), Settings shows its path; ticking the box switches auto start to this copy.
 - **One copy at a time.** Starting coursee while it is already running shows the launcher of the running copy.
-- **Pins and aliases** belong to an item's target (path, URL or command): two shortcuts to the same program share them, and they stay when a shortcut is renamed or a source is switched off and on. What you typed (a URL or command that matched nothing) cannot be pinned or given an alias.
+- **Pins and aliases** belong to an item's target (path, URL or command): two shortcuts to the same program share them, and they stay when a shortcut is renamed or a source is switched off and on. What you typed (a URL or command that matched nothing) cannot be pinned, given an alias or hidden.
+- **Hidden items** are that exact row (source, name and target): hiding one of two shortcuts to the same program keeps the other. A hidden item's alias finds nothing.
+- **Custom entries** are your own name for a URL, folder, file or command. What the target is, and so what Enter does, is decided like for typed text. Changing a target in Settings > Entries keeps the entry's pin, alias and recent history; deleting an entry keeps its pin and alias, like a removed shortcut.
 - **Instant window.** Sources are reloaded in the background each time the launcher opens: it shows the previous list at once, and new or removed items appear a moment later.
 - **Desktop and Start Menu shortcuts** are searched by their target, but opened through the shortcut itself, so their arguments and working folder are kept. Uninstall shortcuts are skipped, and a program found in both places is listed once.
 - **Firefox**: default profile only, bookmarks only (no folders), opened in Firefox.
@@ -98,7 +104,8 @@ Everything stays on your computer, in `%LOCALAPPDATA%\coursee`:
 | --- | --- |
 | `settings.json` | Settings |
 | `recents.json` | Recent list, with the last times each item was opened |
-| `entries.json` | Pinned items and aliases |
+| `entries.json` | Pinned items, aliases and hidden items |
+| `custom.json` | Custom entries |
 | `windows.json` | Where each window was left |
 | `logs\coursee.log` | Log, at most 3 files of 1 MB, oldest deleted |
 
