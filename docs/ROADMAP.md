@@ -2,13 +2,13 @@
 
 Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.md).
 
-| Version | Status      | Theme                                                                                |
-| ------- | ----------- | ------------------------------------------------------------------------------------ |
-| 0.1     | Done        | Hotkey, search, recents, Desktop, Firefox and Run history sources, settings, logging |
-| 0.2     | Done        | Tray icon, Start Menu source, row actions, installer                                 |
-| 0.3     | Done        | Code layout, Edge source, right browser, window positions, theme, settings window    |
-| 0.4     | Done        | Launcher position, list keys, Windows settings source, icons, keyboard-only Settings |
-| 0.5     | In test     | Accents ignored, copy, most used first, pins, aliases                                |
+| Version | Status | Theme                                                                                |
+| ------- | ------ | ------------------------------------------------------------------------------------ |
+| 0.1     | Done   | Hotkey, search, recents, Desktop, Firefox and Run history sources, settings, logging |
+| 0.2     | Done   | Tray icon, Start Menu source, row actions, installer                                 |
+| 0.3     | Done   | Code layout, Edge source, right browser, window positions, theme, settings window    |
+| 0.4     | Done   | Launcher position, list keys, Windows settings source, icons, keyboard-only Settings |
+| 0.5     | Done   | Accents ignored, copy, most used first, pins, aliases                                |
 
 ## 0.1
 1. **Hotkey and window.** A global hotkey toggles the compact window. Only one copy of coursee runs: starting it again shows the launcher of the running copy.
@@ -51,7 +51,6 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
    - **Centered on the mouse's monitor** (default): in the middle of the monitor under the mouse.
    - **At the mouse**: centered on the mouse pointer.
    - **Where I left it**: its last position (as in 0.3).
-
    It is always kept fully on screen. The launcher can still be dragged; only *Where I left it* remembers where.
 2. **List keys.** Page Up / Page Down move the selection by one page of the list, Ctrl+Home / Ctrl+End to the first / last item. Home and End stay with the search box (start / end of the text).
 3. **Source: Windows settings.** A fixed list of Windows settings pages and tools, opened directly: Installed apps, Network, Display, Sound, Windows Update, Services, Device Manager, Event Viewer, Advanced system settings, Environment variables, Control Panel, and more. coursee only opens them, it never changes a setting. Names are written to be found (for example "Installed apps (uninstall programs)"); search still matches name and target only. Consoles and programs (`.msc`, `.exe`) can be run as administrator. Switchable in **Sources**.
