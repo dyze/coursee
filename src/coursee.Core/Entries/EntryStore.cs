@@ -1,13 +1,15 @@
 using System.Text.Json;
+using Coursee.Core.Resources;
 using Coursee.Core.Search;
 
 namespace Coursee.Core.Entries;
 
 /// <summary>
-/// What the user set on entries, persisted as JSON: which ones are pinned, and their aliases.
-/// An entry is known by its target, like in the recent list, so it keeps its pin and alias when
-/// a shortcut is renamed, and gets them back when its source is switched on again. A missing or
-/// corrupt file means nothing is set.
+/// What the user set on entries, persisted as JSON: which ones are pinned, their aliases, and
+/// which ones are hidden. For pins and aliases an entry is known by its target, like in the recent
+/// list, so it keeps them when a shortcut is renamed, and gets them back when its source is
+/// switched on again. A hidden entry is known by its source, name and target (<see cref="HiddenEntry"/>).
+/// A missing or corrupt file means nothing is set.
 /// </summary>
 public sealed class EntryStore
 {
@@ -16,6 +18,8 @@ public sealed class EntryStore
 
     /// <summary>Alias by target: an entry has at most one alias, and an alias belongs to one entry.</summary>
     private readonly Dictionary<string, string> _aliases = new(StringComparer.OrdinalIgnoreCase);
+
+    private readonly List<HiddenEntry> _hidden = [];
 
     public EntryStore(string path)
     {
@@ -30,6 +34,14 @@ public sealed class EntryStore
             if (cleaned.Length > 0 && TargetOfAlias(cleaned) is null && !_aliases.ContainsKey(target))
             {
                 _aliases[target] = cleaned;
+            }
+        }
+
+        foreach (var hidden in data?.Hidden ?? [])
+        {
+            if (hidden is { Source: not null, Name: not null, Target: not null } && !_hidden.Any(hidden.Matches))
+            {
+                _hidden.Add(hidden);
             }
         }
     }
@@ -89,6 +101,40 @@ public sealed class EntryStore
         return movedFrom;
     }
 
+    /// <summary>The hidden entries, in the order they were hidden.</summary>
+    public IReadOnlyList<HiddenEntry> Hidden => _hidden.ToList();
+
+    public bool IsHidden(Resource resource) => _hidden.Any(hidden => hidden.Matches(resource));
+
+    /// <summary>The resources that are not hidden, in their order.</summary>
+    public IReadOnlyList<Resource> Visible(IEnumerable<Resource> resources) =>
+        resources.Where(resource => !IsHidden(resource)).ToList();
+
+    /// <summary>Hides this entry from results and recents. Returns false (and saves nothing) when it already was.</summary>
+    public bool Hide(Resource resource)
+    {
+        if (IsHidden(resource))
+        {
+            return false;
+        }
+
+        _hidden.Add(HiddenEntry.Of(resource));
+        Save();
+        return true;
+    }
+
+    /// <summary>Shows a hidden entry again. Returns false (and saves nothing) when it was not hidden.</summary>
+    public bool Restore(HiddenEntry entry)
+    {
+        if (_hidden.RemoveAll(entry.Matches) == 0)
+        {
+            return false;
+        }
+
+        Save();
+        return true;
+    }
+
     private void Save()
     {
         var directory = Path.GetDirectoryName(_path);
@@ -101,7 +147,8 @@ public sealed class EntryStore
             _pinned.Order(StringComparer.OrdinalIgnoreCase).ToList(),
             _aliases
                 .OrderBy(pair => pair.Value, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(pair => pair.Value, pair => pair.Key));
+                .ToDictionary(pair => pair.Value, pair => pair.Key),
+            _hidden);
         File.WriteAllText(_path, JsonSerializer.Serialize(data));
     }
 
@@ -120,5 +167,8 @@ public sealed class EntryStore
     }
 
     /// <param name="Aliases">Target by alias, as the user reads it.</param>
-    internal sealed record EntryData(List<string>? Pinned, Dictionary<string, string>? Aliases = null);
+    internal sealed record EntryData(
+        List<string>? Pinned,
+        Dictionary<string, string>? Aliases = null,
+        List<HiddenEntry>? Hidden = null);
 }

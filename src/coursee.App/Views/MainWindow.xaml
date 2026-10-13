@@ -37,7 +37,7 @@
       </Style.Triggers>
     </Style>
 
-    <!-- The pin and alias icons: shown on the selected row, and on the row under the mouse. The last
+    <!-- The pin, alias and hide icons: shown on the selected row, and on the row under the mouse. The last
          matching trigger wins, so a disabled icon (typed text) stays hidden. -->
     <Style x:Key="RevealedRowIconButton" TargetType="Button" BasedOn="{StaticResource RowIconButton}">
       <Setter Property="Visibility" Value="Hidden" />
@@ -191,6 +191,11 @@
                       IsEnabled="{Binding CanSetAlias}"
                       ToolTip="{Binding AliasToolTip}"
                       Click="AliasButton_Click" />
+              <Button Style="{StaticResource RevealedRowIconButton}"
+                      Content="&#xED1A;"
+                      IsEnabled="{Binding CanHide}"
+                      ToolTip="Hide from results and recents (Ctrl+H). Restore it in Settings > Entries"
+                      Click="HideButton_Click" />
             </StackPanel>
           </Grid>
         </DataTemplate>

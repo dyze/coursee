@@ -25,6 +25,9 @@ public sealed class ResultRow(Resource resource, bool isPinned, string? alias) :
     /// <summary>Typed text has no entry of its own: no alias icon.</summary>
     public bool CanSetAlias => ResourceActions.CanSetAlias(Resource);
 
+    /// <summary>Typed text has no entry of its own: no hide icon.</summary>
+    public bool CanHide => ResourceActions.CanHide(Resource);
+
     /// <summary>
     /// Segoe Fluent Icons: a tilted pin when pinned, an upright one otherwise. When pinned, the window
     /// also fills it, with the PinnedFill glyph (E841) drawn over this one: alone it is incomplete.

@@ -44,6 +44,9 @@ public static class ResourceActions
     /// <summary>F2: entries from a source can have an alias. Not what was typed, for the same reason.</summary>
     public static bool CanSetAlias(Resource resource) => IsEntry(resource);
 
+    /// <summary>Ctrl+H: entries from a source can be hidden. Not what was typed: there is nothing to hide.</summary>
+    public static bool CanHide(Resource resource) => IsEntry(resource);
+
     private static bool IsEntry(Resource resource) => resource.Source != FallbackClassifier.SourceName;
 
     /// <summary>
@@ -95,6 +98,11 @@ public static class ResourceActions
         if (CanSetAlias(resource))
         {
             parts.Add("F2: Alias");
+        }
+
+        if (CanHide(resource))
+        {
+            parts.Add("Ctrl+H: Hide");
         }
 
         if (inRecents)
