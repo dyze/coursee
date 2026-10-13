@@ -29,8 +29,8 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | --- | --- |
 | *(root)* | `AppVersion` |
 | `Resources/` | `Resource` and what can be done with it: `ResourceActions`, `ActionLabels` (the wording, and the `ResourceAction` behind the row icon), `FallbackClassifier`, `CommandLine`, `Browsers` |
-| `Search/` | `SearchEngine`, `TextFolding` (accents removed before matching), `ListNavigation` (moving the selection in the result list) |
-| `Recents/` | `RecentStore` |
+| `Search/` | `SearchEngine`, `SearchBoosts` (what raises a result above its match), `TextFolding` (accents removed before matching), `ListNavigation` (moving the selection in the result list) |
+| `Recents/` | `RecentStore`, `Frecency` (recency plus frequency) |
 | `Settings/` | `SettingsStore`, `SettingsCatalog` (the entries of the Settings window, their tabs, and the search that finds them) |
 | `Sources/` | `IResourceSource`, `SourceLoader`, `SourceMonitor`, `SourceIcons` (the icon of each source, found by name for a row), and each source with the interface it needs from `App`; `BookmarkUrls` and `ChromiumBookmarks` (Edge's file format, shared by Chrome) for the browser sources |
 | `Platform/` | The other interfaces `App` implements (`IAutoStart`, `IHotkeyRegistrar`, `IBrowserLocator`) and their rules (`AutoStartCommand`, `HotkeyGesture`) |
@@ -81,7 +81,18 @@ Enter  ─► shell opens Resource.OpenTarget, RecentStore records it
 | Target (path, URL, command) contains the word | 30 |
 | Word's letters appear in order in the name (`ffx` → *Firefox*) | 10 |
 
+An entry opened through coursee then gains a **usage bonus**, added once to its total (not per word): see [Recents](#recents).
+
 Results are sorted by total score, then by name, and capped at 50. Matching ignores case, and accents: `TextFolding.Fold` removes them from the query, names and targets before comparing (`Événements` → `Evenements`; letters such as `ß` or `œ` are kept).
+
+## Recents
+- `RecentStore` (`recents.json`) keeps the entries opened through coursee, by target, each with its last 10 open times (`Frecency.MaxOpens`). When full, the least recently opened entry goes first. Del on the recent list removes an entry with its history. The time comes from an injected `TimeProvider`, so tests move the clock.
+- `Frecency` gives each open points by its age: 10 within a day, 5 within a week, 2 within a month, 1 after.
+  - The **recent list** is ordered by the total, then by the last open.
+  - The **search bonus** is the total capped at 25 (`Frecency.MaxBonus`). The cap keeps the match levels apart where they matter: a name start (100) beats letters in order plus the bonus (35), and a name match (60) beats a target match plus the bonus (55). A used entry can pass one level up, for example a word start (80 + 25) over a name start (100).
+  - Only entries still in the list have a bonus (20 by default, Settings > General).
+- `SearchEngine` gets the bonus through `SearchBoosts`, so it stays a pure function of its inputs.
+- Up to 0.4 the file was a plain list of resources; it is read as each one opened once, in its order, and saved in the new format at the next open.
 
 ## Adding a source
 1. In `Core/Sources`, implement `IResourceSource`: a stable `Name` (it is also the key stored in `settings.json`), a `DisplayName` for Settings, `CanBeDisabled` (true gives it a checkbox in **Sources**), an `Icon` (a Segoe Fluent Icons glyph, kept in `SourceIcons` with the others so each stays distinct; shown on its rows and next to its checkbox), and `GetResources()` returning `Resource` records. Take an optional `ILog`.

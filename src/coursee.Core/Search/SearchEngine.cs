@@ -5,7 +5,7 @@ namespace Coursee.Core.Search;
 /// <summary>
 /// In-memory search over resources. Every whitespace-separated token of the query
 /// must match; a higher score means a better match. Targets only, no content search.
-/// Matching ignores case and accents.
+/// Matching ignores case and accents. <see cref="SearchBoosts"/> then raise some results.
 /// </summary>
 public static class SearchEngine
 {
@@ -15,8 +15,13 @@ public static class SearchEngine
     private const int TargetContains = 30;
     private const int NameSubsequence = 10;
 
-    public static IReadOnlyList<Resource> Search(IEnumerable<Resource> resources, string query, int limit = 50)
+    public static IReadOnlyList<Resource> Search(
+        IEnumerable<Resource> resources,
+        string query,
+        SearchBoosts? boosts = null,
+        int limit = 50)
     {
+        boosts ??= SearchBoosts.None;
         if (string.IsNullOrWhiteSpace(query))
         {
             return [];
@@ -27,6 +32,7 @@ public static class SearchEngine
         return resources
             .Select(resource => (Resource: resource, Score: Score(resource, tokens)))
             .Where(x => x.Score > 0)
+            .Select(x => (x.Resource, Score: x.Score + (boosts.UsageBonus?.Invoke(x.Resource.Target) ?? 0)))
             .OrderByDescending(x => x.Score)
             .ThenBy(x => x.Resource.Name, StringComparer.OrdinalIgnoreCase)
             .Take(limit)

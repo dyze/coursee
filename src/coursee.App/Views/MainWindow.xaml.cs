@@ -191,7 +191,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            items = SearchEngine.Search(_all, query);
+            items = SearchEngine.Search(_all, query, new SearchBoosts(UsageBonus: _recents.UsageBonus));
 
             // Nothing matches: offer what the Windows Run dialog would do with the typed text.
             if (items.Count == 0 && FallbackClassifier.Classify(query) is { } fallback)
