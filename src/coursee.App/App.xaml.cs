@@ -186,7 +186,7 @@ public partial class App : Application
             // Windows does not tell which application holds a hotkey. The tray icon still gives
             // access to the launcher; Settings opens so that another hotkey can be chosen.
             log.Warn("Hotkey", $"Could not register {settings.Hotkey} (used by another application or by Windows); no hotkey");
-            Dispatcher.BeginInvoke(() => window.ShowSettings(SettingsCatalog.GeneralTab, hotkeyProblem: true));
+            Dispatcher.BeginInvoke(() => window.ShowSettings(SettingsCatalog.KeysTab, hotkeyProblem: true));
             return;
         }
 

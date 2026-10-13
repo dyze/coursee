@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using Coursee.Core.Entries;
 using Coursee.Core.Logging;
@@ -100,6 +101,10 @@ public partial class SettingsWindow : Window
             Tag = SettingsCatalog.EntriesId,
         });
 
+        var keyBindings = new ListCollectionView(KeyBindings.All.ToList());
+        keyBindings.GroupDescriptions.Add(new PropertyGroupDescription(nameof(KeyBinding.Area)));
+        KeyBindingsList.ItemsSource = keyBindings;
+
         LoadValues();
         TabList.ItemsSource = _catalog.Tabs;
         TabList.SelectedIndex = 0;
@@ -155,7 +160,7 @@ public partial class SettingsWindow : Window
             $"The hotkey {_settings.Hotkey} is used by another application or by Windows, so coursee has no hotkey. "
             + "Choose another one with Change. Meanwhile, the coursee icon in the notification area opens the launcher.";
         HotkeyBanner.Visibility = Visibility.Visible;
-        ShowTab(SettingsCatalog.GeneralTab);
+        ShowTab(SettingsCatalog.KeysTab);
 
         _focusHotkey = true;
         if (IsLoaded)

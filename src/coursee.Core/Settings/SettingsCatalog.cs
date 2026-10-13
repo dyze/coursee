@@ -19,6 +19,7 @@ public sealed class SettingsCatalog
     public const string AppearanceTab = "Appearance";
     public const string SourcesTab = "Sources";
     public const string EntriesTab = "Entries";
+    public const string KeysTab = "Keys";
     public const string LoggingTab = "Logging";
 
     public const string HotkeyId = "Hotkey";
@@ -28,6 +29,7 @@ public sealed class SettingsCatalog
     public const string IgnoreAccentsId = "IgnoreAccents";
     public const string ThemeId = "Theme";
     public const string EntriesId = "Entries";
+    public const string KeyBindingsId = "KeyBindings";
     public const string DebugLoggingId = "DebugLogging";
     public const string LogWindowId = "LogWindow";
 
@@ -38,7 +40,6 @@ public sealed class SettingsCatalog
     {
         var entries = new List<SettingInfo>
         {
-            new(HotkeyId, GeneralTab, "Hotkey", ["shortcut", "key", "keyboard", "show", "launcher"]),
             new(RecentsCapacityId, GeneralTab, "Recent items to keep", ["recents", "history", "count", "number"]),
             new(AutoStartId, GeneralTab, "Start coursee when I sign in to Windows", ["auto", "startup", "boot", "login"]),
             new(LauncherPositionId, GeneralTab, "Launcher position", ["place", "where", "mouse", "center", "centre", "monitor", "screen", "window"]),
@@ -55,6 +56,8 @@ public sealed class SettingsCatalog
             EntriesTab,
             "Hidden entries, custom entries, aliases and pins",
             ["hide", "restore", "show", "custom", "own", "edit", "delete", "rename", "alias", "pin", "unpin"]));
+        entries.Add(new(HotkeyId, KeysTab, "Hotkey", ["shortcut", "key", "keyboard", "show", "launcher"]));
+        entries.Add(new(KeyBindingsId, KeysTab, "Key bindings", ["shortcut", "keyboard", "keys", "help"]));
         entries.Add(new(DebugLoggingId, LoggingTab, "Detailed (debug) logging", ["log", "verbose", "trace"]));
         entries.Add(new(LogWindowId, LoggingTab, "Open log window", ["log", "view", "errors"]));
 
@@ -62,7 +65,7 @@ public sealed class SettingsCatalog
     }
 
     /// <summary>The tabs, in the order they are shown.</summary>
-    public IReadOnlyList<string> Tabs { get; } = [GeneralTab, AppearanceTab, SourcesTab, EntriesTab, LoggingTab];
+    public IReadOnlyList<string> Tabs { get; } = [GeneralTab, AppearanceTab, SourcesTab, EntriesTab, KeysTab, LoggingTab];
 
     public IReadOnlyList<SettingInfo> All { get; }
 

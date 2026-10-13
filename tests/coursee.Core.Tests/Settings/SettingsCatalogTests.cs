@@ -124,11 +124,34 @@ public class SettingsCatalogTests
     }
 
     [Fact]
-    public void Tabs_EntriesComeAfterSources()
+    public void Tabs_EntriesAndKeysComeBeforeLogging()
     {
         Assert.Equal(
-            new[] { SettingsCatalog.GeneralTab, SettingsCatalog.AppearanceTab, SettingsCatalog.SourcesTab, SettingsCatalog.EntriesTab, SettingsCatalog.LoggingTab },
+            new[]
+            {
+                SettingsCatalog.GeneralTab,
+                SettingsCatalog.AppearanceTab,
+                SettingsCatalog.SourcesTab,
+                SettingsCatalog.EntriesTab,
+                SettingsCatalog.KeysTab,
+                SettingsCatalog.LoggingTab,
+            },
             Catalog().Tabs);
+    }
+
+    [Fact]
+    public void Hotkey_IsInTheKeysTab()
+    {
+        Assert.Equal(SettingsCatalog.KeysTab, Catalog().All.Single(entry => entry.Id == SettingsCatalog.HotkeyId).Tab);
+    }
+
+    [Theory]
+    [InlineData("key bindings")]
+    [InlineData("keyboard")]
+    public void Find_FindsTheKeyBindings(string query)
+    {
+        Assert.Contains(Catalog().Find(query), entry => entry.Id == SettingsCatalog.KeyBindingsId);
+        Assert.Equal(SettingsCatalog.KeysTab, Catalog().All.Single(entry => entry.Id == SettingsCatalog.KeyBindingsId).Tab);
     }
 
     [Fact]

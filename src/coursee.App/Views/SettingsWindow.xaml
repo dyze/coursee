@@ -4,7 +4,7 @@
         xmlns:settings="clr-namespace:Coursee.Core.Settings;assembly=coursee.Core"
         Title="coursee settings"
         Icon="/Assets/coursee.ico"
-        Width="560" Height="440"
+        Width="600" Height="460"
         MinWidth="440" MinHeight="300"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
@@ -63,9 +63,10 @@
              Background="Transparent"
              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
              SelectionChanged="TabList_SelectionChanged">
+      <!-- Wraps when the window is too narrow for every tab. -->
       <ListBox.ItemsPanel>
         <ItemsPanelTemplate>
-          <StackPanel Orientation="Horizontal" />
+          <WrapPanel Orientation="Horizontal" />
         </ItemsPanelTemplate>
       </ListBox.ItemsPanel>
       <ListBox.ItemContainerStyle>
@@ -91,21 +92,6 @@
 
         <StackPanel Tag="{x:Static settings:SettingsCatalog.GeneralTab}">
           <TextBlock Text="{x:Static settings:SettingsCatalog.GeneralTab}" Style="{StaticResource SectionHeader}" />
-
-          <StackPanel Tag="{x:Static settings:SettingsCatalog.HotkeyId}"
-                      Margin="0,10,0,0"
-                      Orientation="Horizontal">
-            <TextBlock Text="Hotkey" Width="150" VerticalAlignment="Center" />
-            <TextBox x:Name="HotkeyText"
-                     Width="230"
-                     IsReadOnly="True"
-                     Focusable="False" />
-            <Button x:Name="HotkeyButton"
-                    Margin="8,0,0,0"
-                    Padding="12,4"
-                    Content="Change"
-                    Click="HotkeyButton_Click" />
-          </StackPanel>
 
           <StackPanel Tag="{x:Static settings:SettingsCatalog.RecentsCapacityId}"
                       Margin="0,10,0,0"
@@ -167,6 +153,52 @@
         <!-- The entries panel is added by the window. -->
         <StackPanel x:Name="EntriesSection" Tag="{x:Static settings:SettingsCatalog.EntriesTab}">
           <TextBlock Text="{x:Static settings:SettingsCatalog.EntriesTab}" Style="{StaticResource SectionHeader}" />
+        </StackPanel>
+
+        <StackPanel Tag="{x:Static settings:SettingsCatalog.KeysTab}">
+          <TextBlock Text="{x:Static settings:SettingsCatalog.KeysTab}" Style="{StaticResource SectionHeader}" />
+
+          <StackPanel Tag="{x:Static settings:SettingsCatalog.HotkeyId}"
+                      Margin="0,10,0,0"
+                      Orientation="Horizontal">
+            <TextBlock Text="Hotkey" Width="150" VerticalAlignment="Center" />
+            <TextBox x:Name="HotkeyText"
+                     Width="230"
+                     IsReadOnly="True"
+                     Focusable="False" />
+            <Button x:Name="HotkeyButton"
+                    Margin="8,0,0,0"
+                    Padding="12,4"
+                    Content="Change"
+                    Click="HotkeyButton_Click" />
+          </StackPanel>
+
+          <!-- Read only: the keys cannot be changed (yet). Grouped by where they work. -->
+          <ItemsControl x:Name="KeyBindingsList"
+                        Tag="{x:Static settings:SettingsCatalog.KeyBindingsId}"
+                        Focusable="False">
+            <ItemsControl.GroupStyle>
+              <GroupStyle>
+                <GroupStyle.HeaderTemplate>
+                  <DataTemplate>
+                    <TextBlock Margin="0,14,0,4" FontWeight="SemiBold" Text="{Binding Name}" />
+                  </DataTemplate>
+                </GroupStyle.HeaderTemplate>
+              </GroupStyle>
+            </ItemsControl.GroupStyle>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid Margin="0,2">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="190" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <TextBlock Text="{Binding Keys}" FontWeight="SemiBold" />
+                  <TextBlock Grid.Column="1" Text="{Binding Action}" TextWrapping="Wrap" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
         </StackPanel>
 
         <StackPanel Tag="{x:Static settings:SettingsCatalog.LoggingTab}">
