@@ -57,10 +57,10 @@ public static class ResourceActions
             : null;
 
     /// <summary>
-    /// The line under the search box: what Enter does, then the other keys that apply.
-    /// <paramref name="inRecents"/> is true when the item is shown in the recent list (Del removes it).
+    /// The first line under the search box: what Enter does, with Ctrl and Shift when they apply.
+    /// The other keys are on the second line (<see cref="KeysHint"/>).
     /// </summary>
-    public static string Hint(Resource resource, bool inRecents)
+    public static string Hint(Resource resource)
     {
         var typed = resource.Source == FallbackClassifier.SourceName ? " (what you typed)" : string.Empty;
         var parts = new List<string> { $"Enter: {resource.ActionLabel}{typed}" };
@@ -75,13 +75,37 @@ public static class ResourceActions
             parts.Add("Ctrl+Shift+Enter: Run as admin");
         }
 
+        return string.Join(Separator, parts);
+    }
+
+    /// <summary>
+    /// The second line under the search box: the other keys that apply to the selected item.
+    /// <paramref name="inRecents"/> is true when the item is shown in the recent list (Del removes it);
+    /// <paramref name="isPinned"/> when it is pinned (Ctrl+P unpins it).
+    /// </summary>
+    public static string KeysHint(Resource resource, bool inRecents, bool isPinned)
+    {
+        var parts = new List<string> { "Ctrl+C: Copy" };
+
+        if (CanPin(resource))
+        {
+            parts.Add(isPinned ? "Ctrl+P: Unpin" : "Ctrl+P: Pin");
+        }
+
+        if (CanSetAlias(resource))
+        {
+            parts.Add("F2: Alias");
+        }
+
         if (inRecents)
         {
             parts.Add("Del: Remove from recents");
         }
 
-        return string.Join("  ·  ", parts);
+        return string.Join(Separator, parts);
     }
+
+    private const string Separator = "  ·  ";
 
     /// <summary>"C:\work\" becomes "C:\work" (Explorer selects nothing otherwise); a drive root such as "C:\" is kept.</summary>
     private static string WithoutTrailingSlash(string path)

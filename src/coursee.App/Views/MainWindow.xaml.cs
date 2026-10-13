@@ -235,13 +235,17 @@ public partial class MainWindow : Window
 
     private void UpdateActionText()
     {
-        ActionText.Text = Selected switch
+        if (ResultsList.SelectedItem is ResultRow row)
         {
-            { } resource => ResourceActions.Hint(resource, inRecents: IsShowingRecents),
-            _ => string.IsNullOrWhiteSpace(SearchBox.Text)
-                ? "Type to search, or type a path, URL or command"
-                : "No match",
-        };
+            ActionText.Text = ResourceActions.Hint(row.Resource);
+            KeysText.Text = ResourceActions.KeysHint(row.Resource, inRecents: IsShowingRecents, isPinned: row.IsPinned);
+            return;
+        }
+
+        ActionText.Text = string.IsNullOrWhiteSpace(SearchBox.Text)
+            ? "Type to search, or type a path, URL or command"
+            : "No match";
+        KeysText.Text = string.Empty;
     }
 
     /// <summary>The resource of the selected row, if any.</summary>
@@ -366,8 +370,8 @@ public partial class MainWindow : Window
 
     /// <summary>
     /// Ctrl+C with no text selected in the search box: copies the selected item's target (the path,
-    /// URL or command shown under its name). The launcher stays open; the line under the search box
-    /// says it was copied until the selection or the text changes.
+    /// URL or command shown under its name). The launcher stays open; the second line under the search
+    /// box says it was copied until the selection or the text changes.
     /// </summary>
     private void CopySelected()
     {
@@ -389,7 +393,7 @@ public partial class MainWindow : Window
         }
 
         _log.Info("Action", $"Copied: {resource.Target} ({resource.Source})");
-        ActionText.Text = $"Copied: {resource.Target}";
+        KeysText.Text = $"Copied: {resource.Target}";
     }
 
     /// <summary>Ctrl+P or the pin icon: pins or unpins the selected entry. The list is reordered, the entry stays selected.</summary>

@@ -51,7 +51,7 @@ public class ResourceActionsTests
     {
         var bookmark = new Resource("Docs", "https://example.com", ResourceKind.Url, "Firefox", Browser: "Firefox");
 
-        Assert.Equal("Enter: Open in Firefox", ResourceActions.Hint(bookmark, inRecents: false));
+        Assert.Equal("Enter: Open in Firefox", ResourceActions.Hint(bookmark));
     }
 
     [Theory]
@@ -117,19 +117,51 @@ public class ResourceActionsTests
     {
         Assert.Equal(
             "Enter: Open file  ·  Ctrl+Enter: Show in folder  ·  Ctrl+Shift+Enter: Run as admin",
-            ResourceActions.Hint(R(ResourceKind.File, @"C:\tools\app.exe"), inRecents: false));
+            ResourceActions.Hint(R(ResourceKind.File, @"C:\tools\app.exe")));
 
         Assert.Equal(
             "Enter: Open URL",
-            ResourceActions.Hint(R(ResourceKind.Url, "https://example.com"), inRecents: false));
+            ResourceActions.Hint(R(ResourceKind.Url, "https://example.com")));
     }
 
     [Fact]
-    public void Hint_OffersRemovalForRecentItems()
+    public void KeysHint_ListsCopyPinAndAlias()
     {
         Assert.Equal(
-            "Enter: Open folder  ·  Ctrl+Enter: Show in folder  ·  Del: Remove from recents",
-            ResourceActions.Hint(R(ResourceKind.Folder, @"C:\work"), inRecents: true));
+            "Ctrl+C: Copy  ·  Ctrl+P: Pin  ·  F2: Alias",
+            ResourceActions.KeysHint(R(ResourceKind.Folder, @"C:\work"), inRecents: false, isPinned: false));
+    }
+
+    [Fact]
+    public void KeysHint_OffersUnpinForAPinnedItem()
+    {
+        Assert.Equal(
+            "Ctrl+C: Copy  ·  Ctrl+P: Unpin  ·  F2: Alias",
+            ResourceActions.KeysHint(R(ResourceKind.Folder, @"C:\work"), inRecents: false, isPinned: true));
+    }
+
+    [Fact]
+    public void KeysHint_OffersRemovalForRecentItems()
+    {
+        Assert.Equal(
+            "Ctrl+C: Copy  ·  Ctrl+P: Pin  ·  F2: Alias  ·  Del: Remove from recents",
+            ResourceActions.KeysHint(R(ResourceKind.Folder, @"C:\work"), inRecents: true, isPinned: false));
+    }
+
+    [Fact]
+    public void KeysHint_ForTypedText_OnlyCopy()
+    {
+        Assert.Equal(
+            "Ctrl+C: Copy",
+            ResourceActions.KeysHint(R(ResourceKind.Command, "notepad", FallbackClassifier.SourceName), inRecents: false, isPinned: false));
+    }
+
+    [Fact]
+    public void Hint_LeavesTheOtherKeysToTheSecondLine()
+    {
+        Assert.Equal(
+            "Enter: Open folder  ·  Ctrl+Enter: Show in folder",
+            ResourceActions.Hint(R(ResourceKind.Folder, @"C:\work")));
     }
 
     [Fact]
@@ -137,7 +169,7 @@ public class ResourceActionsTests
     {
         Assert.Equal(
             "Enter: Run command (what you typed)  ·  Ctrl+Shift+Enter: Run as admin",
-            ResourceActions.Hint(R(ResourceKind.Command, "notepad", FallbackClassifier.SourceName), inRecents: false));
+            ResourceActions.Hint(R(ResourceKind.Command, "notepad", FallbackClassifier.SourceName)));
     }
 
     [Fact]
