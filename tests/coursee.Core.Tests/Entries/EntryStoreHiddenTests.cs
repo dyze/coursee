@@ -107,8 +107,8 @@ public sealed class EntryStoreHiddenTests : IDisposable
             {"Pinned":[],"Hidden":[
               null,
               {"Source":"Desktop","Name":"App"},
-              {"Source":"Desktop","Name":"App","Target":"C:\app.exe"},
-              {"Source":"desktop","Name":"APP","Target":"c:\app.exe"}
+              {"Source":"Desktop","Name":"App","Target":"C:\\app.exe"},
+              {"Source":"desktop","Name":"APP","Target":"c:\\app.exe"}
             ]}
             """);
 
@@ -121,7 +121,7 @@ public sealed class EntryStoreHiddenTests : IDisposable
     public void FileWithoutHiddenEntries_MeansNothingHidden()
     {
         Directory.CreateDirectory(_directory);
-        File.WriteAllText(FilePath, """{"Pinned":["C:\a"]}""");
+        File.WriteAllText(FilePath, """{"Pinned":["C:\\a"]}""");
 
         var store = new EntryStore(FilePath);
 
