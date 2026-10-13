@@ -102,7 +102,7 @@ public partial class SettingsWindow : Window
         });
 
         var keyBindings = new ListCollectionView(KeyBindings.All.ToList());
-        keyBindings.GroupDescriptions.Add(new PropertyGroupDescription(nameof(KeyBinding.Area)));
+        keyBindings.GroupDescriptions.Add(new PropertyGroupDescription(nameof(Core.Settings.KeyBinding.Area)));
         KeyBindingsList.ItemsSource = keyBindings;
 
         LoadValues();
