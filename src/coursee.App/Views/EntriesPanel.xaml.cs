@@ -188,12 +188,7 @@ public partial class EntriesPanel : UserControl
     private void DeleteCustomButton_Click(object sender, RoutedEventArgs e)
     {
         var entry = RowOf<CustomEntryRow>(sender).Entry;
-        var answer = MessageBox.Show(
-            Window.GetWindow(this)!,
-            $"Delete the custom entry \"{entry.Name}\"?",
-            "coursee",
-            MessageBoxButton.YesNo);
-        if (answer != MessageBoxResult.Yes)
+        if (!MessageDialog.Confirm(Window.GetWindow(this)!, $"Delete the custom entry \"{entry.Name}\"?"))
         {
             return;
         }

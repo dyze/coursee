@@ -42,7 +42,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `coursee.App` | Content |
 | --- | --- |
 | *(root)* | `App.xaml`: startup and wiring |
-| `Views/` | Windows: `MainWindow` (the launcher; its entry actions in `MainWindow.Entries.cs`), `SettingsWindow`, `LogWindow`; `ResultRow` (a row of the launcher: the resource, its pin and alias, and what its box is open for: `RowEdit`); `EntriesPanel` and `EntryRows` (Settings > Entries); `AppTheme`; `ActionGlyphConverter` (the Segoe Fluent glyph of each `ResourceAction`), `SourceIconConverter` (the icon of a row's source) |
+| `Views/` | Windows: `MainWindow` (the launcher; its entry actions in `MainWindow.Entries.cs`), `SettingsWindow`, `LogWindow`; `ResultRow` (a row of the launcher: the resource, its pin and alias, and what its box is open for: `RowEdit`); `EntriesPanel` and `EntryRows` (Settings > Entries); `MessageDialog` (messages and yes / no questions in the app's theme, instead of the Windows `MessageBox`); `AppTheme`; `ActionGlyphConverter` (the Segoe Fluent glyph of each `ResourceAction`), `SourceIconConverter` (the icon of a row's source) |
 | `Tray/` | `TrayIcon` |
 | `Platform/` | Implementations of the `Core` interfaces, `SingleInstance`, and window placement (`NativeWindows`, `WindowPlacer`) |
 | `Logging/` | `LogHub`, `SerilogFileLog` |

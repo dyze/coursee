@@ -532,5 +532,5 @@ public partial class SettingsWindow : Window
     /// <summary>Opens the log window in front of this dialog, which stays open (to switch debug logging on and watch, say).</summary>
     private void OpenLogButton_Click(object sender, RoutedEventArgs e) => _openLog(this);
 
-    private void ShowMessage(string message) => MessageBox.Show(this, message, "coursee");
+    private void ShowMessage(string message) => MessageDialog.Inform(this, message);
 }

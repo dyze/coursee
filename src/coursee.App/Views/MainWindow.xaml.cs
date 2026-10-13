@@ -688,7 +688,7 @@ public partial class MainWindow : Window
         _showingDialog = true;
         try
         {
-            MessageBox.Show(this, message, "coursee");
+            MessageDialog.Inform(this, message);
         }
         finally
         {
