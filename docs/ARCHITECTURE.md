@@ -54,6 +54,8 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | --- | --- | --- |
 | `Microsoft.Data.Sqlite` | Core | Read Firefox bookmarks (`places.sqlite`) |
 | `Serilog`, `Serilog.Sinks.File` | App | Log file |
+| `coverlet.msbuild` | Tests | Coverage of `Core`, build fails below 95 % lines |
+| `dotnet-reportgenerator-globaltool` | Local tool (`.config/dotnet-tools.json`) | HTML coverage report (`build.cmd`) |
 
 Shared build settings and the version are in `Directory.Build.props`; output goes to `artifacts/`. The installer is built with [Inno Setup](https://jrsoftware.org/isinfo.php) (`build/installer.cmd`, `build/installer/coursee.iss`), a tool installed on the PC, not a package.
 

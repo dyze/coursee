@@ -117,6 +117,8 @@ build.cmd     # Windows
 
 Both restore, build in Release and run the tests. Output goes to `artifacts/`. The version is set in `Directory.Build.props` only.
 
+The build fails if `Core` line coverage is below **95 %**. `build.cmd` also writes an HTML coverage report to `artifacts/coverage/report/`; `build.cmd open` opens it in the browser.
+
 ## Layout
 
 | Folder | Purpose |
@@ -129,3 +131,4 @@ Both restore, build in Release and run the tests. Output goes to `artifacts/`. T
 | `packages/` | Local NuGet packages, if any |
 | `samples/` | Samples |
 | `artifacts/` | Build output (git-ignored) |
+| `.config/` | Local dotnet tools (ReportGenerator) |

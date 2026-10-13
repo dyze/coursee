@@ -4,4 +4,5 @@ cd "$(dirname "$0")"
 
 dotnet restore
 dotnet build -c Release --no-restore
-dotnet test -c Release --no-build
+# -tl:off: the terminal logger would hide the coverage summary.
+dotnet test -c Release --no-build -tl:off

@@ -7,7 +7,21 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
+  <!-- Coverage of Core, enforced on every `dotnet test` (coverlet.msbuild). -->
+  <PropertyGroup>
+    <CollectCoverage>true</CollectCoverage>
+    <Include>[coursee.Core]*</Include>
+    <Threshold>95</Threshold>
+    <ThresholdType>line</ThresholdType>
+    <CoverletOutputFormat>cobertura</CoverletOutputFormat>
+    <CoverletOutput>$(ArtifactsPath)/coverage/</CoverletOutput>
+  </PropertyGroup>
+
   <ItemGroup>
+    <PackageReference Include="coverlet.msbuild" Version="10.1.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.0" />
