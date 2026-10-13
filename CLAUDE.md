@@ -30,7 +30,7 @@ Only those listed in `docs/ARCHITECTURE.md#stack`. Ask before adding one.
 - Bump it only when the owner asks.
 
 ## Repo layout
-`src/`, `tests/`, `docs/`, `build/`, `lib/`, `packages/`, `samples/`, `artifacts/` (ignored). Do not add top-level folders without asking.
+`src/`, `tests/`, `docs/`, `build/`, `lib/`, `packages/`, `samples/`, `.config/` (dotnet tools), `artifacts/` (ignored). Do not add top-level folders without asking.
 
 ## How we work
 - **Concise answers.** Short explanations, diagrams over long text.
@@ -43,14 +43,33 @@ Only those listed in `docs/ARCHITECTURE.md#stack`. Ask before adding one.
   - version scope → `docs/ROADMAP.md`
   - design and internals → `docs/ARCHITECTURE.md`
   - goal and principles → `docs/GOAL.md`
-
+  Prefer diagrams and tables to long descriptions.
   Link between them rather than copying. Update them when behavior changes.
 - **Don't touch** `LICENSE`.
+
+## Design rules
+
+* Be concise.
+* Follow Clean Architecture principles 
+* Avoid redundancies in explanations, try to update existing docs instead of creating new ones.
+* Ask clarifying questions before making architectural changes.
+* Mark in documents what is implemented and what is not.
+
+## Coding rules
+
+* Apply Clean Code principles. e.g. prioritize meaningful variable names rather than long comments.
+* Writing Code for Today's Problems, Not Tomorrow's Fantasies.
+* Remove dead code.
+* Avoid long modules. Move large, monolithic classes or methods into separate `.cs` files or helper classes to keep individual files concise and maintainable.
+* Avoid redundant code.
+* Validate with the owner's `build.cmd` run (see Build honesty).
+* Maintain Core library sub-systems code coverage target of **>=95%** (line coverage, enforced by `build.cmd`).
+* Reduce build warnings.
 
 ## Git
 - Commit and push only when asked.
 - Create branches only when asked. Otherwise work on `main`.
-- Small commits, imperative subject line ("Add Firefox bookmarks source").
+- Small commits, [Conventional Commits](https://www.conventionalcommits.org/en) with an imperative subject (`feat: add Firefox bookmarks source`).
 
 ## Definition of done
 Code is written, tests cover the new `Core` behavior, docs are updated, and the owner has run `build.cmd` successfully.
