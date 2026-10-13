@@ -34,6 +34,7 @@ Upgrade: run a newer setup over the old one. Uninstall: *Settings > Apps*. Your 
 | Enter | Open the selected resource, or act on the typed text if nothing matches (see below) |
 | Ctrl+Enter | Show the selected file or folder in Explorer, item selected |
 | Ctrl+Shift+Enter | Run the selected command, program or Windows tool as administrator (`.exe`, `.bat`, `.cmd`, `.com`, `.msc`) |
+| Ctrl+C | Copy the selected item's path, URL or command; the launcher stays open. With text selected in the search box, copies that text |
 | Del | Remove the selected item from recents (search box empty) |
 | Tab | Move the focus to the Settings button (Enter or Space opens Settings), and back |
 | Esc | Clear the search box; when it is empty, hide the launcher |

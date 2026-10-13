@@ -340,6 +340,34 @@ public partial class MainWindow : Window
         Hide();
     }
 
+    /// <summary>
+    /// Ctrl+C with no text selected in the search box: copies the selected item's target (the path,
+    /// URL or command shown under its name). The launcher stays open; the line under the search box
+    /// says it was copied until the selection or the text changes.
+    /// </summary>
+    private void CopySelected()
+    {
+        if (ResultsList.SelectedItem is not Resource resource)
+        {
+            return;
+        }
+
+        try
+        {
+            Clipboard.SetText(resource.Target);
+        }
+        catch (System.Runtime.InteropServices.ExternalException ex)
+        {
+            // Another application holds the clipboard.
+            _log.Warn("Action", $"Copy failed for {resource.Target}: {ex.Message}");
+            ShowMessage($"The clipboard is busy, try again. ({ex.Message})");
+            return;
+        }
+
+        _log.Info("Action", $"Copied: {resource.Target} ({resource.Source})");
+        ActionText.Text = $"Copied: {resource.Target}";
+    }
+
     /// <summary>Del on the recent list: forgets the selected item and keeps the selection in place.</summary>
     private void RemoveSelectedFromRecents()
     {
@@ -451,6 +479,13 @@ public partial class MainWindow : Window
                 break;
             case Key.Enter when Keyboard.Modifiers == ModifierKeys.None:
                 OpenSelected();
+                e.Handled = true;
+                break;
+            // With text selected in the search box, Ctrl+C is left to it and copies that text.
+            case Key.C when Keyboard.Modifiers == ModifierKeys.Control
+                            && SearchBox.SelectionLength == 0
+                            && ResultsList.SelectedItem is not null:
+                CopySelected();
                 e.Handled = true;
                 break;
             case Key.Delete when IsShowingRecents && ResultsList.SelectedItem is not null:
