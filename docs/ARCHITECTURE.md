@@ -31,7 +31,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `Resources/` | `Resource` and what can be done with it: `ResourceActions`, `ActionLabels` (the wording, and the `ResourceAction` behind the row icon), `FallbackClassifier`, `CommandLine`, `Browsers` |
 | `Search/` | `SearchEngine`, `SearchBoosts` (what raises a result above its match), `TextFolding` (accents removed before matching), `ListNavigation` (moving the selection in the result list) |
 | `Recents/` | `RecentStore`, `Frecency` (recency plus frequency) |
-| `Entries/` | `EntryStore`: what the user set on entries (pins) |
+| `Entries/` | `EntryStore`: what the user set on entries (pins, aliases) |
 | `Settings/` | `SettingsStore`, `SettingsCatalog` (the entries of the Settings window, their tabs, and the search that finds them) |
 | `Sources/` | `IResourceSource`, `SourceLoader`, `SourceMonitor`, `SourceIcons` (the icon of each source, found by name for a row), and each source with the interface it needs from `App`; `BookmarkUrls` and `ChromiumBookmarks` (Edge's file format, shared by Chrome) for the browser sources |
 | `Platform/` | The other interfaces `App` implements (`IAutoStart`, `IHotkeyRegistrar`, `IBrowserLocator`) and their rules (`AutoStartCommand`, `HotkeyGesture`) |
@@ -41,7 +41,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `coursee.App` | Content |
 | --- | --- |
 | *(root)* | `App.xaml`: startup and wiring |
-| `Views/` | Windows: `MainWindow` (the launcher), `SettingsWindow`, `LogWindow`; `ResultRow` (a row of the launcher: the resource and its pin); `AppTheme`; `ActionGlyphConverter` (the Segoe Fluent glyph of each `ResourceAction`), `SourceIconConverter` (the icon of a row's source) |
+| `Views/` | Windows: `MainWindow` (the launcher), `SettingsWindow`, `LogWindow`; `ResultRow` (a row of the launcher: the resource, its pin and alias, and whether its alias box is open); `AppTheme`; `ActionGlyphConverter` (the Segoe Fluent glyph of each `ResourceAction`), `SourceIconConverter` (the icon of a row's source) |
 | `Tray/` | `TrayIcon` |
 | `Platform/` | Implementations of the `Core` interfaces, `SingleInstance`, and window placement (`NativeWindows`, `WindowPlacer`) |
 | `Logging/` | `LogHub`, `SerilogFileLog` |
@@ -82,7 +82,10 @@ Enter  ─► shell opens Resource.OpenTarget, RecentStore records it
 | Target (path, URL, command) contains the word | 30 |
 | Word's letters appear in order in the name (`ffx` → *Firefox*) | 10 |
 
-An entry opened through coursee then gains a **usage bonus**, added once to its total (not per word): see [Recents](#recents). **Pinned** entries that match are listed before all others, ordered by their own scores, and before the 50 are cut: see [Entries](#entries).
+An entry opened through coursee then gains a **usage bonus**, added once to its total (not per word): see [Recents](#recents). Then, before the 50 are cut (see [Entries](#entries)):
+1. A query that is exactly an entry's **alias** (whole query, trimmed, ignoring case and accents) lists that entry first, every item with its target, whether the name matches or not.
+2. **Pinned** entries that match come next, ordered by their own scores.
+3. Then all the others.
 
 Results are sorted by total score, then by name, and capped at 50. Matching ignores case, and accents: `TextFolding.Fold` removes them from the query, names and targets before comparing (`Événements` → `Evenements`; letters such as `ß` or `œ` are kept).
 
@@ -96,10 +99,12 @@ Results are sorted by total score, then by name, and capped at 50. Matching igno
 - Up to 0.4 the file was a plain list of resources; it is read as each one opened once, in its order, and saved in the new format at the next open.
 
 ## Entries
-- `EntryStore` (`entries.json`) keeps what the user set on entries: the pinned targets. It is kept out of the sources, so adding a source still does not touch it, and out of `settings.json`: it is about entries, not how coursee behaves.
+- `EntryStore` (`entries.json`) keeps what the user set on entries: the pinned targets, and the aliases (stored as alias → target, as the user reads them).
+- An alias belongs to one entry and an entry has one alias: `SetAlias` replaces the entry's old alias, and moves an alias another entry had (it returns that entry, for the log). An empty alias removes it. Aliases are compared with `TextFolding.AreEqual` (case and accents ignored). It is kept out of the sources, so adding a source still does not touch it, and out of `settings.json`: it is about entries, not how coursee behaves.
 - An entry is known by its **target**, case-insensitive, as in recents. Two items with the same target (one program, two shortcut names) share their pin. A pin outlives a renamed shortcut and a source switched off.
-- Typed text (the fallback) cannot be pinned (`ResourceActions.CanPin`): it is no entry, and would never be listed.
-- The launcher shows a `ResultRow` per item. The pin icon is on the selected row only, hidden (not collapsed) where it does not apply, so the action icons stay aligned.
+- Typed text (the fallback) cannot be pinned or given an alias (`ResourceActions.CanPin`, `CanSetAlias`): it is no entry, and would never be listed.
+- The launcher shows a `ResultRow` per item. The pin and alias icons are on the selected row only, hidden (not collapsed) where they do not apply, so the action icons stay aligned. They never take the focus.
+- F2 opens a text box in the selected row. While it is open, the launcher's keys are off (Enter saves, Esc cancels, everything else is typed in the box), a background refresh does not rebuild the list under it, and losing the focus cancels.
 
 ## Adding a source
 1. In `Core/Sources`, implement `IResourceSource`: a stable `Name` (it is also the key stored in `settings.json`), a `DisplayName` for Settings, `CanBeDisabled` (true gives it a checkbox in **Sources**), an `Icon` (a Segoe Fluent Icons glyph, kept in `SourceIcons` with the others so each stays distinct; shown on its rows and next to its checkbox), and `GetResources()` returning `Resource` records. Take an optional `ILog`.

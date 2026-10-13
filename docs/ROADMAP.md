@@ -8,6 +8,7 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 | 0.2     | Done        | Tray icon, Start Menu source, row actions, installer                                 |
 | 0.3     | Done        | Code layout, Edge source, right browser, window positions, theme, settings window    |
 | 0.4     | Done        | Launcher position, list keys, Windows settings source, icons, keyboard-only Settings |
+| 0.5     | In test     | Accents ignored, copy, most used first, pins, aliases                                |
 
 ## 0.1
 1. **Hotkey and window.** A global hotkey toggles the compact window. Only one copy of coursee runs: starting it again shows the launcher of the running copy.
@@ -60,14 +61,14 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 7. **Source icons.** Each row shows a small icon of the source it comes from (typed text has its own). The **Sources** tab shows the same icon next to each source.
 8. **Keyboard only.** In the launcher, Tab moves the focus to the Settings button, Enter or Space opens Settings, Tab again goes back to the search box. In Settings: a logical Tab order, Ctrl+Tab / Ctrl+Shift+Tab switch tabs (arrows too, on the tab strip), Down in the Find box goes to the first setting shown, and the focused control is always visible.
 
-## 0.5 (to define)
+## 0.5
 1. **Ignore accents.** Matching ignores accents: `evene` finds *Événements*, `parametres` finds *Paramètres*.
-2. **Copy the target.** Ctrl+C copies the selected entry's path, URL or command. If text is selected in the search box, Ctrl+C copies that text instead.
+2. **Copy the target.** Ctrl+C copies the selected entry's path, URL or command, and the launcher stays open (the line under the search box says it was copied). If text is selected in the search box, Ctrl+C copies that text instead.
 3. **Priority to opened entries.** An entry opened through coursee gets a score bonus that grows with how often and how recently it was opened. The bonus is capped, so a strong name match still beats a weak match of an often opened entry. The recent list is ordered the same way (recency plus frequency).
 4. **Pinning.** Ctrl+P, or the pin icon at the right of the action icon, pins or unpins the selected entry. Pinned entries that match the query are listed first. With an empty search box, pinned entries are not shown (the recent list is).
-5. **Aliases.** F2, or the alias icon at the right of the action icon, sets a short name of your own for the selected entry (`ff` for Firefox). Typing the exact alias lists that entry first. An alias belongs to one entry: setting it on another entry moves it. F2 with an empty alias removes it.
+5. **Aliases.** F2, or the alias icon at the right of the action icon, sets a short name of your own for the selected entry (`ff` for Firefox), in a box on its row: Enter saves, Esc cancels. Typing the exact alias (the whole search, ignoring case and accents) lists that entry first, before the pinned ones. An alias belongs to one entry: setting it on another entry moves it. F2 with an empty alias removes it.
 
-   The pin and alias icons are shown on the selected row only.
+   The pin and alias icons are shown on the selected row only. Pins and aliases belong to the entry's target, like recents. What was typed (the fallback) cannot be pinned or given an alias; custom entries (0.6) cover that.
 
 ## 0.6 (to define)
 1. **Hide an entry.** Ctrl+H hides the selected entry from results and recents, to remove noise such as duplicate shortcuts or old bookmarks. Hidden entries can be restored in the **Entries** tab.

@@ -36,6 +36,7 @@ Upgrade: run a newer setup over the old one. Uninstall: *Settings > Apps*. Your 
 | Ctrl+Shift+Enter | Run the selected command, program or Windows tool as administrator (`.exe`, `.bat`, `.cmd`, `.com`, `.msc`) |
 | Ctrl+C | Copy the selected item's path, URL or command; the launcher stays open. With text selected in the search box, copies that text |
 | Ctrl+P | Pin or unpin the selected item (also the pin icon on the selected row) |
+| F2 | Set the selected item's alias, in a box on its row (also the alias icon): Enter saves, Esc cancels, empty removes it |
 | Del | Remove the selected item from recents (search box empty) |
 | Tab | Move the focus to the Settings button (Enter or Space opens Settings), and back |
 | Esc | Clear the search box; when it is empty, hide the launcher |
@@ -66,7 +67,8 @@ Gear button in the launcher, or tray menu > Settings. A dialog over the launcher
 - Matches the name and the target (path, URL, command), never file contents.
 - Every word you type must match, in any order, ignoring case and accents (`parametres` finds *Paramètres*).
 - Best matches first: name starts with the word, then a word inside the name, then anywhere in the name, then the target, then letters in order (`ffx` finds *Firefox*). Up to 50 results.
-- Pinned items that match come first.
+- Typing an item's alias exactly (the whole search, ignoring case and accents) lists that item first, even if its name does not match. An alias belongs to one item: giving it to another one moves it.
+- Pinned items that match come next.
 - Items you open often, and lately, move up. The boost is limited, so a much better name match still comes first.
 - Empty search box: the recent list, items opened through coursee, the most used first (recent opens count more). Pinned items are not added to it.
 
@@ -79,6 +81,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#search).
 - **Start.** Started by you (Start Menu, desktop shortcut, end of setup), coursee shows the launcher. Started at sign-in, it stays in the notification area: the auto start entry runs `coursee.exe --hidden`. An entry written by an older version (without `--hidden`) is updated at the next start.
 - **Start with Windows** is ticked only when Windows starts *this* copy. If it starts another one (say the installed copy, while you run a build), Settings shows its path; ticking the box switches auto start to this copy.
 - **One copy at a time.** Starting coursee while it is already running shows the launcher of the running copy.
+- **Pins and aliases** belong to an item's target (path, URL or command): two shortcuts to the same program share them, and they stay when a shortcut is renamed or a source is switched off and on. What you typed (a URL or command that matched nothing) cannot be pinned or given an alias.
 - **Instant window.** Sources are reloaded in the background each time the launcher opens: it shows the previous list at once, and new or removed items appear a moment later.
 - **Desktop and Start Menu shortcuts** are searched by their target, but opened through the shortcut itself, so their arguments and working folder are kept. Uninstall shortcuts are skipped, and a program found in both places is listed once.
 - **Firefox**: default profile only, bookmarks only (no folders), opened in Firefox.
@@ -95,7 +98,7 @@ Everything stays on your computer, in `%LOCALAPPDATA%\coursee`:
 | --- | --- |
 | `settings.json` | Settings |
 | `recents.json` | Recent list, with the last times each item was opened |
-| `entries.json` | Pinned items |
+| `entries.json` | Pinned items and aliases |
 | `windows.json` | Where each window was left |
 | `logs\coursee.log` | Log, at most 3 files of 1 MB, oldest deleted |
 

@@ -29,7 +29,13 @@ public static class SearchEngine
         var boost = boosts ?? SearchBoosts.None;
         var tokens = TextFolding.Fold(query).Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        return resources
+        // Typing an entry's alias lists that entry first (every item with its target), match or not.
+        var aliasTarget = boost.AliasTarget?.Invoke(query.Trim());
+        var all = resources.ToList();
+        var aliased = all.Where(r => IsTarget(r, aliasTarget)).ToList();
+
+        var matches = all
+            .Where(r => !IsTarget(r, aliasTarget))
             .Select(resource => (Resource: resource, Score: Score(resource, tokens)))
             .Where(x => x.Score > 0)
             .Select(x => (
@@ -39,10 +45,13 @@ public static class SearchEngine
             .OrderByDescending(x => x.Pinned)
             .ThenByDescending(x => x.Score)
             .ThenBy(x => x.Resource.Name, StringComparer.OrdinalIgnoreCase)
-            .Take(limit)
-            .Select(x => x.Resource)
-            .ToList();
+            .Select(x => x.Resource);
+
+        return aliased.Concat(matches).Take(limit).ToList();
     }
+
+    private static bool IsTarget(Resource resource, string? target) =>
+        target is not null && string.Equals(resource.Target, target, StringComparison.OrdinalIgnoreCase);
 
     private static int Score(Resource resource, string[] tokens)
     {

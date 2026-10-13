@@ -6,9 +6,14 @@ namespace Coursee.Core.Search;
 /// </summary>
 /// <param name="UsageBonus">Points for an entry opened through coursee (see <c>Frecency.Bonus</c>), added to its match score.</param>
 /// <param name="IsPinned">True for a pinned entry: when it matches, it is listed before the entries that are not pinned.</param>
+/// <param name="AliasTarget">
+/// The target of the entry whose alias is the whole query, or null. That entry is listed first,
+/// whether its name matches or not.
+/// </param>
 public sealed record SearchBoosts(
     Func<string, int>? UsageBonus = null,
-    Func<string, bool>? IsPinned = null)
+    Func<string, bool>? IsPinned = null,
+    Func<string, string?>? AliasTarget = null)
 {
     public static SearchBoosts None { get; } = new();
 }

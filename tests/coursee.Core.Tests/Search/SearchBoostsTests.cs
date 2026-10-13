@@ -119,4 +119,58 @@ public class SearchBoostsTests
 
         Assert.Equal("x item", result[0].Name);
     }
+
+    /// <summary>The alias "ff" belongs to the entry with this target.</summary>
+    private static SearchBoosts Alias(string target) =>
+        new(AliasTarget: text => text == "ff" ? target : null);
+
+    [Fact]
+    public void Alias_ListsItsEntryFirst_EvenIfItsNameDoesNotMatch()
+    {
+        var resources = new[] { R("Buffer tools"), R("Firefox", @"C:\apps\browser.exe") };
+
+        var result = SearchEngine.Search(resources, "ff", Alias(@"C:\APPS\browser.exe"));
+
+        Assert.Equal(new[] { "Firefox", "Buffer tools" }, Names(result));
+    }
+
+    [Fact]
+    public void Alias_ComesBeforePinnedEntries()
+    {
+        var resources = new[] { R("Buffer"), R("Firefox", @"C:\apps\browser.exe") };
+        var boosts = new SearchBoosts(IsPinned: t => t.EndsWith(@"\Buffer"), AliasTarget: Alias(@"C:\apps\browser.exe").AliasTarget);
+
+        var result = SearchEngine.Search(resources, "ff", boosts);
+
+        Assert.Equal(new[] { "Firefox", "Buffer" }, Names(result));
+    }
+
+    [Fact]
+    public void Alias_IsLookedUpWithTheWholeQuery_Trimmed()
+    {
+        string? asked = null;
+        var boosts = new SearchBoosts(AliasTarget: text => { asked = text; return null; });
+
+        SearchEngine.Search([R("Docs")], "  my docs ", boosts);
+
+        Assert.Equal("my docs", asked);
+    }
+
+    [Fact]
+    public void Alias_ListsEveryItemWithItsTarget_Once()
+    {
+        var resources = new[] { R("Firefox", @"C:\ff.exe"), R("Firefox (work)", @"C:\ff.exe"), R("Other") };
+
+        var result = SearchEngine.Search(resources, "ff", Alias(@"C:\ff.exe"));
+
+        Assert.Equal(new[] { "Firefox", "Firefox (work)" }, Names(result));
+    }
+
+    [Fact]
+    public void Alias_OfAnEntryNotListed_ChangesNothing()
+    {
+        var result = SearchEngine.Search([R("Buffer")], "ff", Alias(@"C:\gone.exe"));
+
+        Assert.Equal(new[] { "Buffer" }, Names(result));
+    }
 }

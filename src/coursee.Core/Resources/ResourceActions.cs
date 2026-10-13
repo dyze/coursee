@@ -39,7 +39,12 @@ public static class ResourceActions
     /// Ctrl+P: entries from a source can be pinned. Not what was typed: it is no entry of its own,
     /// so it would never be found again.
     /// </summary>
-    public static bool CanPin(Resource resource) => resource.Source != FallbackClassifier.SourceName;
+    public static bool CanPin(Resource resource) => IsEntry(resource);
+
+    /// <summary>F2: entries from a source can have an alias. Not what was typed, for the same reason.</summary>
+    public static bool CanSetAlias(Resource resource) => IsEntry(resource);
+
+    private static bool IsEntry(Resource resource) => resource.Source != FallbackClassifier.SourceName;
 
     /// <summary>
     /// Enter on a URL from a browser's bookmarks: the program of that browser, so the URL opens

@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Coursee.Core;
 using Coursee.Core.Entries;
 using Coursee.Core.Logging;
@@ -28,6 +29,9 @@ public partial class MainWindow : Window
     private readonly Action _openLog;
     private readonly SourceMonitor _monitor;
     private IReadOnlyList<Resource> _all = [];
+
+    /// <summary>The row whose alias box is open (F2), or null.</summary>
+    private ResultRow? _aliasRow;
     private SettingsWindow? _settingsDialog;
     private bool _showingDialog;
     private bool _refreshing;
@@ -175,7 +179,9 @@ public partial class MainWindow : Window
         }
 
         _all = SourceLoader.Merge(lists);
-        if (IsVisible && !string.IsNullOrWhiteSpace(SearchBox.Text))
+
+        // Not under an open alias box: the list is rebuilt when it closes.
+        if (IsVisible && !string.IsNullOrWhiteSpace(SearchBox.Text) && _aliasRow is null)
         {
             Refresh(keepSelection: true);
         }
@@ -185,6 +191,9 @@ public partial class MainWindow : Window
     /// the selected row stays selected. Otherwise the best match is selected.</param>
     private void Refresh(bool keepSelection = false)
     {
+        // A new list has no alias box open.
+        _aliasRow = null;
+
         var selectedTarget = keepSelection ? Selected?.Target : null;
         var query = SearchBox.Text;
         IReadOnlyList<Resource> items;
@@ -198,7 +207,10 @@ public partial class MainWindow : Window
             items = SearchEngine.Search(
                 _all,
                 query,
-                new SearchBoosts(UsageBonus: _recents.UsageBonus, IsPinned: _entries.IsPinned));
+                new SearchBoosts(
+                    UsageBonus: _recents.UsageBonus,
+                    IsPinned: _entries.IsPinned,
+                    AliasTarget: _entries.TargetOfAlias));
 
             // Nothing matches: offer what the Windows Run dialog would do with the typed text.
             if (items.Count == 0 && FallbackClassifier.Classify(query) is { } fallback)
@@ -207,7 +219,9 @@ public partial class MainWindow : Window
             }
         }
 
-        ResultsList.ItemsSource = items.Select(r => new ResultRow(r, _entries.IsPinned(r.Target))).ToList();
+        ResultsList.ItemsSource = items
+            .Select(r => new ResultRow(r, _entries.IsPinned(r.Target), _entries.AliasOf(r.Target)))
+            .ToList();
         if (items.Count > 0)
         {
             var keep = selectedTarget is null
@@ -418,6 +432,93 @@ public partial class MainWindow : Window
         SearchBox.Focus();
     }
 
+    /// <summary>F2 or the alias icon: opens the alias box on the selected row, filled with its alias.</summary>
+    private void StartAliasEdit()
+    {
+        if (ResultsList.SelectedItem is not ResultRow row || !row.CanSetAlias)
+        {
+            return;
+        }
+
+        _aliasRow = row;
+        row.IsEditingAlias = true;
+
+        // The box exists once the row is laid out again.
+        Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
+        {
+            if (_aliasRow != row || AliasBoxOf(row) is not { } box)
+            {
+                return;
+            }
+
+            box.Text = row.Alias ?? string.Empty;
+            box.SelectAll();
+            box.Focus();
+        });
+    }
+
+    private TextBox? AliasBoxOf(ResultRow row) =>
+        ResultsList.ItemContainerGenerator.ContainerFromItem(row) is ListBoxItem item
+            ? FindChild<TextBox>(item)
+            : null;
+
+    /// <summary>Enter in the alias box: saves the alias (an empty one removes it), then closes the box.</summary>
+    private void CommitAlias()
+    {
+        if (_aliasRow is not { } row)
+        {
+            return;
+        }
+
+        var alias = (AliasBoxOf(row)?.Text ?? string.Empty).Trim();
+        var target = row.Resource.Target;
+        try
+        {
+            var movedFrom = _entries.SetAlias(target, alias);
+            if (alias.Length == 0)
+            {
+                _log.Info("Action", $"Alias removed: {target}");
+            }
+            else
+            {
+                var moved = movedFrom is null ? string.Empty : $" (moved from {movedFrom})";
+                _log.Info("Action", $"Alias set: {alias} -> {target}{moved}");
+            }
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            _log.Error("Entries", "Cannot save the aliases", ex);
+            EndAliasEdit();
+            ShowMessage(ex.Message);
+            return;
+        }
+
+        EndAliasEdit();
+    }
+
+    /// <summary>Closes the alias box (Esc, or the box lost the focus) and goes back to the search box.</summary>
+    private void EndAliasEdit()
+    {
+        if (_aliasRow is null)
+        {
+            return;
+        }
+
+        // Cleared first: moving the focus back makes the box lose it, which ends the edit again.
+        _aliasRow.IsEditingAlias = false;
+        _aliasRow = null;
+        SearchBox.Focus();
+        Refresh(keepSelection: true);
+    }
+
+    private void AliasButton_Click(object sender, RoutedEventArgs e)
+    {
+        SelectRowOf(sender);
+        StartAliasEdit();
+    }
+
+    private void AliasBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) => EndAliasEdit();
+
     /// <summary>Del on the recent list: forgets the selected item and keeps the selection in place.</summary>
     private void RemoveSelectedFromRecents()
     {
@@ -493,6 +594,23 @@ public partial class MainWindow : Window
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
     {
+        // The alias box is open: Enter saves, Esc cancels, every other key is typed in it.
+        if (_aliasRow is not null)
+        {
+            if (e.Key == Key.Enter)
+            {
+                CommitAlias();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                EndAliasEdit();
+                e.Handled = true;
+            }
+
+            return;
+        }
+
         if (e.Key == Key.Escape)
         {
             // First Esc clears the search (the recent list is shown again), the next one hides.
@@ -538,6 +656,10 @@ public partial class MainWindow : Window
                 CopySelected();
                 e.Handled = true;
                 break;
+            case Key.F2 when Keyboard.Modifiers == ModifierKeys.None:
+                StartAliasEdit();
+                e.Handled = true;
+                break;
             case Key.P when Keyboard.Modifiers == ModifierKeys.Control:
                 TogglePinSelected();
                 e.Handled = true;
@@ -577,7 +699,14 @@ public partial class MainWindow : Window
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) => Refresh();
 
-    private void ResultsList_MouseDoubleClick(object sender, MouseButtonEventArgs e) => OpenSelected();
+    private void ResultsList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        // A double click in the alias box selects a word there.
+        if (_aliasRow is null)
+        {
+            OpenSelected();
+        }
+    }
 
     private void ResultsList_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateActionText();
 

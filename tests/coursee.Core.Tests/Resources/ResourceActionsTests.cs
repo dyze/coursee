@@ -146,4 +146,11 @@ public class ResourceActionsTests
         Assert.True(ResourceActions.CanPin(R(ResourceKind.Folder, @"C:\work")));
         Assert.False(ResourceActions.CanPin(R(ResourceKind.Command, "notepad", FallbackClassifier.SourceName)));
     }
+
+    [Fact]
+    public void CanSetAlias_EntriesFromASource_NotTypedText()
+    {
+        Assert.True(ResourceActions.CanSetAlias(R(ResourceKind.Folder, @"C:\work")));
+        Assert.False(ResourceActions.CanSetAlias(R(ResourceKind.Command, "notepad", FallbackClassifier.SourceName)));
+    }
 }
