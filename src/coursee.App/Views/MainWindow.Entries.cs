@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Coursee.Core.Logging;
 using Coursee.Core.Resources;
 
 namespace Coursee.UI.Views;
