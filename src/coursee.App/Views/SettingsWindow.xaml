@@ -5,7 +5,7 @@
         Title="coursee settings"
         Icon="/Assets/coursee.ico"
         Width="600" Height="460"
-        MinWidth="440" MinHeight="300"
+        MinWidth="520" MinHeight="420"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
         SourceInitialized="Window_SourceInitialized"
@@ -79,7 +79,8 @@
 
     <!-- One panel per tab (its Tag). Rows carry the id of their setting (SettingsCatalog) in their Tag. -->
     <!-- Not a Tab stop itself: Tab goes from the tab strip straight to the first setting. -->
-    <ScrollViewer Grid.Row="3"
+    <ScrollViewer x:Name="SectionsScroller"
+                  Grid.Row="3"
                   Margin="0,8,0,0"
                   Focusable="False"
                   VerticalScrollBarVisibility="Auto">
@@ -150,9 +151,16 @@
           <TextBlock Text="{x:Static settings:SettingsCatalog.SourcesTab}" Style="{StaticResource SectionHeader}" />
         </StackPanel>
 
-        <!-- The entries panel is added by the window. -->
-        <StackPanel x:Name="EntriesSection" Tag="{x:Static settings:SettingsCatalog.EntriesTab}">
+        <!-- In the search results only: the Entries tab itself is shown in EntriesHost. -->
+        <StackPanel Tag="{x:Static settings:SettingsCatalog.EntriesTab}">
           <TextBlock Text="{x:Static settings:SettingsCatalog.EntriesTab}" Style="{StaticResource SectionHeader}" />
+
+          <Button Tag="{x:Static settings:SettingsCatalog.EntriesId}"
+                  Margin="0,10,0,0"
+                  Padding="12,4"
+                  HorizontalAlignment="Left"
+                  Content="Hidden entries, custom entries, aliases and pins"
+                  Click="ShowEntriesButton_Click" />
         </StackPanel>
 
         <StackPanel Tag="{x:Static settings:SettingsCatalog.KeysTab}">
@@ -219,6 +227,13 @@
         </StackPanel>
       </StackPanel>
     </ScrollViewer>
+
+    <!-- The Entries tab fills the height, its list scrolling on its own: shown instead of the sections. -->
+    <ContentControl x:Name="EntriesHost"
+                    Grid.Row="3"
+                    Margin="0,8,0,0"
+                    Focusable="False"
+                    Visibility="Collapsed" />
 
     <TextBlock Grid.Row="4"
                Margin="0,8,0,0"

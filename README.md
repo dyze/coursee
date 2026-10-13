@@ -58,7 +58,7 @@ Gear button in the launcher, or tray menu > Settings. A dialog over the launcher
 | General | Number of recent items (default 20), launcher position, ignore accents when searching (default on), start with Windows |
 | Appearance | Theme: follow Windows (default), light or dark. The tray menu follows at the next start |
 | Sources | Custom entries, Start Menu, Firefox bookmarks, Edge favorites, Windows Run history, Windows settings and tools (on / off) |
-| Entries | Hidden entries (restore), custom entries (edit name and target, delete), aliases (edit, remove), pins (unpin). Enter in a box saves its row |
+| Entries | One list at a time, picked in a strip with counts: hidden entries (restore), custom entries (edit name and target, delete), aliases (edit, remove), pins (unpin). A filter box narrows every list (name, target, alias or source). Enter in a box saves its row |
 | Keys | Hotkey (must include Ctrl, Alt or Win), and the list of keys (read only) |
 | Logging | Detailed (debug) logging, open the log window |
 

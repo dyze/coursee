@@ -8,17 +8,23 @@ using Coursee.Core.Sources;
 namespace Coursee.UI.Views;
 
 /// <summary>
-/// Settings > Entries: what the user set on entries, to undo or change it. Hidden entries (restore),
-/// custom entries (edit, delete), aliases (edit, remove) and pins (unpin). Each change is saved at once.
+/// Settings > Entries: what the user set on entries, to undo or change it, one list at a time:
+/// hidden entries (restore), custom entries (edit, delete), aliases (edit, remove) and pins (unpin).
+/// A filter narrows every list. Each change is saved at once.
 /// </summary>
 public partial class EntriesPanel : UserControl
 {
+    /// <summary>One list of the panel, shown when its tab in the strip is selected.</summary>
+    private sealed record Group(string Title, ItemsControl List, string EmptyText);
+
     private readonly EntryStore _entries;
     private readonly CustomEntryStore _customEntries;
     private readonly CustomEntryEditor _customEntryEditor;
     private readonly SourceIcons _sourceIcons;
     private readonly ILog _log;
     private readonly Action<string> _showMessage;
+    private readonly Group[] _groups;
+    private bool _reloading;
 
     /// <param name="sourceIcons">Names the source of each hidden entry.</param>
     public EntriesPanel(
@@ -36,21 +42,71 @@ public partial class EntriesPanel : UserControl
         _log = log;
         _showMessage = showMessage;
         InitializeComponent();
+
+        _groups =
+        [
+            new("Hidden", HiddenList, "None. Ctrl+H in the launcher hides the selected entry."),
+            new("Custom", CustomList, "None. Ctrl+N or + in the launcher makes the typed text one."),
+            new("Aliases", AliasList, "None. F2 in the launcher gives the selected entry an alias."),
+            new("Pins", PinList, "None. Ctrl+P in the launcher pins the selected entry."),
+        ];
         Reload();
     }
 
+    /// <summary>Fills every list with what matches the filter, counts them in the strip, and keeps the selected one.</summary>
     private void Reload()
     {
-        Show(HiddenList, NoHiddenText, _entries.Hidden.Select(entry => new HiddenEntryRow(entry, _sourceIcons.LabelOf(entry.Source))).ToList());
-        Show(CustomList, NoCustomText, _customEntries.All.Select(entry => new CustomEntryRow(entry)).ToList());
-        Show(AliasList, NoAliasesText, _entries.Aliases.Select(alias => new AliasRow(alias)).ToList());
-        Show(PinList, NoPinsText, _entries.Pinned);
+        var filter = FilterBox.Text;
+        HiddenList.ItemsSource = _entries.Hidden
+            .Select(entry => new HiddenEntryRow(entry, _sourceIcons.LabelOf(entry.Source)))
+            .Where(row => EntryFilter.Matches(filter, row.Name, row.Entry.Target, row.SourceLabel))
+            .ToList();
+        CustomList.ItemsSource = _customEntries.All
+            .Where(entry => EntryFilter.Matches(filter, entry.Name, entry.Target))
+            .Select(entry => new CustomEntryRow(entry))
+            .ToList();
+        AliasList.ItemsSource = _entries.Aliases
+            .Where(alias => EntryFilter.Matches(filter, alias.Alias, alias.Target))
+            .Select(alias => new AliasRow(alias))
+            .ToList();
+        PinList.ItemsSource = _entries.Pinned.Where(target => EntryFilter.Matches(filter, target)).ToList();
+
+        var selected = Math.Max(GroupList.SelectedIndex, 0);
+        _reloading = true;
+        GroupList.ItemsSource = _groups.Select(group => $"{group.Title} ({group.List.Items.Count})").ToList();
+        GroupList.SelectedIndex = selected;
+        _reloading = false;
+        ShowSelectedGroup();
     }
 
-    private static void Show<T>(ItemsControl list, UIElement emptyText, IReadOnlyList<T> items)
+    private void ShowSelectedGroup()
     {
-        list.ItemsSource = items;
-        emptyText.Visibility = items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        var selected = _groups[Math.Max(GroupList.SelectedIndex, 0)];
+        foreach (var group in _groups)
+        {
+            group.List.Visibility = group == selected ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        EmptyText.Text = string.IsNullOrWhiteSpace(FilterBox.Text) ? selected.EmptyText : "Nothing matches the filter.";
+        EmptyText.Visibility = selected.List.Items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void GroupList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        // Also raised while InitializeComponent runs, before the groups exist.
+        if (!_reloading && _groups is not null)
+        {
+            ShowSelectedGroup();
+        }
+    }
+
+    private void FilterBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        FilterPlaceholder.Visibility = FilterBox.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+        if (_groups is not null)
+        {
+            Reload();
+        }
     }
 
     /// <summary>

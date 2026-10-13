@@ -96,10 +96,7 @@ public partial class SettingsWindow : Window
             _sourceCheckBoxes[name] = checkBox;
         }
 
-        EntriesSection.Children.Add(new EntriesPanel(entries, customEntries, customEntryEditor, new SourceIcons(sources), _log, ShowMessage)
-        {
-            Tag = SettingsCatalog.EntriesId,
-        });
+        EntriesHost.Content = new EntriesPanel(entries, customEntries, customEntryEditor, new SourceIcons(sources), _log, ShowMessage);
 
         var keyBindings = new ListCollectionView(KeyBindings.All.ToList());
         keyBindings.GroupDescriptions.Add(new PropertyGroupDescription(nameof(Core.Settings.KeyBinding.Area)));
@@ -214,6 +211,17 @@ public partial class SettingsWindow : Window
         }
 
         NoMatchText.Visibility = searching && matches.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+
+        var showEntries = !searching && tab == SettingsCatalog.EntriesTab;
+        EntriesHost.Visibility = showEntries ? Visibility.Visible : Visibility.Collapsed;
+        SectionsScroller.Visibility = showEntries ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    /// <summary>The Entries row of the search results: clears the search and shows that tab.</summary>
+    private void ShowEntriesButton_Click(object sender, RoutedEventArgs e)
+    {
+        FindBox.Clear();
+        ShowTab(SettingsCatalog.EntriesTab);
     }
 
     /// <summary>A section title: the only child of a section without a setting id.</summary>
@@ -376,7 +384,8 @@ public partial class SettingsWindow : Window
     {
         if (e.Key == Key.Down && Keyboard.Modifiers == ModifierKeys.None)
         {
-            SectionsPanel.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
+            var shown = EntriesHost.IsVisible ? (UIElement)EntriesHost : SectionsPanel;
+            shown.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
             e.Handled = true;
         }
     }

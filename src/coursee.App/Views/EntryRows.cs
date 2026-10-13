@@ -9,7 +9,12 @@ public sealed class HiddenEntryRow(HiddenEntry entry, string sourceLabel)
 
     public string Name => Entry.Name;
 
-    public string Detail => $"{Entry.Target}  ·  {sourceLabel}";
+    public string SourceLabel { get; } = sourceLabel;
+
+    /// <summary>The source first: a long target is cut at the end.</summary>
+    public string Detail => $"{SourceLabel}  ·  {Entry.Target}";
+
+    public string ToolTip => $"{Entry.Name}\n{Entry.Target}\n{SourceLabel}";
 }
 
 /// <summary>A custom entry in Settings > Entries: its boxes edit <see cref="Name"/> and <see cref="Target"/> until saved.</summary>
