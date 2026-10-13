@@ -90,6 +90,7 @@ All items are implemented, waiting for the owner's `build.cmd` run and test.
 5. **End user manual.** A html manual is shipped with installer and available thru a "?" icon from App.
 6. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
 7. **Paths.** Show in settings the paths to relevant files: user settings, entries... Add for each a button to "explore to".
+8. **Portable.**  Package binaries for portable usage.
 
 ## 0.8 (to define)
 Game launcher sources. **Installed games only**; owned but not installed games are out of scope. coursee only reads local files and the registry: no sign-in, no API key. Signing in, when a game needs it, is left to the launcher.
