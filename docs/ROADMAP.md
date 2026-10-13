@@ -68,6 +68,7 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 5. **Aliases.** F2, or the alias icon at the right of the action icon, sets a short name of your own for the selected entry (`ff` for Firefox), in a box on its row: Enter saves, Esc cancels. Typing the exact alias (the whole search, ignoring case and accents) lists that entry first, before the pinned ones. An alias belongs to one entry: setting it on another entry moves it. F2 with an empty alias removes it. The pin and alias icons are shown on the selected row, and on the row under the mouse; a pinned entry always shows its pin. Pins and aliases belong to the entry's target, like recents. What was typed (the fallback) cannot be pinned or given an alias; custom entries (0.6) cover that.
 6. **Click the action icon.** The action icon of a row (open file, open in Edge...) does the same as Enter on that row.
 7. **Two hint lines.** Under the search box, the first line says what Enter does (with Ctrl and Shift), the second the other keys that apply: Ctrl+C, Ctrl+P (Pin or Unpin), F2, Del.
+8. **Log window from Settings.** Settings > Logging > *Open log window* opens the log window in front, and Settings and the launcher stay open (until 0.4 both closed). The log window stays open after Settings is closed.
 
 ## 0.6 (to define)
 1. **Test coverage.** Reach 95% of coverage by tests at least for Core project. Add that as a development rule.

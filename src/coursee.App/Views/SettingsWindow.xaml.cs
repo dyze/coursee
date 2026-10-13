@@ -45,6 +45,7 @@ public partial class SettingsWindow : Window
     private readonly ILog _log;
     private readonly SettingsCatalog _catalog;
     private readonly Action<string> _onSourceToggled;
+    private readonly Action<Window> _openLog;
     private readonly Dictionary<string, CheckBox> _sourceCheckBoxes = [];
     private bool _capturingHotkey;
     private bool _focusHotkey;
@@ -59,7 +60,8 @@ public partial class SettingsWindow : Window
         IAutoStart autoStart,
         IHotkeyRegistrar hotkeys,
         LogHub logHub,
-        Action<string> onSourceToggled)
+        Action<string> onSourceToggled,
+        Action<Window> openLog)
     {
         _settings = settings;
         _recents = recents;
@@ -68,6 +70,7 @@ public partial class SettingsWindow : Window
         _logHub = logHub;
         _log = logHub.Filter;
         _onSourceToggled = onSourceToggled;
+        _openLog = openLog;
         _catalog = new SettingsCatalog(sources);
         InitializeComponent();
 
@@ -111,9 +114,6 @@ public partial class SettingsWindow : Window
         label.Children.Add(new TextBlock { Text = source.DisplayName, VerticalAlignment = VerticalAlignment.Center });
         return label;
     }
-
-    /// <summary>True when the window was closed by "Open log window": the caller then opens it.</summary>
-    public bool LogWindowRequested { get; private set; }
 
     /// <summary>Selects a tab (one of <see cref="SettingsCatalog.Tabs"/>).</summary>
     public void ShowTab(string tab) => TabList.SelectedItem = tab;
@@ -506,15 +506,8 @@ public partial class SettingsWindow : Window
         }
     }
 
-    /// <summary>
-    /// The log window would open behind this dialog and the launcher (both stay on top), and
-    /// would close with them. So the dialog closes, and the caller opens the log window.
-    /// </summary>
-    private void OpenLogButton_Click(object sender, RoutedEventArgs e)
-    {
-        LogWindowRequested = true;
-        Close();
-    }
+    /// <summary>Opens the log window in front of this dialog, which stays open (to switch debug logging on and watch, say).</summary>
+    private void OpenLogButton_Click(object sender, RoutedEventArgs e) => _openLog(this);
 
     private void ShowMessage(string message) => MessageBox.Show(this, message, "coursee");
 }

@@ -178,7 +178,6 @@
                   Padding="12,4"
                   HorizontalAlignment="Left"
                   Content="Open log window"
-                  ToolTip="Closes Settings and the launcher, then opens the log window"
                   Click="OpenLogButton_Click" />
         </StackPanel>
       </StackPanel>

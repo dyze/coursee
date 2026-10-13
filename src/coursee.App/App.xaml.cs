@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Interop;
 using Coursee.Core;
 using Coursee.Core.Entries;
 using Coursee.Core.Logging;
@@ -130,11 +131,10 @@ public partial class App : Application
             new RegistryBrowserLocator(),
             createSettings: () =>
             {
-                var created = new SettingsWindow(sources, settings, recents, autoStart, hotkey, logHub, onSourceToggled: OnSourceToggled);
+                var created = new SettingsWindow(sources, settings, recents, autoStart, hotkey, logHub, onSourceToggled: OnSourceToggled, openLog: OpenLogWindow);
                 placer.Attach(created, "Settings", RestoreMode.SizeOverOwner);
                 return created;
-            },
-            openLog: OpenLogWindow);
+            });
         var window = _window;
         placer.Attach(window, "Launcher", RestoreMode.Position);
 
@@ -154,7 +154,7 @@ public partial class App : Application
             show: () => window.ShowFromOutside(),
             // After the menu has closed: Settings is a dialog, it waits until closed.
             showSettings: () => Dispatcher.BeginInvoke(() => window.ShowSettings()),
-            showLog: OpenLogWindow,
+            showLog: () => OpenLogWindow(),
             quit: () =>
             {
                 log.Info("Action", "Quit from the tray");
@@ -208,7 +208,11 @@ public partial class App : Application
     }
 
     /// <summary>Opens the log window, or brings it to the front when it is already open.</summary>
-    private void OpenLogWindow()
+    /// <param name="over">
+    /// A window that stays open, on top, and modal (Settings over the launcher): the log window is
+    /// shown in front of it and usable until it closes, then it stays open on its own.
+    /// </param>
+    private void OpenLogWindow(Window? over = null)
     {
         if (_logWindow is null && _createLogWindow is not null)
         {
@@ -216,9 +220,24 @@ public partial class App : Application
             _logWindow.Closed += (_, _) => _logWindow = null;
         }
 
-        if (_logWindow is not null)
+        if (_logWindow is not { } logWindow)
         {
-            BringToFront(_logWindow);
+            return;
+        }
+
+        if (over is not null)
+        {
+            // Settings is on top (its owner, the launcher, is), so the log window must be too while it is open.
+            logWindow.Topmost = true;
+            over.Closed += (_, _) => logWindow.Topmost = false;
+        }
+
+        BringToFront(logWindow);
+
+        // A log window opened before Settings was disabled by it, as a modal dialog does with the others.
+        if (over is not null)
+        {
+            NativeWindows.Enable(new WindowInteropHelper(logWindow).Handle);
         }
     }
 

@@ -61,6 +61,12 @@ public static class NativeWindows
     public static void SetWindowBounds(IntPtr window, ScreenRect bounds) =>
         SetWindowPos(window, IntPtr.Zero, bounds.Left, bounds.Top, bounds.Width, bounds.Height, SwpNoZOrder | SwpNoActivate);
 
+    /// <summary>
+    /// Makes a window usable again while a modal dialog is open (the dialog disables the windows
+    /// that were open before it). Windows enables it anyway when the dialog closes.
+    /// </summary>
+    public static void Enable(IntPtr window) => EnableWindow(window, true);
+
     /// <summary>Removes the minimize and maximize buttons from the title bar. The window can still be resized.</summary>
     public static void RemoveMinimizeMaximizeButtons(IntPtr window)
     {
@@ -117,6 +123,9 @@ public static class NativeWindows
 
     [DllImport("user32.dll")]
     private static extern bool GetCursorPos(out NativePoint point);
+
+    [DllImport("user32.dll")]
+    private static extern bool EnableWindow(IntPtr window, bool enable);
 
     [DllImport("user32.dll")]
     private static extern bool GetWindowRect(IntPtr window, out NativeRect rect);

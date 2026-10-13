@@ -26,7 +26,6 @@ public partial class MainWindow : Window
     private readonly ILog _log;
     private readonly IBrowserLocator _browsers;
     private readonly Func<SettingsWindow> _createSettings;
-    private readonly Action _openLog;
     private readonly SourceMonitor _monitor;
     private IReadOnlyList<Resource> _all = [];
 
@@ -39,7 +38,6 @@ public partial class MainWindow : Window
 
     /// <param name="browsers">Finds the browser a bookmark came from, to open it there.</param>
     /// <param name="createSettings">Creates the Settings window, shown as a dialog over the launcher.</param>
-    /// <param name="openLog">Opens the log window.</param>
     public MainWindow(
         IReadOnlyList<IResourceSource> sources,
         RecentStore recents,
@@ -47,8 +45,7 @@ public partial class MainWindow : Window
         SettingsStore settings,
         ILog log,
         IBrowserLocator browsers,
-        Func<SettingsWindow> createSettings,
-        Action openLog)
+        Func<SettingsWindow> createSettings)
     {
         _log = log;
         _browsers = browsers;
@@ -58,7 +55,6 @@ public partial class MainWindow : Window
         _entries = entries;
         _settings = settings;
         _createSettings = createSettings;
-        _openLog = openLog;
 
         // Before the XAML, which uses it in the rows of the list.
         Resources.Add("SourceIcon", new SourceIconConverter(new SourceIcons(sources)));
@@ -772,13 +768,6 @@ public partial class MainWindow : Window
         {
             _showingDialog = false;
             _settingsDialog = null;
-        }
-
-        if (dialog.LogWindowRequested)
-        {
-            Hide();
-            _openLog();
-            return;
         }
 
         Activate();
