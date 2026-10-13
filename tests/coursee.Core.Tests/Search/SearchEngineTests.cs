@@ -76,4 +76,50 @@ public class SearchEngineTests
 
         Assert.Equal(3, result.Count);
     }
+
+    [Theory]
+    [InlineData("evene", "Événements")]
+    [InlineData("parametres", "Paramètres")]
+    [InlineData("PARAM", "Paramètres")]
+    public void UnaccentedQuery_FindsAccentedName(string query, string name)
+    {
+        var result = SearchEngine.Search([R(name)], query);
+
+        Assert.Equal(new[] { name }, result.Select(r => r.Name));
+    }
+
+    [Fact]
+    public void AccentedQuery_FindsUnaccentedName()
+    {
+        var result = SearchEngine.Search([R("Parametres")], "paramètres");
+
+        Assert.Single(result);
+    }
+
+    [Fact]
+    public void AccentsDoNotChangeTheRanking()
+    {
+        // Once accents are ignored, "eve" starts the second name and a word of the first.
+        var resources = new[] { R("Les événements"), R("Événements") };
+
+        var result = SearchEngine.Search(resources, "eve");
+
+        Assert.Equal(new[] { "Événements", "Les événements" }, result.Select(r => r.Name));
+    }
+
+    [Fact]
+    public void Target_IsMatchedWithoutAccents()
+    {
+        var result = SearchEngine.Search([R("Notes", @"C:\Users\René\Documents")], "rene");
+
+        Assert.Single(result);
+    }
+
+    [Fact]
+    public void Subsequence_IgnoresAccents()
+    {
+        var result = SearchEngine.Search([R("Éditeur de texte")], "edt");
+
+        Assert.Single(result);
+    }
 }

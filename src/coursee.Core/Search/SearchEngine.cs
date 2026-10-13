@@ -5,6 +5,7 @@ namespace Coursee.Core.Search;
 /// <summary>
 /// In-memory search over resources. Every whitespace-separated token of the query
 /// must match; a higher score means a better match. Targets only, no content search.
+/// Matching ignores case and accents.
 /// </summary>
 public static class SearchEngine
 {
@@ -21,7 +22,7 @@ public static class SearchEngine
             return [];
         }
 
-        var tokens = query.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var tokens = TextFolding.Fold(query).Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         return resources
             .Select(resource => (Resource: resource, Score: Score(resource, tokens)))
@@ -35,10 +36,12 @@ public static class SearchEngine
 
     private static int Score(Resource resource, string[] tokens)
     {
+        var name = TextFolding.Fold(resource.Name);
+        var target = TextFolding.Fold(resource.Target);
         var total = 0;
         foreach (var token in tokens)
         {
-            var score = ScoreToken(resource, token);
+            var score = ScoreToken(name, target, token);
             if (score == 0)
             {
                 return 0;
@@ -50,9 +53,9 @@ public static class SearchEngine
         return total;
     }
 
-    private static int ScoreToken(Resource resource, string token)
+    private static int ScoreToken(string name, string target, string token)
     {
-        var index = resource.Name.IndexOf(token, StringComparison.OrdinalIgnoreCase);
+        var index = name.IndexOf(token, StringComparison.OrdinalIgnoreCase);
         if (index == 0)
         {
             return NamePrefix;
@@ -60,15 +63,15 @@ public static class SearchEngine
 
         if (index > 0)
         {
-            return IsWordStart(resource.Name, index) ? NameWordStart : NameContains;
+            return IsWordStart(name, index) ? NameWordStart : NameContains;
         }
 
-        if (resource.Target.Contains(token, StringComparison.OrdinalIgnoreCase))
+        if (target.Contains(token, StringComparison.OrdinalIgnoreCase))
         {
             return TargetContains;
         }
 
-        return IsSubsequence(resource.Name, token) ? NameSubsequence : 0;
+        return IsSubsequence(name, token) ? NameSubsequence : 0;
     }
 
     private static bool IsWordStart(string text, int index) =>

@@ -29,7 +29,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | --- | --- |
 | *(root)* | `AppVersion` |
 | `Resources/` | `Resource` and what can be done with it: `ResourceActions`, `ActionLabels` (the wording, and the `ResourceAction` behind the row icon), `FallbackClassifier`, `CommandLine`, `Browsers` |
-| `Search/` | `SearchEngine`, `ListNavigation` (moving the selection in the result list) |
+| `Search/` | `SearchEngine`, `TextFolding` (accents removed before matching), `ListNavigation` (moving the selection in the result list) |
 | `Recents/` | `RecentStore` |
 | `Settings/` | `SettingsStore`, `SettingsCatalog` (the entries of the Settings window, their tabs, and the search that finds them) |
 | `Sources/` | `IResourceSource`, `SourceLoader`, `SourceMonitor`, `SourceIcons` (the icon of each source, found by name for a row), and each source with the interface it needs from `App`; `BookmarkUrls` and `ChromiumBookmarks` (Edge's file format, shared by Chrome) for the browser sources |
@@ -81,7 +81,7 @@ Enter  ─► shell opens Resource.OpenTarget, RecentStore records it
 | Target (path, URL, command) contains the word | 30 |
 | Word's letters appear in order in the name (`ffx` → *Firefox*) | 10 |
 
-Results are sorted by total score, then by name, and capped at 50. Matching ignores case.
+Results are sorted by total score, then by name, and capped at 50. Matching ignores case, and accents: `TextFolding.Fold` removes them from the query, names and targets before comparing (`Événements` → `Evenements`; letters such as `ß` or `œ` are kept).
 
 ## Adding a source
 1. In `Core/Sources`, implement `IResourceSource`: a stable `Name` (it is also the key stored in `settings.json`), a `DisplayName` for Settings, `CanBeDisabled` (true gives it a checkbox in **Sources**), an `Icon` (a Segoe Fluent Icons glyph, kept in `SourceIcons` with the others so each stays distinct; shown on its rows and next to its checkbox), and `GetResources()` returning `Resource` records. Take an optional `ILog`.

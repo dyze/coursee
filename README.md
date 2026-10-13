@@ -62,7 +62,7 @@ Gear button in the launcher, or tray menu > Settings. A dialog over the launcher
 ## Search
 
 - Matches the name and the target (path, URL, command), never file contents.
-- Every word you type must match, in any order, ignoring case.
+- Every word you type must match, in any order, ignoring case and accents (`parametres` finds *Paramètres*).
 - Best matches first: name starts with the word, then a word inside the name, then anywhere in the name, then the target, then letters in order (`ffx` finds *Firefox*). Up to 50 results.
 - Empty search box: the recent list, items opened through coursee, most recent first.
 
