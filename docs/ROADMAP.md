@@ -9,6 +9,7 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 | 0.3     | Done   | Code layout, Edge source, right browser, window positions, theme, settings window    |
 | 0.4     | Done   | Launcher position, list keys, Windows settings source, icons, keyboard-only Settings |
 | 0.5     | Done   | Accents ignored, copy, most used first, pins, aliases                                |
+| 0.6     | Doing  | Coverage, hide entries, custom entries, Entries and Keys tabs                        |
 
 ## 0.1
 1. **Hotkey and window.** A global hotkey toggles the compact window. Only one copy of coursee runs: starting it again shows the launcher of the running copy.
@@ -70,14 +71,14 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 7. **Two hint lines.** Under the search box, the first line says what Enter does (with Ctrl and Shift), the second the other keys that apply: Ctrl+C, Ctrl+P (Pin or Unpin), F2, Del.
 8. **Log window from Settings.** Settings > Logging > *Open log window* opens the log window in front, and Settings and the launcher stay open (until 0.4 both closed). The log window stays open after Settings is closed.
 
-## 0.6 (to define)
-1. **Test coverage.** Reach 95% of coverage by tests at least for Core project. Add that as a development rule.
-2. **Hide an entry.** Ctrl+H or clicking an icon hides the selected entry from results and recents, to remove noise such as duplicate shortcuts or old bookmarks. Hidden entries can be restored in the **Entries** tab.
-3. **Custom entries.** Your own name and target (a URL, folder or command), as a new **Custom** source:
-	   * When nothing matches, a **+** button at the right of the search box creates a custom entry, with the typed text as its target.
-	   * Custom entries are edited and deleted in the **Entries** tab.
-4. **Entries tab.** A new Settings tab listing hidden entries (to restore), custom entries (to edit or delete) and aliases (to edit or remove).
-5. **Key bindings.** A settings tab shows supported key bindings. No change allowed for now. Move hotkey there too, but this one is changeable.
+## 0.6
+1. **Test coverage.** Done: the build fails below 95 % line coverage of `Core` (`build.cmd`, rule in `CLAUDE.md`), and writes an HTML report.
+2. **Hide an entry.** Ctrl+H, or the hide icon on the row, hides the selected entry from results and recents, to remove noise such as duplicate shortcuts or old bookmarks. A hidden entry is that exact row: its source, name and target, so one of two shortcuts to the same program can be hidden. An alias of a hidden entry finds nothing. Typed text cannot be hidden. Hidden entries are restored in the **Entries** tab.
+3. **Custom entries.** Your own name and target (a URL, folder, file or command), as a new **Custom** source, switchable in **Sources**. What the target is (URL, folder...) is decided from it, like typed text.
+   * When nothing matches, a **+** button at the right of the search box, or Ctrl+N, creates a custom entry with the typed text as its target: a box on the row asks for its name (the typed text by default), Enter saves, Esc cancels.
+   * Custom entries are edited (name, target) and deleted in the **Entries** tab. A new target keeps the entry's pin, alias and recent history. Deleting one leaves its pin and alias, like a removed shortcut.
+4. **Entries tab.** A new Settings tab listing hidden entries (to restore), custom entries (to edit or delete), aliases (to edit or remove) and pins (to unpin).
+5. **Keys tab.** A new Settings tab lists the supported keys, read only. The hotkey moves there from General, and stays changeable.
 
 ## 0.7 (to define)
 1. **Warning.** At first display, show a warning that tells user that an entry could harm the system. The developer rejects any responsibility about that.
