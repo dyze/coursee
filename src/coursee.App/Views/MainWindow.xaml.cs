@@ -230,6 +230,12 @@ public partial class MainWindow : Window
             ResultsList.SelectedIndex = Math.Max(keep, 0);
         }
 
+        // A new list (new search, launcher shown again) starts at the top; a background refresh keeps the scroll.
+        if (!keepSelection)
+        {
+            FindChild<ScrollViewer>(ResultsList)?.ScrollToTop();
+        }
+
         UpdateActionText();
     }
 

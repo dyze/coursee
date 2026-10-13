@@ -66,18 +66,18 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 2. **Copy the target.** Ctrl+C copies the selected entry's path, URL or command, and the launcher stays open (the second line under the search box says it was copied). If text is selected in the search box, Ctrl+C copies that text instead.
 3. **Priority to opened entries.** An entry opened through coursee gets a score bonus that grows with how often and how recently it was opened. The bonus is capped, so a strong name match still beats a weak match of an often opened entry. The recent list is ordered the same way (recency plus frequency).
 4. **Pinning.** Ctrl+P, or the pin icon at the right of the action icon, pins or unpins the selected entry. Pinned entries that match the query are listed first. With an empty search box, pinned entries are not shown (the recent list is).
-5. **Aliases.** F2, or the alias icon at the right of the action icon, sets a short name of your own for the selected entry (`ff` for Firefox), in a box on its row: Enter saves, Esc cancels. Typing the exact alias (the whole search, ignoring case and accents) lists that entry first, before the pinned ones. An alias belongs to one entry: setting it on another entry moves it. F2 with an empty alias removes it.
-
-   The pin and alias icons are shown on the selected row only. Pins and aliases belong to the entry's target, like recents. What was typed (the fallback) cannot be pinned or given an alias; custom entries (0.6) cover that.
+5. **Aliases.** F2, or the alias icon at the right of the action icon, sets a short name of your own for the selected entry (`ff` for Firefox), in a box on its row: Enter saves, Esc cancels. Typing the exact alias (the whole search, ignoring case and accents) lists that entry first, before the pinned ones. An alias belongs to one entry: setting it on another entry moves it. F2 with an empty alias removes it. The pin and alias icons are shown on the selected row only. Pins and aliases belong to the entry's target, like recents. What was typed (the fallback) cannot be pinned or given an alias; custom entries (0.6) cover that.
 6. **Click the action icon.** The action icon of a row (open file, open in Edge...) does the same as Enter on that row.
 7. **Two hint lines.** Under the search box, the first line says what Enter does (with Ctrl and Shift), the second the other keys that apply: Ctrl+C, Ctrl+P (Pin or Unpin), F2, Del.
 
 ## 0.6 (to define)
-1. **Hide an entry.** Ctrl+H hides the selected entry from results and recents, to remove noise such as duplicate shortcuts or old bookmarks. Hidden entries can be restored in the **Entries** tab.
-2. **Custom entries.** Your own name and target (a URL, folder or command), as a new **Custom** source.
-   - When nothing matches, a **+** button at the right of the search box creates a custom entry, with the typed text as its target.
-   - Custom entries are edited and deleted in the **Entries** tab.
-1. **Entries tab.** A new Settings tab listing hidden entries (to restore), custom entries (to edit or delete) and aliases (to edit or remove).
+1. **Test coverage.** Reach 95% of coverage by tests at least for Core project. Add that as a development rule.
+2. **Hide an entry.** Ctrl+H or clicking an icon hides the selected entry from results and recents, to remove noise such as duplicate shortcuts or old bookmarks. Hidden entries can be restored in the **Entries** tab.
+3. **Custom entries.** Your own name and target (a URL, folder or command), as a new **Custom** source:
+	   * When nothing matches, a **+** button at the right of the search box creates a custom entry, with the typed text as its target.
+	   * Custom entries are edited and deleted in the **Entries** tab.
+4. **Entries tab.** A new Settings tab listing hidden entries (to restore), custom entries (to edit or delete) and aliases (to edit or remove).
+5. **Key bindings.** A settings tab shows supported key bindings. No change allowed for now. Move hotkey there too, but this one is changeable.
 
 ## 0.7 (to define)
 1. **Warning.** At first display, show a warning that tells user that an entry could harm the system. The developer rejects any responsibility about that.
