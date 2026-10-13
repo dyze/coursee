@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Coursee.Core;
+using Coursee.Core.Entries;
 using Coursee.Core.Logging;
 using Coursee.Core.Platform;
 using Coursee.Core.Recents;
@@ -19,6 +20,7 @@ public partial class MainWindow : Window
 {
     private readonly IReadOnlyList<IResourceSource> _sources;
     private readonly RecentStore _recents;
+    private readonly EntryStore _entries;
     private readonly SettingsStore _settings;
     private readonly ILog _log;
     private readonly IBrowserLocator _browsers;
@@ -37,6 +39,7 @@ public partial class MainWindow : Window
     public MainWindow(
         IReadOnlyList<IResourceSource> sources,
         RecentStore recents,
+        EntryStore entries,
         SettingsStore settings,
         ILog log,
         IBrowserLocator browsers,
@@ -48,6 +51,7 @@ public partial class MainWindow : Window
         _monitor = new SourceMonitor(_log);
         _sources = sources;
         _recents = recents;
+        _entries = entries;
         _settings = settings;
         _createSettings = createSettings;
         _openLog = openLog;
@@ -181,7 +185,7 @@ public partial class MainWindow : Window
     /// the selected row stays selected. Otherwise the best match is selected.</param>
     private void Refresh(bool keepSelection = false)
     {
-        var selectedTarget = keepSelection ? (ResultsList.SelectedItem as Resource)?.Target : null;
+        var selectedTarget = keepSelection ? Selected?.Target : null;
         var query = SearchBox.Text;
         IReadOnlyList<Resource> items;
 
@@ -191,7 +195,10 @@ public partial class MainWindow : Window
         }
         else
         {
-            items = SearchEngine.Search(_all, query, new SearchBoosts(UsageBonus: _recents.UsageBonus));
+            items = SearchEngine.Search(
+                _all,
+                query,
+                new SearchBoosts(UsageBonus: _recents.UsageBonus, IsPinned: _entries.IsPinned));
 
             // Nothing matches: offer what the Windows Run dialog would do with the typed text.
             if (items.Count == 0 && FallbackClassifier.Classify(query) is { } fallback)
@@ -200,7 +207,7 @@ public partial class MainWindow : Window
             }
         }
 
-        ResultsList.ItemsSource = items;
+        ResultsList.ItemsSource = items.Select(r => new ResultRow(r, _entries.IsPinned(r.Target))).ToList();
         if (items.Count > 0)
         {
             var keep = selectedTarget is null
@@ -214,14 +221,17 @@ public partial class MainWindow : Window
 
     private void UpdateActionText()
     {
-        ActionText.Text = ResultsList.SelectedItem switch
+        ActionText.Text = Selected switch
         {
-            Resource resource => ResourceActions.Hint(resource, inRecents: IsShowingRecents),
+            { } resource => ResourceActions.Hint(resource, inRecents: IsShowingRecents),
             _ => string.IsNullOrWhiteSpace(SearchBox.Text)
                 ? "Type to search, or type a path, URL or command"
                 : "No match",
         };
     }
+
+    /// <summary>The resource of the selected row, if any.</summary>
+    private Resource? Selected => (ResultsList.SelectedItem as ResultRow)?.Resource;
 
     /// <summary>The recent list is shown (search box empty), so Del can remove the selected item.</summary>
     private bool IsShowingRecents => string.IsNullOrWhiteSpace(SearchBox.Text);
@@ -269,7 +279,7 @@ public partial class MainWindow : Window
     /// <summary>Enter (or Ctrl+Shift+Enter, elevated): opens the selected item, remembers it, hides.</summary>
     private void OpenSelected(bool asAdministrator = false)
     {
-        if (ResultsList.SelectedItem is not Resource resource)
+        if (Selected is not { } resource)
         {
             return;
         }
@@ -320,7 +330,7 @@ public partial class MainWindow : Window
     /// <summary>Ctrl+Enter: opens the containing folder in Explorer with the item selected.</summary>
     private void ShowSelectedInFolder()
     {
-        if (ResultsList.SelectedItem is not Resource resource || !ResourceActions.CanShowInFolder(resource))
+        if (Selected is not { } resource || !ResourceActions.CanShowInFolder(resource))
         {
             return;
         }
@@ -347,7 +357,7 @@ public partial class MainWindow : Window
     /// </summary>
     private void CopySelected()
     {
-        if (ResultsList.SelectedItem is not Resource resource)
+        if (Selected is not { } resource)
         {
             return;
         }
@@ -368,10 +378,50 @@ public partial class MainWindow : Window
         ActionText.Text = $"Copied: {resource.Target}";
     }
 
+    /// <summary>Ctrl+P or the pin icon: pins or unpins the selected entry. The list is reordered, the entry stays selected.</summary>
+    private void TogglePinSelected()
+    {
+        if (Selected is not { } resource || !ResourceActions.CanPin(resource))
+        {
+            return;
+        }
+
+        bool pinned;
+        try
+        {
+            pinned = _entries.TogglePin(resource.Target);
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            _log.Error("Entries", "Cannot save the pinned entries", ex);
+            ShowMessage(ex.Message);
+            return;
+        }
+
+        _log.Info("Action", $"{(pinned ? "Pinned" : "Unpinned")}: {resource.Target} ({resource.Source})");
+        Refresh(keepSelection: true);
+    }
+
+    /// <summary>The icons of a row act on that row: select it first (they are only shown on the selected row anyway).</summary>
+    private void SelectRowOf(object sender)
+    {
+        if (sender is FrameworkElement { DataContext: ResultRow row })
+        {
+            ResultsList.SelectedItem = row;
+        }
+    }
+
+    private void PinButton_Click(object sender, RoutedEventArgs e)
+    {
+        SelectRowOf(sender);
+        TogglePinSelected();
+        SearchBox.Focus();
+    }
+
     /// <summary>Del on the recent list: forgets the selected item and keeps the selection in place.</summary>
     private void RemoveSelectedFromRecents()
     {
-        if (!IsShowingRecents || ResultsList.SelectedItem is not Resource resource)
+        if (!IsShowingRecents || Selected is not { } resource)
         {
             return;
         }
@@ -486,6 +536,10 @@ public partial class MainWindow : Window
                             && SearchBox.SelectionLength == 0
                             && ResultsList.SelectedItem is not null:
                 CopySelected();
+                e.Handled = true;
+                break;
+            case Key.P when Keyboard.Modifiers == ModifierKeys.Control:
+                TogglePinSelected();
                 e.Handled = true;
                 break;
             case Key.Delete when IsShowingRecents && ResultsList.SelectedItem is not null:

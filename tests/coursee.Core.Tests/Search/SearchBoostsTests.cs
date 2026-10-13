@@ -72,4 +72,51 @@ public class SearchBoostsTests
 
         Assert.Equal(new[] { "Report sales", "Prepaid salary" }, Names(result));
     }
+
+    private static SearchBoosts Pinned(params string[] pinned) =>
+        new(IsPinned: target => pinned.Any(name => target.EndsWith(@"\" + name)));
+
+    [Fact]
+    public void PinnedEntry_IsListedFirst_EvenWithAWeakMatch()
+    {
+        var resources = new[] { R("Firefox"), R("Fax invoice") };
+
+        var result = SearchEngine.Search(resources, "fi", Pinned("Fax invoice"));
+
+        Assert.Equal(new[] { "Fax invoice", "Firefox" }, Names(result));
+    }
+
+    [Fact]
+    public void PinnedEntries_AreOrderedByScore()
+    {
+        var resources = new[] { R("Redocs"), R("Docs"), R("Other docs"), R("Docs b") };
+
+        var result = SearchEngine.Search(resources, "docs", Pinned("Redocs", "Docs"));
+
+        Assert.Equal(new[] { "Docs", "Redocs", "Docs b", "Other docs" }, Names(result));
+    }
+
+    [Fact]
+    public void PinnedEntry_ThatDoesNotMatch_IsNotListed()
+    {
+        var result = SearchEngine.Search([R("Docs"), R("Photos")], "docs", Pinned("Photos"));
+
+        Assert.Equal(new[] { "Docs" }, Names(result));
+    }
+
+    [Fact]
+    public void PinnedEntries_AreNotListed_ForAnEmptyQuery()
+    {
+        Assert.Empty(SearchEngine.Search([R("Docs")], "", Pinned("Docs")));
+    }
+
+    [Fact]
+    public void PinnedEntries_ComeFirst_BeforeTheLimit()
+    {
+        var resources = Enumerable.Range(0, 10).Select(i => R($"item{i}")).Append(R("x item"));
+
+        var result = SearchEngine.Search(resources, "item", Pinned("x item"), limit: 3);
+
+        Assert.Equal("x item", result[0].Name);
+    }
 }

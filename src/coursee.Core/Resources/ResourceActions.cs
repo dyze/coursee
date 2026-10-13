@@ -36,6 +36,12 @@ public static class ResourceActions
     };
 
     /// <summary>
+    /// Ctrl+P: entries from a source can be pinned. Not what was typed: it is no entry of its own,
+    /// so it would never be found again.
+    /// </summary>
+    public static bool CanPin(Resource resource) => resource.Source != FallbackClassifier.SourceName;
+
+    /// <summary>
     /// Enter on a URL from a browser's bookmarks: the program of that browser, so the URL opens
     /// where it was bookmarked. Null when the resource opens with the default handler: it is not
     /// such a URL, or that browser is not installed (the default browser is then used).

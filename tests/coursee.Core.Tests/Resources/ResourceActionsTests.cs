@@ -139,4 +139,11 @@ public class ResourceActionsTests
             "Enter: Run command (what you typed)  ·  Ctrl+Shift+Enter: Run as admin",
             ResourceActions.Hint(R(ResourceKind.Command, "notepad", FallbackClassifier.SourceName), inRecents: false));
     }
+
+    [Fact]
+    public void CanPin_EntriesFromASource_NotTypedText()
+    {
+        Assert.True(ResourceActions.CanPin(R(ResourceKind.Folder, @"C:\work")));
+        Assert.False(ResourceActions.CanPin(R(ResourceKind.Command, "notepad", FallbackClassifier.SourceName)));
+    }
 }

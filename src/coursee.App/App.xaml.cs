@@ -1,5 +1,6 @@
 using System.Windows;
 using Coursee.Core;
+using Coursee.Core.Entries;
 using Coursee.Core.Logging;
 using Coursee.Core.Placement;
 using Coursee.Core.Platform;
@@ -110,6 +111,8 @@ public partial class App : Application
 
         var recents = new RecentStore(Path.Combine(dataDirectory, "recents.json"), settings.RecentsCapacity);
 
+        var entries = new EntryStore(Path.Combine(dataDirectory, "entries.json"));
+
         var executablePath = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "coursee.exe");
 
         var autoStart = new RegistryAutoStart(executablePath);
@@ -121,6 +124,7 @@ public partial class App : Application
         _window = new MainWindow(
             sources,
             recents,
+            entries,
             settings,
             log,
             new RegistryBrowserLocator(),

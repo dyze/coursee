@@ -21,19 +21,23 @@ public static class SearchEngine
         SearchBoosts? boosts = null,
         int limit = 50)
     {
-        boosts ??= SearchBoosts.None;
         if (string.IsNullOrWhiteSpace(query))
         {
             return [];
         }
 
+        var boost = boosts ?? SearchBoosts.None;
         var tokens = TextFolding.Fold(query).Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         return resources
             .Select(resource => (Resource: resource, Score: Score(resource, tokens)))
             .Where(x => x.Score > 0)
-            .Select(x => (x.Resource, Score: x.Score + (boosts.UsageBonus?.Invoke(x.Resource.Target) ?? 0)))
-            .OrderByDescending(x => x.Score)
+            .Select(x => (
+                x.Resource,
+                Pinned: boost.IsPinned?.Invoke(x.Resource.Target) ?? false,
+                Score: x.Score + (boost.UsageBonus?.Invoke(x.Resource.Target) ?? 0)))
+            .OrderByDescending(x => x.Pinned)
+            .ThenByDescending(x => x.Score)
             .ThenBy(x => x.Resource.Name, StringComparer.OrdinalIgnoreCase)
             .Take(limit)
             .Select(x => x.Resource)

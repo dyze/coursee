@@ -35,6 +35,7 @@ Upgrade: run a newer setup over the old one. Uninstall: *Settings > Apps*. Your 
 | Ctrl+Enter | Show the selected file or folder in Explorer, item selected |
 | Ctrl+Shift+Enter | Run the selected command, program or Windows tool as administrator (`.exe`, `.bat`, `.cmd`, `.com`, `.msc`) |
 | Ctrl+C | Copy the selected item's path, URL or command; the launcher stays open. With text selected in the search box, copies that text |
+| Ctrl+P | Pin or unpin the selected item (also the pin icon on the selected row) |
 | Del | Remove the selected item from recents (search box empty) |
 | Tab | Move the focus to the Settings button (Enter or Space opens Settings), and back |
 | Esc | Clear the search box; when it is empty, hide the launcher |
@@ -65,8 +66,9 @@ Gear button in the launcher, or tray menu > Settings. A dialog over the launcher
 - Matches the name and the target (path, URL, command), never file contents.
 - Every word you type must match, in any order, ignoring case and accents (`parametres` finds *Paramètres*).
 - Best matches first: name starts with the word, then a word inside the name, then anywhere in the name, then the target, then letters in order (`ffx` finds *Firefox*). Up to 50 results.
+- Pinned items that match come first.
 - Items you open often, and lately, move up. The boost is limited, so a much better name match still comes first.
-- Empty search box: the recent list, items opened through coursee, the most used first (recent opens count more).
+- Empty search box: the recent list, items opened through coursee, the most used first (recent opens count more). Pinned items are not added to it.
 
 Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#search).
 
@@ -93,6 +95,7 @@ Everything stays on your computer, in `%LOCALAPPDATA%\coursee`:
 | --- | --- |
 | `settings.json` | Settings |
 | `recents.json` | Recent list, with the last times each item was opened |
+| `entries.json` | Pinned items |
 | `windows.json` | Where each window was left |
 | `logs\coursee.log` | Log, at most 3 files of 1 MB, oldest deleted |
 
