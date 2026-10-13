@@ -123,7 +123,7 @@ public sealed class RecentStoreUsageTests : IDisposable
         Directory.CreateDirectory(_directory);
         File.WriteAllText(
             FilePath,
-            """[{"Name":"b","Target":"C:\b","Kind":1,"Source":"test"},{"Name":"a","Target":"C:\a","Kind":1,"Source":"test"}]""");
+            """[{"Name":"b","Target":"C:\\b","Kind":1,"Source":"test"},{"Name":"a","Target":"C:\\a","Kind":1,"Source":"test"}]""");
 
         var store = NewStore();
 
@@ -135,7 +135,7 @@ public sealed class RecentStoreUsageTests : IDisposable
     public void FileOfVersion04_IsSavedInTheNewFormat()
     {
         Directory.CreateDirectory(_directory);
-        File.WriteAllText(FilePath, """[{"Name":"a","Target":"C:\a","Kind":1,"Source":"test"}]""");
+        File.WriteAllText(FilePath, """[{"Name":"a","Target":"C:\\a","Kind":1,"Source":"test"}]""");
 
         NewStore().Add(R("b"));
 

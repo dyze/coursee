@@ -135,7 +135,7 @@ public sealed class EntryStoreAliasTests : IDisposable
     public void FileWithPinsOnly_IsRead()
     {
         Directory.CreateDirectory(_directory);
-        File.WriteAllText(FilePath, """{"Pinned":["C:\a"]}""");
+        File.WriteAllText(FilePath, """{"Pinned":["C:\\a"]}""");
 
         var store = new EntryStore(FilePath);
 
@@ -147,7 +147,7 @@ public sealed class EntryStoreAliasTests : IDisposable
     public void RepeatedAliasInTheFile_FirstOneWins()
     {
         Directory.CreateDirectory(_directory);
-        File.WriteAllText(FilePath, """{"Aliases":{"ff":"C:\a","FF":"C:\b"," ":"C:\c"}}""");
+        File.WriteAllText(FilePath, """{"Aliases":{"ff":"C:\\a","FF":"C:\\b"," ":"C:\\c"}}""");
 
         var store = new EntryStore(FilePath);
 
