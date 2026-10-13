@@ -83,3 +83,4 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 4. **Release notes.** A release notes is maintained and committed. This file is provided inside installer and its opening is proposed at end of installer.
 5. **End user manual.** A html manual is shipped with installer and available thru a "?" icon from App.
 6. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
+7. **Paths.** Show in settings the paths to relevant files: user settings, entries... Add for each a button to "explore to".
