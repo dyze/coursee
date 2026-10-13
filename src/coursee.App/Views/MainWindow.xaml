@@ -87,7 +87,7 @@
 
       <!-- The Windows settings icon. No padding: the Fluent theme's default one leaves too little room and cuts it.
            Tab moves the focus between the search box and this button only; Enter or Space opens Settings. -->
-      <!-- Shown when nothing matches: makes the typed text a custom entry (Ctrl+N). Not a Tab stop. -->
+      <!-- Shown while the search box has text: makes that text a custom entry (Ctrl+N). Not a Tab stop. -->
       <Button x:Name="AddButton"
               Grid.Column="1"
               Width="48"
@@ -99,7 +99,7 @@
               FontSize="18"
               Focusable="False"
               Visibility="Collapsed"
-              ToolTip="Make it a custom entry (Ctrl+N)"
+              ToolTip="Make the typed text a custom entry (Ctrl+N)"
               Click="AddButton_Click" />
 
       <Button x:Name="SettingsButton"

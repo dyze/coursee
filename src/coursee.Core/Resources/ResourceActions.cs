@@ -47,7 +47,10 @@ public static class ResourceActions
     /// <summary>Ctrl+H: entries from a source can be hidden. Not what was typed: there is nothing to hide.</summary>
     public static bool CanHide(Resource resource) => IsEntry(resource);
 
-    /// <summary>Ctrl+N or the + button: what was typed (nothing matched) can become a custom entry, with it as target.</summary>
+    /// <summary>
+    /// The row of the typed text, whose name box Ctrl+N or the + button opens to make it a custom
+    /// entry. When something matched, the launcher adds that row first.
+    /// </summary>
     public static bool CanMakeCustomEntry(Resource resource) => !IsEntry(resource);
 
     private static bool IsEntry(Resource resource) => resource.Source != FallbackClassifier.SourceName;
@@ -86,7 +89,8 @@ public static class ResourceActions
 
     /// <summary>
     /// The second line under the search box: the other keys that apply to the selected item.
-    /// <paramref name="inRecents"/> is true when the item is shown in the recent list (Del removes it);
+    /// <paramref name="inRecents"/> is true when the item is shown in the recent list (Del removes it),
+    /// false when the search box has text (Ctrl+N makes that text a custom entry);
     /// <paramref name="isPinned"/> when it is pinned (Ctrl+P unpins it).
     /// </summary>
     public static string KeysHint(Resource resource, bool inRecents, bool isPinned)
@@ -108,15 +112,7 @@ public static class ResourceActions
             parts.Add("Ctrl+H: Hide");
         }
 
-        if (CanMakeCustomEntry(resource))
-        {
-            parts.Add("Ctrl+N: New custom entry");
-        }
-
-        if (inRecents)
-        {
-            parts.Add("Del: Remove from recents");
-        }
+        parts.Add(inRecents ? "Del: Remove from recents" : "Ctrl+N: New custom entry");
 
         return string.Join(Separator, parts);
     }

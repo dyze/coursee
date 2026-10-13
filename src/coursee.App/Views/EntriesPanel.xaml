@@ -49,7 +49,7 @@
     </ItemsControl>
 
     <TextBlock Text="Custom entries" Style="{StaticResource GroupHeader}" />
-    <TextBlock x:Name="NoCustomText" Style="{StaticResource EmptyText}" Text="None. When nothing matches, Ctrl+N or + in the launcher makes the typed text one." />
+    <TextBlock x:Name="NoCustomText" Style="{StaticResource EmptyText}" Text="None. Ctrl+N or + in the launcher makes the typed text one." />
     <ItemsControl x:Name="CustomList" Focusable="False">
       <ItemsControl.ItemTemplate>
         <DataTemplate>

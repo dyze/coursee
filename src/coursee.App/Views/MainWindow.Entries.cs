@@ -88,15 +88,27 @@ public partial class MainWindow
     }
 
     /// <summary>
-    /// Ctrl+N or the + button, when nothing matched: opens the row's box on the typed text, to name
-    /// the custom entry it becomes (the typed text by default).
+    /// Ctrl+N or the + button: opens the box of the typed text's row, to name the custom entry it
+    /// becomes (the typed text by default). When something matched, that row is added first.
     /// </summary>
     private void StartCustomEntry()
     {
-        if (ResultsList.SelectedItem is ResultRow row && ResourceActions.CanMakeCustomEntry(row.Resource))
+        if (IsShowingRecents || FallbackClassifier.Classify(SearchBox.Text) is not { } typed)
         {
-            StartEdit(row, RowEdit.CustomEntryName, row.Resource.Name);
+            return;
         }
+
+        var rows = ResultsList.Items.OfType<ResultRow>().ToList();
+        var row = rows.Find(r => ResourceActions.CanMakeCustomEntry(r.Resource));
+        if (row is null)
+        {
+            row = new ResultRow(typed, isPinned: false, alias: null);
+            ResultsList.ItemsSource = rows.Prepend(row).ToList();
+        }
+
+        ResultsList.SelectedItem = row;
+        ResultsList.ScrollIntoView(row);
+        StartEdit(row, RowEdit.CustomEntryName, row.Resource.Name);
     }
 
     private void StartEdit(ResultRow row, RowEdit edit, string text)
@@ -203,12 +215,8 @@ public partial class MainWindow
         StartAliasEdit();
     }
 
-    /// <summary>The + button, shown when nothing matches: the only row is the typed text.</summary>
-    private void AddButton_Click(object sender, RoutedEventArgs e)
-    {
-        ResultsList.SelectedIndex = 0;
-        StartCustomEntry();
-    }
+    /// <summary>The + button, shown while the search box has text.</summary>
+    private void AddButton_Click(object sender, RoutedEventArgs e) => StartCustomEntry();
 
     private void EditBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) => EndEdit();
 }

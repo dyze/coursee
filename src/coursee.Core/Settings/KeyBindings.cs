@@ -26,7 +26,7 @@ public static class KeyBindings
         new(Launcher, "Ctrl+P", "Pin or unpin the selected entry"),
         new(Launcher, "F2", "Set the alias of the selected entry"),
         new(Launcher, "Ctrl+H", "Hide the selected entry from results and recents"),
-        new(Launcher, "Ctrl+N", "Make the typed text a custom entry (when nothing matches)"),
+        new(Launcher, "Ctrl+N", "Make the typed text a custom entry"),
         new(Launcher, "Del", "Remove the selected entry from recents (search box empty)"),
         new(Launcher, "Up / Down", "Move the selection"),
         new(Launcher, "Page Up / Page Down", "Move the selection by one page"),

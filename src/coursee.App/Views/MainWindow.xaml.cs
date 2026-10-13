@@ -218,10 +218,8 @@ public partial class MainWindow : Window
             }
         }
 
-        // Nothing matched: the typed text can become a custom entry.
-        AddButton.Visibility = items is [var only] && ResourceActions.CanMakeCustomEntry(only)
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+        // The typed text can become a custom entry.
+        AddButton.Visibility = IsShowingRecents ? Visibility.Collapsed : Visibility.Visible;
 
         ResultsList.ItemsSource = items
             .Select(r => new ResultRow(r, _entries.IsPinned(r.Target), _entries.AliasOf(r.Target)))

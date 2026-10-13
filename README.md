@@ -38,7 +38,7 @@ Upgrade: run a newer setup over the old one. Uninstall: *Settings > Apps*. Your 
 | Ctrl+P | Pin or unpin the selected item (also the pin icon on the selected row; a pinned item always shows it) |
 | F2 | Set the selected item's alias, in a box on its row (also the alias icon): Enter saves, Esc cancels, empty removes it |
 | Ctrl+H | Hide the selected item from results and recents (also the hide icon); restore it in Settings > Entries |
-| Ctrl+N | When nothing matches: make the typed text a custom entry (also the **+** button right of the search box). A box on the row asks for its name: Enter saves, Esc cancels |
+| Ctrl+N | Make the typed text a custom entry (also the **+** button right of the search box). A box on the typed text's row (added first when something matched) asks for its name: Enter saves, Esc cancels |
 | Del | Remove the selected item from recents (search box empty) |
 | Tab | Move the focus to the Settings button (Enter or Space opens Settings), and back |
 | Esc | Clear the search box; when it is empty, hide the launcher |
