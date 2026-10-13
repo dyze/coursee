@@ -37,11 +37,14 @@
       </Style.Triggers>
     </Style>
 
-    <!-- Shown on the selected row only. -->
+    <!-- Shown on the selected row, and on the row under the mouse. -->
     <Style x:Key="SelectedRowOnly" TargetType="StackPanel">
       <Setter Property="Visibility" Value="Hidden" />
       <Style.Triggers>
         <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+          <Setter Property="Visibility" Value="Visible" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
           <Setter Property="Visibility" Value="Visible" />
         </DataTrigger>
       </Style.Triggers>
