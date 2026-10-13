@@ -74,4 +74,12 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 2. **Custom entries.** Your own name and target (a URL, folder or command), as a new **Custom** source.
    - When nothing matches, a **+** button at the right of the search box creates a custom entry, with the typed text as its target.
    - Custom entries are edited and deleted in the **Entries** tab.
-3. **Entries tab.** A new Settings tab listing hidden entries (to restore), custom entries (to edit or delete) and aliases (to edit or remove).
+1. **Entries tab.** A new Settings tab listing hidden entries (to restore), custom entries (to edit or delete) and aliases (to edit or remove).
+
+## 0.7 (to define)
+1. **Warning.** At first display, show a warning that tells user that an entry could harm the system. The developer rejects any responsibility about that.
+2. **Disable fallback actions.** Because they could harm the system (e.g. "del c:\file"). The user can disable fallback actions
+3. **Detect updates.** Once a day, the app checks for updates. If there is one, it is shown thru the settings icon. When pressing it, the update tab is highlighted. In this tab, there is a link (github repo) to invite user to download a new installers.
+4. **Release notes.** A release notes is maintained and committed. This file is provided inside installer and its opening is proposed at end of installer.
+5. **End user manual.** A html manual is shipped with installer and available thru a "?" icon from App.
+6. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
