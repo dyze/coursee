@@ -75,6 +75,30 @@
           <Setter Property="Margin" Value="0,0,4,0" />
         </Style>
       </ListBox.ItemContainerStyle>
+      <!-- The tab name; About gets a dot while a newer release exists (AboutMarked). -->
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Text="{Binding}" />
+            <Ellipse x:Name="Mark"
+                     Width="8"
+                     Height="8"
+                     Margin="6,0,0,0"
+                     VerticalAlignment="Center"
+                     Fill="{DynamicResource SystemFillColorCautionBrush}"
+                     Visibility="Collapsed" />
+          </StackPanel>
+          <DataTemplate.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Binding="{Binding}" Value="{x:Static settings:SettingsCatalog.AboutTab}" />
+                <Condition Binding="{Binding AboutMarked, RelativeSource={RelativeSource AncestorType=Window}}" Value="True" />
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="Mark" Property="Visibility" Value="Visible" />
+            </MultiDataTrigger>
+          </DataTemplate.Triggers>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
     </ListBox>
 
     <!-- One panel per tab (its Tag). Rows carry the id of their setting (SettingsCatalog) in their Tag. -->
@@ -243,6 +267,16 @@
               <Run Text="  ·  " />
               <Hyperlink x:Name="IssuesLink" Click="Link_Click">Report an issue</Hyperlink>
             </TextBlock>
+          </StackPanel>
+
+          <!-- What the last check found (filled by ShowUpdateStatus), and the switch. -->
+          <StackPanel Tag="{x:Static settings:SettingsCatalog.UpdatesId}" Margin="0,16,0,0">
+            <TextBlock x:Name="UpdateStatusText" TextWrapping="Wrap" />
+            <CheckBox x:Name="CheckForUpdatesCheckBox"
+                      Margin="0,8,0,0"
+                      Content="Check for updates once a day"
+                      ToolTip="Asks GitHub for the latest release: coursee's only network access. Nothing is downloaded"
+                      Click="CheckForUpdatesCheckBox_Click" />
           </StackPanel>
 
           <!-- One row per file, built from AppFiles: name, path (selectable), Show in folder. -->

@@ -161,6 +161,8 @@ public class SettingsCatalogTests
     [InlineData("version", SettingsCatalog.AboutId)]
     [InlineData("path", SettingsCatalog.FilesId)]
     [InlineData("json", SettingsCatalog.FilesId)]
+    [InlineData("update", SettingsCatalog.UpdatesId)]
+    [InlineData("download", SettingsCatalog.UpdatesId)]
     public void Find_FindsTheAboutTab(string query, string id)
     {
         Assert.Equal(id, Assert.Single(Catalog().Find(query)).Id);

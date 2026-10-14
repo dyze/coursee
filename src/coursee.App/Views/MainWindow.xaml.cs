@@ -12,6 +12,7 @@ using Coursee.Core.Resources;
 using Coursee.Core.Search;
 using Coursee.Core.Settings;
 using Coursee.Core.Sources;
+using Coursee.Core.Updates;
 using Coursee.UI.Platform;
 
 namespace Coursee.UI.Views;
@@ -25,6 +26,7 @@ public partial class MainWindow : Window
     private readonly SettingsStore _settings;
     private readonly ILog _log;
     private readonly IBrowserLocator _browsers;
+    private readonly UpdateChecker _updates;
     private readonly Func<SettingsWindow> _createSettings;
     private readonly SourceMonitor _monitor;
     private IReadOnlyList<Resource> _all = [];
@@ -37,6 +39,7 @@ public partial class MainWindow : Window
     private bool _refreshAgain;
 
     /// <param name="browsers">Finds the browser a bookmark came from, to open it there.</param>
+    /// <param name="updates">Checks once a day for a newer release; the Settings button shows a mark when there is one.</param>
     /// <param name="createSettings">Creates the Settings window, shown as a dialog over the launcher.</param>
     public MainWindow(
         SourceCatalog sources,
@@ -46,10 +49,12 @@ public partial class MainWindow : Window
         SettingsStore settings,
         ILog log,
         IBrowserLocator browsers,
+        UpdateChecker updates,
         Func<SettingsWindow> createSettings)
     {
         _log = log;
         _browsers = browsers;
+        _updates = updates;
         _monitor = new SourceMonitor(_log);
         _sources = sources;
         _recents = recents;
@@ -62,6 +67,38 @@ public partial class MainWindow : Window
         Resources.Add("SourceIcon", new SourceIconConverter(new SourceIcons(() => sources.All)));
         InitializeComponent();
         VersionText.Text = $"coursee {AppVersion.Of(typeof(MainWindow).Assembly)}";
+        ShowUpdateMark();
+    }
+
+    /// <summary>
+    /// Asks for a newer release when the check is on and a day has passed (in the background),
+    /// then shows or hides the mark on the Settings button.
+    /// </summary>
+    public async void CheckForUpdates()
+    {
+        try
+        {
+            if (_settings.CheckForUpdates && _updates.IsDue)
+            {
+                await Task.Run(() => _updates.CheckIfDueAsync());
+            }
+        }
+        catch (Exception ex)
+        {
+            _log.Error(UpdateChecker.LogCategory, "Update check failed", ex);
+        }
+
+        ShowUpdateMark();
+    }
+
+    /// <summary>A dot on the Settings button while a newer release is not seen in About yet (and the check is on).</summary>
+    private void ShowUpdateMark()
+    {
+        var available = _settings.CheckForUpdates && _updates.ShouldNotify ? _updates.Available : null;
+        UpdateMark.Visibility = available is null ? Visibility.Collapsed : Visibility.Visible;
+        SettingsButton.ToolTip = available is null
+            ? "Settings (Tab, then Enter)"
+            : $"Settings (Tab, then Enter). coursee {available.Version} is available: see About";
     }
 
     public void Toggle()
@@ -111,6 +148,7 @@ public partial class MainWindow : Window
         Activate();
         SearchBox.Focus();
         RefreshResources();
+        CheckForUpdates();
 
         if (!_settings.SafetyNoticeSeen)
         {
@@ -729,6 +767,9 @@ public partial class MainWindow : Window
         // Settings > Entries may have restored, changed or deleted entries.
         Refresh(keepSelection: true);
         RefreshResources();
+
+        // The update check may have been switched on or off.
+        CheckForUpdates();
     }
 
     /// <summary>

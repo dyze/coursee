@@ -8,6 +8,7 @@ using Coursee.Core.Platform;
 using Coursee.Core.Recents;
 using Coursee.Core.Settings;
 using Coursee.Core.Sources;
+using Coursee.Core.Updates;
 using Coursee.UI.Logging;
 using Coursee.UI.Platform;
 using Coursee.UI.Tray;
@@ -129,6 +130,8 @@ public partial class App : Application
         var autoStart = new RegistryAutoStart(executablePath);
         UpgradeAutoStart(autoStart, log);
         var placer = new WindowPlacer(new PlacementStore(files.WindowPositions), log);
+        var version = AppVersion.Of(typeof(App).Assembly);
+        var updates = new UpdateChecker(new GitHubReleaseFeed(version), new UpdateStore(files.UpdateCheck), version, log: log);
         var logHub = _logHub;
         _hotkey = new HotkeyService(() => _window?.Toggle());
         var hotkey = _hotkey;
@@ -140,6 +143,7 @@ public partial class App : Application
             settings,
             log,
             new RegistryBrowserLocator(),
+            updates,
             createSettings: () =>
             {
                 var created = new SettingsWindow(
@@ -153,6 +157,7 @@ public partial class App : Application
                     hotkey,
                     logHub,
                     files,
+                    updates,
                     onSourcesChanged: () => _window?.RefreshResources(),
                     openLog: OpenLogWindow);
                 placer.Attach(created, "Settings", RestoreMode.SizeOverOwner);
@@ -170,6 +175,7 @@ public partial class App : Application
 
         // Load the sources now, in the background, so the first hotkey press shows a full list.
         _window.RefreshResources();
+        _window.CheckForUpdates();
 
         _tray = new TrayIcon(
             AppVersion.Of(typeof(App).Assembly),

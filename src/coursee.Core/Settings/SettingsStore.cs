@@ -28,7 +28,7 @@ public enum LauncherPosition
 /// User settings persisted as JSON: which sources are disabled (every source is on by default),
 /// the folders searched (see <see cref="Folders"/>), the global hotkey, how many recent items to
 /// keep, the theme, where the launcher appears, whether searching ignores accents, whether typed
-/// text can run as a command, and whether the safety notice was seen. A missing, corrupt or
+/// text can run as a command, whether the safety notice was seen, and whether to check for updates. A missing, corrupt or
 /// partial file means defaults for whatever cannot be read.
 /// </summary>
 public sealed class SettingsStore
@@ -68,6 +68,7 @@ public sealed class SettingsStore
         IgnoreAccents = data?.IgnoreAccents ?? true;
         AllowTypedCommands = data?.AllowTypedCommands ?? true;
         SafetyNoticeSeen = data?.SafetyNoticeSeen ?? false;
+        CheckForUpdates = data?.CheckForUpdates ?? true;
     }
 
     /// <summary>The values offered in Settings for the number of recent items to keep.</summary>
@@ -95,6 +96,9 @@ public sealed class SettingsStore
 
     /// <summary>The safety notice was shown and acknowledged (shown once).</summary>
     public bool SafetyNoticeSeen { get; private set; }
+
+    /// <summary>When on, coursee asks GitHub once a day for a newer release (its only network access). On by default.</summary>
+    public bool CheckForUpdates { get; private set; }
 
     /// <summary>
     /// The folders the user added as sources, in the order added: <see cref="DesktopFolder"/> or a
@@ -211,6 +215,12 @@ public sealed class SettingsStore
         Save();
     }
 
+    public void SetCheckForUpdates(bool check)
+    {
+        CheckForUpdates = check;
+        Save();
+    }
+
     private void Save()
     {
         var directory = Path.GetDirectoryName(_path);
@@ -229,7 +239,8 @@ public sealed class SettingsStore
             IgnoreAccents,
             _folders,
             AllowTypedCommands,
-            SafetyNoticeSeen);
+            SafetyNoticeSeen,
+            CheckForUpdates);
         File.WriteAllText(_path, JsonSerializer.Serialize(data));
     }
 
@@ -257,5 +268,6 @@ public sealed class SettingsStore
         bool? IgnoreAccents = null,
         List<string>? Folders = null,
         bool? AllowTypedCommands = null,
-        bool? SafetyNoticeSeen = null);
+        bool? SafetyNoticeSeen = null,
+        bool? CheckForUpdates = null);
 }

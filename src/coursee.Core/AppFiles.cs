@@ -31,6 +31,8 @@ public sealed class AppFiles
 
     public string WindowPositions => Path.Combine(DataDirectory, "windows.json");
 
+    public string UpdateCheck => Path.Combine(DataDirectory, "updates.json");
+
     public string Logs => Path.Combine(DataDirectory, "logs");
 
     /// <summary>What Settings > About lists, in this order.</summary>
@@ -41,6 +43,7 @@ public sealed class AppFiles
         new("Custom entries", CustomEntries),
         new("Recents", Recents),
         new("Window positions", WindowPositions),
+        new("Update check", UpdateCheck),
         new("Logs", Logs),
         new("Program", ProgramDirectory),
     ];

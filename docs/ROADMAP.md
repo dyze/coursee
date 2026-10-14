@@ -88,7 +88,7 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 Theme: getting ready for other users.
 
 1. **About tab.** Done. A new Settings tab: version, links to the GitHub repository and its issues page.
-2. **Update check.** Once a day, coursee asks GitHub for the latest release. If it is newer, the Settings button shows a mark and the About tab says so, with a link to download the installer. Nothing is downloaded or installed by coursee. A setting turns the check off. 
+2. **Update check.** Done. Once a day, coursee asks GitHub for the latest release. If it is newer, the Settings button shows a mark and the About tab says so, with a link to download the installer. Nothing is downloaded or installed by coursee. A setting turns the check off. 
 3. **Paths.** Done. The About tab lists coursee's files (settings, entries, logs), each with a *Show in folder* button.
 4. **Safety notice.** Done. The first time the launcher shows, a notice says that typed text and commands run with the user's rights and can harm the system, and that coursee comes without warranty. Acknowledged once (`SafetyNoticeSeen`).
 5. **Turn off typed commands.** Done. A setting (Settings > General, and offered by the notice) stops typed text from being run as a command (`del c:\file`). Typed URLs, folders and files still open. Run history entries are not affected.

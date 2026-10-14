@@ -10,6 +10,7 @@ using Coursee.Core.Platform;
 using Coursee.Core.Recents;
 using Coursee.Core.Settings;
 using Coursee.Core.Sources;
+using Coursee.Core.Updates;
 using Coursee.UI.Logging;
 using Coursee.UI.Platform;
 
@@ -26,6 +27,10 @@ public partial class SettingsWindow : Window
     {
         public override string ToString() => Label;
     }
+
+    /// <summary>True while the About tab shows a dot: a newer release exists (and the check is on), seen or not.</summary>
+    public static readonly DependencyProperty AboutMarkedProperty =
+        DependencyProperty.Register(nameof(AboutMarked), typeof(bool), typeof(SettingsWindow));
 
     private static readonly Option<ThemeChoice>[] ThemeOptions =
     [
@@ -51,6 +56,7 @@ public partial class SettingsWindow : Window
     private readonly Action _onSourcesChanged;
     private readonly Action<Window> _openLog;
     private readonly Button _addFolderButton;
+    private readonly UpdateChecker _updates;
     private readonly Dictionary<string, CheckBox> _quickAccessCheckBoxes = new(StringComparer.OrdinalIgnoreCase);
     private SettingsCatalog _catalog;
     private CheckBox? _quickAccessCheckBox;
@@ -71,6 +77,7 @@ public partial class SettingsWindow : Window
         IHotkeyRegistrar hotkeys,
         LogHub logHub,
         AppFiles files,
+        UpdateChecker updates,
         Action onSourcesChanged,
         Action<Window> openLog)
     {
@@ -106,6 +113,7 @@ public partial class SettingsWindow : Window
         sources.Changed += onChanged;
         Closed += (_, _) => sources.Changed -= onChanged;
 
+        _updates = updates;
         ShowAbout(files);
 
         EntriesHost.Content = new EntriesPanel(entries, customEntries, customEntryEditor, new SourceIcons(() => sources.All), _log, ShowMessage);
@@ -236,6 +244,7 @@ public partial class SettingsWindow : Window
         AboutVersionText.Text = $"coursee {AppVersion.Of(typeof(SettingsWindow).Assembly)}";
         RepositoryLink.NavigateUri = new Uri(ProjectLinks.Repository);
         IssuesLink.NavigateUri = new Uri(ProjectLinks.Issues);
+        ShowUpdateStatus();
 
         foreach (var file in files.All)
         {
@@ -273,6 +282,60 @@ public partial class SettingsWindow : Window
             FilesGrid.Children.Add(path);
             FilesGrid.Children.Add(show);
         }
+    }
+
+    /// <summary>The newer release with a link to its page, or when the last check ran.</summary>
+    private void ShowUpdateStatus()
+    {
+        CheckForUpdatesCheckBox.IsChecked = _settings.CheckForUpdates;
+        AboutMarked = _settings.CheckForUpdates && _updates.Available is not null;
+        UpdateStatusText.Inlines.Clear();
+        UpdateStatusText.FontWeight = FontWeights.Normal;
+        UpdateStatusText.ClearValue(TextBlock.ForegroundProperty);
+
+        if (!_settings.CheckForUpdates)
+        {
+            UpdateStatusText.Inlines.Add(new System.Windows.Documents.Run("The update check is off."));
+        }
+        else if (_updates.Available is { } release)
+        {
+            // In the caution color of the dots that lead here, link included.
+            const string caution = "SystemFillColorCautionBrush";
+            UpdateStatusText.FontWeight = FontWeights.SemiBold;
+            UpdateStatusText.SetResourceReference(TextBlock.ForegroundProperty, caution);
+            UpdateStatusText.Inlines.Add(new System.Windows.Documents.Run($"coursee {release.Version} is available: "));
+            var link = new System.Windows.Documents.Hyperlink(new System.Windows.Documents.Run("download it"))
+            {
+                NavigateUri = new Uri(Uri.TryCreate(release.Page, UriKind.Absolute, out var page) && page.Scheme == Uri.UriSchemeHttps ? release.Page : ProjectLinks.Releases),
+            };
+            link.SetResourceReference(System.Windows.Documents.TextElement.ForegroundProperty, caution);
+            link.Click += Link_Click;
+            UpdateStatusText.Inlines.Add(link);
+        }
+        else
+        {
+            UpdateStatusText.Inlines.Add(new System.Windows.Documents.Run(_updates.LastCheck is { } last
+                ? $"You have the latest version (checked {last.ToLocalTime():g})."
+                : "Not checked yet."));
+        }
+    }
+
+    private void CheckForUpdatesCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        var wanted = CheckForUpdatesCheckBox.IsChecked == true;
+
+        try
+        {
+            _settings.SetCheckForUpdates(wanted);
+            _log.Info("Settings", $"Check for updates {(wanted ? "on" : "off")}");
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            _log.Error("Settings", "Cannot change the update check", ex);
+            ShowMessage(ex.Message);
+        }
+
+        ShowUpdateStatus();
     }
 
     private void ShowInFolder(AppFile file)
@@ -323,6 +386,12 @@ public partial class SettingsWindow : Window
         });
         label.Children.Add(new TextBlock { Text = text, VerticalAlignment = VerticalAlignment.Center });
         return label;
+    }
+
+    public bool AboutMarked
+    {
+        get => (bool)GetValue(AboutMarkedProperty);
+        set => SetValue(AboutMarkedProperty, value);
     }
 
     /// <summary>Selects a tab (one of <see cref="SettingsCatalog.Tabs"/>).</summary>
@@ -451,7 +520,31 @@ public partial class SettingsWindow : Window
     private void Window_SourceInitialized(object? sender, EventArgs e) =>
         NativeWindows.RemoveMinimizeMaximizeButtons(new System.Windows.Interop.WindowInteropHelper(this).Handle);
 
-    private void TabList_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateSections();
+    private void TabList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        UpdateSections();
+        if (TabList.SelectedItem as string == SettingsCatalog.AboutTab)
+        {
+            AcknowledgeUpdate();
+        }
+    }
+
+    /// <summary>
+    /// The About tab is shown: the newer release has been seen, so the launcher's Settings button
+    /// loses its mark (when this window closes) until a later one comes. The About tab keeps its
+    /// own mark while a newer release exists.
+    /// </summary>
+    private void AcknowledgeUpdate()
+    {
+        try
+        {
+            _updates.Acknowledge();
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            _log.Warn(UpdateChecker.LogCategory, $"Cannot save that the release was seen: {ex.GetType().Name}: {ex.Message}");
+        }
+    }
 
     private void FindBox_TextChanged(object sender, TextChangedEventArgs e)
     {

@@ -7,14 +7,14 @@ coursee.App   (WPF, Windows only)
 │  launcher, settings window, log window, tray icon
 │  adapters: WshShortcutResolver, RegistryRunHistoryReader, RegistryAutoStart,
 │            RegistryBrowserLocator, HotkeyService, SerilogFileLog, SingleInstance,
-│            NativeWindows + WindowPlacer (window positions), ShellQuickAccessReader
+│            NativeWindows + WindowPlacer (window positions), ShellQuickAccessReader, GitHubReleaseFeed
 │
-│  implements ▼  IShortcutResolver · IRunHistoryReader · IQuickAccessReader · IAutoStart · IHotkeyRegistrar · IBrowserLocator · ILog
+│  implements ▼  IShortcutResolver · IRunHistoryReader · IQuickAccessReader · IReleaseFeed · IAutoStart · IHotkeyRegistrar · IBrowserLocator · ILog
 │
 coursee.Core  (no Windows dependency, fully unit-tested on any OS)
    SearchEngine · RecentStore · EntryStore · CustomEntryStore · CustomEntryEditor · SettingsStore · SettingsCatalog · KeyBindings
    SourceCatalog · SourceLoader · SourceMonitor · FallbackClassifier
-   ResourceActions · PlacementRules · PlacementStore
+   ResourceActions · PlacementRules · PlacementStore · UpdateChecker · UpdateStore
    sources (IResourceSource): CustomSource · ShortcutsSource (Desktop, folders, Start Menu) · FirefoxBookmarksSource · EdgeFavoritesSource · RunHistorySource
                               · WindowsSettingsSource (fixed list, ResourceKind.Setting)
 ```
@@ -38,6 +38,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `Platform/` | The other interfaces `App` implements (`IAutoStart`, `IHotkeyRegistrar`, `IBrowserLocator`) and their rules (`AutoStartCommand`, `HotkeyGesture`) |
 | `Logging/` | `ILog`, `LogEntry`, `RingLog`, `CompositeLog`, `FilteredLog` |
 | `Placement/` | Window positions: `WindowPlacement`, `PlacementRules`, `PlacementStore` (see [Window positions](#window-positions)) |
+| `Updates/` | The daily update check: `UpdateChecker` (once a day, newer or not), the Settings button is marked until the release is seen: opening Settings > About acknowledges it (`ShouldNotify`, `Acknowledge`), and a later release or another installed version marks it again; the About tab is marked while a newer release exists; `Release` (GitHub's answer, version comparison), `IReleaseFeed`, `UpdateStore` (`updates.json`: state, not a setting) |
 
 | `coursee.App` | Content |
 | --- | --- |
@@ -57,6 +58,8 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `Serilog`, `Serilog.Sinks.File` | App | Log file |
 | `coverlet.msbuild` | Tests | Coverage of `Core`, build fails below 95 % lines |
 | `dotnet-reportgenerator-globaltool` | Local tool (`.config/dotnet-tools.json`) | HTML coverage report (`build.cmd`) |
+
+The update check uses .NET's own `HttpClient` (`GitHubReleaseFeed` in App): coursee's only network access, see [GOAL.md](GOAL.md#principles).
 
 Shared build settings and the version are in `Directory.Build.props`; output goes to `artifacts/`. Builds are deterministic and `DeterministicSourcePaths` replaces the local repo path with `/_/` in DLLs, PDBs and their Source Link data, so no local path (or user name) ships. The installer is built with [Inno Setup](https://jrsoftware.org/isinfo.php) (`build/installer.cmd`, `build/installer/coursee.iss`), a tool installed on the PC, not a package.
 

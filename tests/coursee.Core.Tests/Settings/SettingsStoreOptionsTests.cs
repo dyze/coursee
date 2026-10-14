@@ -56,6 +56,16 @@ public sealed class SettingsStoreOptionsTests : IDisposable
     }
 
     [Fact]
+    public void UpdateCheck_IsOnByDefault_AndCanBeSwitchedOff()
+    {
+        Assert.True(new SettingsStore(FilePath).CheckForUpdates);
+
+        new SettingsStore(FilePath).SetCheckForUpdates(false);
+
+        Assert.False(new SettingsStore(FilePath).CheckForUpdates);
+    }
+
+    [Fact]
     public void Theme_FollowsWindowsByDefault()
     {
         Assert.Equal(ThemeChoice.System, new SettingsStore(FilePath).Theme);

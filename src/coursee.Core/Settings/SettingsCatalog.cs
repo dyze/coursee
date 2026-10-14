@@ -38,6 +38,7 @@ public sealed class SettingsCatalog
     public const string LogWindowId = "LogWindow";
     public const string AboutId = "About";
     public const string FilesId = "Files";
+    public const string UpdatesId = "Updates";
 
     private const string SourceIdPrefix = "Source:";
 
@@ -78,6 +79,7 @@ public sealed class SettingsCatalog
         entries.Add(new(DebugLoggingId, LoggingTab, "Detailed (debug) logging", ["log", "verbose", "trace"]));
         entries.Add(new(LogWindowId, LoggingTab, "Open log window", ["log", "view", "errors"]));
         entries.Add(new(AboutId, AboutTab, "Version, website and issues", ["github", "web", "link", "bug", "report", "help", "feedback"]));
+        entries.Add(new(UpdatesId, AboutTab, "Check for updates once a day", ["update", "release", "download", "newer", "network", "internet"]));
         entries.Add(new(FilesId, AboutTab, "coursee's files", ["path", "location", "data", "json", "explorer", "program", "show"]));
 
         All = entries;

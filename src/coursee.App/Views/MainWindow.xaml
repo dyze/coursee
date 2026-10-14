@@ -122,6 +122,18 @@
               FontSize="18"
               ToolTip="Settings (Tab, then Enter)"
               Click="SettingsButton_Click" />
+
+      <!-- A newer release is available (see Settings > About). Over the button's corner; clicks go through. -->
+      <Ellipse x:Name="UpdateMark"
+               Grid.Column="2"
+               Width="9"
+               Height="9"
+               Margin="0,7,7,0"
+               HorizontalAlignment="Right"
+               VerticalAlignment="Top"
+               Fill="{DynamicResource SystemFillColorCautionBrush}"
+               IsHitTestVisible="False"
+               Visibility="Collapsed" />
     </Grid>
 
     <!-- Two lines under the search box: what Enter does, then the other keys. The second one keeps

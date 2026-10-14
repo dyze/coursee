@@ -40,6 +40,7 @@
     <Using Include="Coursee.Core.Search" />
     <Using Include="Coursee.Core.Settings" />
     <Using Include="Coursee.Core.Sources" />
+    <Using Include="Coursee.Core.Updates" />
   </ItemGroup>
 
   <ItemGroup>

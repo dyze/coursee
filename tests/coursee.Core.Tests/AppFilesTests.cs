@@ -15,6 +15,7 @@ public class AppFilesTests
         Assert.Equal(Path.Combine(Data, "custom.json"), files.CustomEntries);
         Assert.Equal(Path.Combine(Data, "recents.json"), files.Recents);
         Assert.Equal(Path.Combine(Data, "windows.json"), files.WindowPositions);
+        Assert.Equal(Path.Combine(Data, "updates.json"), files.UpdateCheck);
         Assert.Equal(Path.Combine(Data, "logs"), files.Logs);
         Assert.Equal(Data, files.DataDirectory);
     }
@@ -24,7 +25,7 @@ public class AppFilesTests
     {
         var files = new AppFiles(Data, Program);
 
-        Assert.Equal(7, files.All.Count);
+        Assert.Equal(8, files.All.Count);
         Assert.Equal(files.All.Count, files.All.Select(file => file.Path).Distinct().Count());
         Assert.Equal(new AppFile("Settings", files.Settings), files.All[0]);
         Assert.Equal(new AppFile("Program", Program), files.All[^1]);
