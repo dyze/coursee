@@ -41,7 +41,8 @@ public class ProgramFinderTests
     {
         var file = Path.Combine(Windows, "notepad.exe");
 
-        Assert.Equal(file, Finder(file).Find("notepad"));
+        // The extension is added as PATHEXT writes it; Windows file names ignore case.
+        Assert.Equal(file, Finder(file).Find("notepad"), ignoreCase: true);
         Assert.Null(Finder(Path.Combine(Windows, "notepad.com")).Find("notepad"));
     }
 
@@ -75,9 +76,9 @@ public class ProgramFinderTests
     public void NoPathVariables_StillSearchesTheWorkingFolder_WithTheUsualExtensions()
     {
         var file = Path.Combine(Home, "setup.bat");
-        var finder = new ProgramFinder(Home, null, null, path => path == file);
+        var finder = new ProgramFinder(Home, null, null, path => string.Equals(path, file, StringComparison.OrdinalIgnoreCase));
 
-        Assert.Equal(file, finder.Find("setup"));
+        Assert.Equal(file, finder.Find("setup"), ignoreCase: true);
     }
 
     [Fact]
