@@ -84,16 +84,17 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 8. **Alias icon like the pin.** Done: an entry with an alias always shows its alias icon, filled, as a pinned entry shows its pin.
 
 ## 0.7 (to define)
-1. **Link to website.** Add link to github web site and issue tab.
-2. **Warning.** At first display, show a warning that tells user that an entry could harm the system. The developer rejects any responsibility about that.
-3. **Disable fallback actions.** Because they could harm the system (e.g. "del c:\file"). The user can disable fallback actions
-4. **Detect updates.** Once a day, the app checks for updates. If there is one, it is shown thru the settings icon. When pressing it, the update tab is highlighted. In this tab, there is a link (github repo) to invite user to download a new installers.
-5. **Release notes.** A release notes is maintained and committed. This file is provided inside installer and its opening is proposed at end of installer.
-6. **End user manual.** A html manual is shipped with installer and available thru a "?" icon from App.
-7. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
-8. **Paths.** Show in settings the paths to relevant files: user settings, entries... Add for each a button to "explore to".
-9. **Portable.**  Package binaries for portable usage.
-10. **Source: Explorer Quick access.** Not implemented. The folders pinned in Explorer's *Quick access*: the standard ones (Desktop, Downloads, Documents, Pictures, Music, Videos) and the user's own pins. Opened in Explorer; switchable in **Sources**, with its own icon.
+1. **Customer folder sources.** Be able to set several folder as sources of shortcuts. Apply same behaviour as for Desktop source. In fact, Desktop source could be defined as a first default customer folder source.
+2. **Link to website.** Add link to github web site and issue tab.
+3. **Warning.** At first display, show a warning that tells user that an entry could harm the system. The developer rejects any responsibility about that.
+4. **Disable fallback actions.** Because they could harm the system (e.g. "del c:\file"). The user can disable fallback actions
+5. **Detect updates.** Once a day, the app checks for updates. If there is one, it is shown thru the settings icon. When pressing it, the update tab is highlighted. In this tab, there is a link (github repo) to invite user to download a new installers.
+6. **Release notes.** A release notes is maintained and committed. This file is provided inside installer and its opening is proposed at end of installer.
+7. **End user manual.** A html manual is shipped with installer and available thru a "?" icon from App.
+8. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
+9. **Paths.** Show in settings the paths to relevant files: user settings, entries... Add for each a button to "explore to".
+10. **Portable.**  Package binaries for portable usage.
+11. **Source: Explorer Quick access.** Not implemented. The folders pinned in Explorer's *Quick access*: the standard ones (Desktop, Downloads, Documents, Pictures, Music, Videos) and the user's own pins. Opened in Explorer; switchable in **Sources**, with its own icon.
 
 ## 0.8 (to define)
 1. Game launcher sources. **Installed games only**; owned but not installed games are out of scope. coursee only reads local files and the registry: no sign-in, no API key. Signing in, when a game needs it, is left to the launcher.
