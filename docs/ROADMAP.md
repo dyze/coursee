@@ -10,6 +10,7 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 | 0.4     | Done   | Launcher position, list keys, Windows settings source, icons, keyboard-only Settings |
 | 0.5     | Done   | Accents ignored, copy, most used first, pins, aliases                                |
 | 0.6     | Done   | Coverage, hide entries, custom entries, Entries and Keys tabs, Desktop files         |
+| 0.7     | Planned | About tab, update check, safety notice, folder sources                              |
 
 ## 0.1
 1. **Hotkey and window.** A global hotkey toggles the compact window. Only one copy of coursee runs: starting it again shows the launcher of the running copy.
@@ -84,22 +85,24 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 8. **Alias icon like the pin.** Done: an entry with an alias always shows its alias icon, filled, as a pinned entry shows its pin.
 
 ## 0.7 (to define)
-1. **Customer folder sources.** Be able to set several folder as sources of shortcuts. Apply same behaviour as for Desktop source. In fact, Desktop source could be defined as a first default customer folder source.
-2. **Link to website.** Add link to github web site and issue tab.
-3. **Warning.** At first display, show a warning that tells user that an entry could harm the system. The developer rejects any responsibility about that.
-4. **Disable fallback actions.** Because they could harm the system (e.g. "del c:\file"). The user can disable fallback actions
-5. **Detect updates.** Once a day, the app checks for updates. If there is one, it is shown thru the settings icon. When pressing it, the update tab is highlighted. In this tab, there is a link (github repo) to invite user to download a new installers.
-6. **Release notes.** A release notes is maintained and committed. This file is provided inside installer and its opening is proposed at end of installer.
-7. **End user manual.** A html manual is shipped with installer and available thru a "?" icon from App.
-8. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
-9. **Paths.** Show in settings the paths to relevant files: user settings, entries... Add for each a button to "explore to".
-10. **Portable.**  Package binaries for portable usage.
-11. **Source: Explorer Quick access.** Not implemented. The folders pinned in Explorer's *Quick access*: the standard ones (Desktop, Downloads, Documents, Pictures, Music, Videos) and the user's own pins. Opened in Explorer; switchable in **Sources**, with its own icon.
+Theme: getting ready for other users.
+
+1. **About tab.** A new Settings tab: version, links to the GitHub repository and its issues page.
+2. **Update check.** Once a day, coursee asks GitHub for the latest release. If it is newer, the Settings button shows a mark and the About tab says so, with a link to download the installer. Nothing is downloaded or installed by coursee. A setting turns the check off. 
+3. **Paths.** The About tab lists coursee's files (settings, entries, logs), each with a *Show in folder* button.
+4. **Safety notice.** On first start, a notice says that typed text and commands run with the user's rights and can harm the system, and that coursee comes without warranty (see `LICENSE`). Acknowledged once.
+5. **Turn off typed commands.** A setting (Settings > General, and offered by the notice) stops typed text from being run as a command (`del c:\file`). Typed URLs, folders and files still open. Run history entries are not affected.
+6. **Folder sources.** One source per folder: its top-level files, folders and shortcuts are listed, like the Desktop source (subfolders not included). In **Sources**, *Add folder…* adds one, ✕ removes it, its checkbox switches it off. Desktop is the default folder and can be removed like any other.
+   * **Quick access.** Each folder pinned in Explorer's *Quick access* (the standard ones and the user's own pins) is a folder source too, kept in sync with Explorer: pinning `D:\code` there makes its files searchable. These have a checkbox only (no ✕); they are removed by unpinning them in Explorer. An entry found in two folder sources (Desktop added and pinned) is listed once.
 
 ## 0.8 (to define)
-1. Game launcher sources. **Installed games only**; owned but not installed games are out of scope. coursee only reads local files and the registry: no sign-in, no API key. Signing in, when a game needs it, is left to the launcher.
+1. **Portable.**  Package binaries for portable usage.
+2. **Game launcher sources**. Installed games only; owned but not installed games are out of scope. coursee only reads local files and the registry: no sign-in, no API key. Signing in, when a game needs it, is left to the launcher.
 	- **One source per launcher**, each an `IResourceSource`, switchable in **Sources**, with its own icon. A launcher that is not installed gives no entries, without error.
 	- **Tolerant reading.** These formats are not documented and may change: a file that cannot be read is logged (Warning) and skipped; the other games and sources are not affected.
 	- **Icons.** The game's exe icon when it can be found, else the source icon.
-2. **Donate.** Add a link to donate to the developer.
-3. **Sign installer.** To make it more secure, use a certificate to sign all installers coming from the developer.
+3. **Donate.** Add a link to donate to the developer.
+4. **Sign installer.** To make it more secure, use a certificate to sign all installers coming from the developer.
+5. **Release notes.** A release notes is maintained and committed. This file is provided inside installer and its opening is proposed at end of installer.
+6. **End user manual.** A html manual is shipped with installer and available thru a "?" icon from App.
+7. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
