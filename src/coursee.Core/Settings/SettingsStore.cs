@@ -26,9 +26,10 @@ public enum LauncherPosition
 
 /// <summary>
 /// User settings persisted as JSON: which sources are disabled (every source is on by default),
-/// the folders searched (see <see cref="Folders"/>), the global hotkey, how many recent items to keep, the theme, where the launcher appears and whether
-/// searching ignores accents. A missing, corrupt or partial file
-/// means defaults for whatever cannot be read.
+/// the folders searched (see <see cref="Folders"/>), the global hotkey, how many recent items to
+/// keep, the theme, where the launcher appears, whether searching ignores accents, whether typed
+/// text can run as a command, and whether the safety notice was seen. A missing, corrupt or
+/// partial file means defaults for whatever cannot be read.
 /// </summary>
 public sealed class SettingsStore
 {
@@ -65,6 +66,8 @@ public sealed class SettingsStore
             ? position
             : LauncherPosition.Centered;
         IgnoreAccents = data?.IgnoreAccents ?? true;
+        AllowTypedCommands = data?.AllowTypedCommands ?? true;
+        SafetyNoticeSeen = data?.SafetyNoticeSeen ?? false;
     }
 
     /// <summary>The values offered in Settings for the number of recent items to keep.</summary>
@@ -83,6 +86,15 @@ public sealed class SettingsStore
 
     /// <summary>When on, searching ignores accents (<c>evene</c> finds <c>Événements</c>). On by default.</summary>
     public bool IgnoreAccents { get; private set; }
+
+    /// <summary>
+    /// When on, text that matches nothing can be run as a command, like in the Windows Run dialog.
+    /// Off: typed URLs, folders and files still open. On by default.
+    /// </summary>
+    public bool AllowTypedCommands { get; private set; }
+
+    /// <summary>The safety notice was shown and acknowledged (shown once).</summary>
+    public bool SafetyNoticeSeen { get; private set; }
 
     /// <summary>
     /// The folders the user added as sources, in the order added: <see cref="DesktopFolder"/> or a
@@ -187,6 +199,18 @@ public sealed class SettingsStore
         Save();
     }
 
+    public void SetAllowTypedCommands(bool allow)
+    {
+        AllowTypedCommands = allow;
+        Save();
+    }
+
+    public void SetSafetyNoticeSeen()
+    {
+        SafetyNoticeSeen = true;
+        Save();
+    }
+
     private void Save()
     {
         var directory = Path.GetDirectoryName(_path);
@@ -203,7 +227,9 @@ public sealed class SettingsStore
             Theme.ToString(),
             LauncherPosition.ToString(),
             IgnoreAccents,
-            _folders);
+            _folders,
+            AllowTypedCommands,
+            SafetyNoticeSeen);
         File.WriteAllText(_path, JsonSerializer.Serialize(data));
     }
 
@@ -229,5 +255,7 @@ public sealed class SettingsStore
         string? Theme = null,
         string? LauncherPosition = null,
         bool? IgnoreAccents = null,
-        List<string>? Folders = null);
+        List<string>? Folders = null,
+        bool? AllowTypedCommands = null,
+        bool? SafetyNoticeSeen = null);
 }

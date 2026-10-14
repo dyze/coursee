@@ -34,6 +34,28 @@ public sealed class SettingsStoreOptionsTests : IDisposable
     }
 
     [Fact]
+    public void TypedCommands_AreAllowedByDefault_AndTheNoticeIsNotSeen()
+    {
+        var store = new SettingsStore(FilePath);
+
+        Assert.True(store.AllowTypedCommands);
+        Assert.False(store.SafetyNoticeSeen);
+    }
+
+    [Fact]
+    public void TypedCommandsAndTheNotice_ArePersisted()
+    {
+        var store = new SettingsStore(FilePath);
+        store.SetAllowTypedCommands(false);
+        store.SetSafetyNoticeSeen();
+
+        var reloaded = new SettingsStore(FilePath);
+
+        Assert.False(reloaded.AllowTypedCommands);
+        Assert.True(reloaded.SafetyNoticeSeen);
+    }
+
+    [Fact]
     public void Theme_FollowsWindowsByDefault()
     {
         Assert.Equal(ThemeChoice.System, new SettingsStore(FilePath).Theme);

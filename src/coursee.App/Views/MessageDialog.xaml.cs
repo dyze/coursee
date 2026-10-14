@@ -4,7 +4,7 @@ using Coursee.UI.Platform;
 
 namespace Coursee.UI.Views;
 
-/// <summary>A message or a yes / no question, in the app's theme, centered on its owner.</summary>
+/// <summary>A message (with an option, for a notice) or a yes / no question, in the app's theme, centered on its owner.</summary>
 public partial class MessageDialog : Window
 {
     private MessageDialog(Window owner, string message, bool question)
@@ -26,6 +26,21 @@ public partial class MessageDialog : Window
 
     public static void Inform(Window owner, string message) =>
         new MessageDialog(owner, message, question: false).ShowDialog();
+
+    /// <summary>
+    /// A warning, with one option to tick or untick (<paramref name="option"/>, starting at
+    /// <paramref name="isChecked"/>). Returns the option's state when closed, by OK or Esc.
+    /// </summary>
+    public static bool Notice(Window owner, string message, string option, bool isChecked)
+    {
+        var dialog = new MessageDialog(owner, message, question: false);
+        dialog.WarningIcon.Visibility = Visibility.Visible;
+        dialog.OptionCheckBox.Content = option;
+        dialog.OptionCheckBox.IsChecked = isChecked;
+        dialog.OptionCheckBox.Visibility = Visibility.Visible;
+        dialog.ShowDialog();
+        return dialog.OptionCheckBox.IsChecked == true;
+    }
 
     /// <summary>True when the user answered Yes.</summary>
     public static bool Confirm(Window owner, string question) =>

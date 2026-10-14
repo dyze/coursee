@@ -111,6 +111,53 @@ public partial class MainWindow : Window
         Activate();
         SearchBox.Focus();
         RefreshResources();
+
+        if (!_settings.SafetyNoticeSeen)
+        {
+            Dispatcher.BeginInvoke(() => ShowSafetyNotice());
+        }
+    }
+
+    /// <summary>
+    /// Once, the first time the launcher shows: says what typed text can do, and offers to switch
+    /// typed commands off. Acknowledged however it is closed.
+    /// </summary>
+    private void ShowSafetyNotice()
+    {
+        const string notice =
+            "Like Win+R, typed text runs as a command with your rights (\"del\" deletes files).\n"
+            + "coursee comes without warranty.";
+
+        bool allow;
+        _showingDialog = true;
+        try
+        {
+            allow = MessageDialog.Notice(this, notice, "Run typed text as a command", _settings.AllowTypedCommands);
+        }
+        finally
+        {
+            _showingDialog = false;
+        }
+
+        try
+        {
+            _settings.SetSafetyNoticeSeen();
+            if (allow != _settings.AllowTypedCommands)
+            {
+                _settings.SetAllowTypedCommands(allow);
+                _log.Info("Settings", $"Run typed text as a command {(allow ? "on" : "off")}");
+            }
+
+            _log.Info("App", "Safety notice acknowledged");
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            _log.Error("Settings", "Cannot save the safety notice", ex);
+        }
+
+        Activate();
+        SearchBox.Focus();
+        Refresh(keepSelection: true);
     }
 
     /// <summary>
@@ -208,8 +255,11 @@ public partial class MainWindow : Window
                     AliasTarget: _entries.TargetOfAlias),
                 ignoreAccents: _settings.IgnoreAccents);
 
-            // Nothing matches: offer what the Windows Run dialog would do with the typed text.
-            if (items.Count == 0 && FallbackClassifier.Classify(query) is { } fallback)
+            // Nothing matches: offer what the Windows Run dialog would do with the typed text,
+            // unless that is running a command and typed commands are off.
+            if (items.Count == 0
+                && FallbackClassifier.Classify(query) is { } fallback
+                && !FallbackClassifier.IsBlocked(fallback, _settings.AllowTypedCommands))
             {
                 items = [fallback];
             }
@@ -248,8 +298,8 @@ public partial class MainWindow : Window
         }
 
         ActionText.Text = string.IsNullOrWhiteSpace(SearchBox.Text)
-            ? "Type to search, or type a path, URL or command"
-            : "No match";
+            ? _settings.AllowTypedCommands ? "Type to search, or type a path, URL or command" : "Type to search, or type a path or URL"
+            : _settings.AllowTypedCommands ? "No match" : "No match (typed commands are off: Settings > General)";
         KeysText.Text = string.Empty;
     }
 

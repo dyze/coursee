@@ -14,11 +14,30 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
-    <TextBlock x:Name="MessageText" TextWrapping="Wrap" />
+    <DockPanel>
+      <!-- A notice shows a warning sign (Segoe Fluent "Warning"), in the theme's caution color. -->
+      <TextBlock x:Name="WarningIcon"
+                 DockPanel.Dock="Left"
+                 Margin="0,0,14,0"
+                 VerticalAlignment="Top"
+                 FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                 FontSize="28"
+                 Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                 Text="&#xE7BA;"
+                 Visibility="Collapsed" />
+      <TextBlock x:Name="MessageText" VerticalAlignment="Center" TextWrapping="Wrap" />
+    </DockPanel>
 
-    <StackPanel Grid.Row="1"
+    <!-- A notice can carry one option (MessageDialog.Notice). -->
+    <CheckBox x:Name="OptionCheckBox"
+              Grid.Row="1"
+              Margin="0,16,0,0"
+              Visibility="Collapsed" />
+
+    <StackPanel Grid.Row="2"
                 Margin="0,20,0,0"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal">

@@ -251,6 +251,7 @@ public partial class SettingsWindow : Window
         RecentsComboBox.SelectedItem = _settings.RecentsCapacity;
         DebugLoggingCheckBox.IsChecked = _settings.DebugLogging;
         IgnoreAccentsCheckBox.IsChecked = _settings.IgnoreAccents;
+        AllowTypedCommandsCheckBox.IsChecked = _settings.AllowTypedCommands;
         ThemeComboBox.SelectedItem = ThemeOptions.First(option => option.Value == _settings.Theme);
         LauncherPositionComboBox.SelectedItem = PositionOptions.First(option => option.Value == _settings.LauncherPosition);
 
@@ -699,6 +700,23 @@ public partial class SettingsWindow : Window
             _log.Error("Settings", "Cannot change ignoring accents", ex);
             ShowMessage(ex.Message);
             IgnoreAccentsCheckBox.IsChecked = !wanted;
+        }
+    }
+
+    private void AllowTypedCommandsCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        var wanted = AllowTypedCommandsCheckBox.IsChecked == true;
+
+        try
+        {
+            _settings.SetAllowTypedCommands(wanted);
+            _log.Info("Settings", $"Run typed text as a command {(wanted ? "on" : "off")}");
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            _log.Error("Settings", "Cannot change running typed text as a command", ex);
+            ShowMessage(ex.Message);
+            AllowTypedCommandsCheckBox.IsChecked = !wanted;
         }
     }
 

@@ -27,6 +27,7 @@ public sealed class SettingsCatalog
     public const string AutoStartId = "AutoStart";
     public const string LauncherPositionId = "LauncherPosition";
     public const string IgnoreAccentsId = "IgnoreAccents";
+    public const string AllowTypedCommandsId = "AllowTypedCommands";
     public const string ThemeId = "Theme";
     public const string AddFolderId = "AddFolder";
     public const string QuickAccessId = "QuickAccess";
@@ -50,6 +51,7 @@ public sealed class SettingsCatalog
             new(AutoStartId, GeneralTab, "Start coursee when I sign in to Windows", ["auto", "startup", "boot", "login"]),
             new(LauncherPositionId, GeneralTab, "Launcher position", ["place", "where", "mouse", "center", "centre", "monitor", "screen", "window"]),
             new(IgnoreAccentsId, GeneralTab, "Ignore accents when searching", ["accent", "diacritic", "search", "match", "letters"]),
+            new(AllowTypedCommandsId, GeneralTab, "Run typed text as a command", ["typed", "fallback", "win+r", "safety", "harm", "dangerous"]),
             new(ThemeId, AppearanceTab, "Theme", ["dark", "light", "mode", "color", "colour"]),
         };
 

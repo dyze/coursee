@@ -47,7 +47,7 @@ Two lines under the search box say which keys apply to the selected item: what E
 
 **Tray icon.** Click: show the launcher. Menu: Show, Settings, Log window, Quit.
 
-**Typed text.** When nothing matches, Enter acts like Win+R: it opens a URL, folder or file, or runs the text as a command. Like Win+R, a command starts in your user folder, and its program is found there or in PATH even when its name has spaces (`kill rds.cmd`, no quotes needed). Network paths (`\\server\share`) are opened without being checked, so typing them never freezes the window.
+**Typed text.** When nothing matches, Enter acts like Win+R: it opens a URL, folder or file, or runs the text as a command. Like Win+R, a command starts in your user folder, and its program is found there or in PATH even when its name has spaces (`kill rds.cmd`, no quotes needed). Network paths (`\\server\share`) are opened without being checked, so typing them never freezes the window. Running typed text as a command can be switched off (Settings > General): URLs, folders and files still open, and a custom entry (Ctrl+N) still runs its command. The first time the launcher shows, a safety notice explains this and offers the same switch.
 
 ## Settings
 
@@ -55,7 +55,7 @@ Gear button in the launcher, or tray menu > Settings. A dialog over the launcher
 
 | Tab | Options |
 | --- | --- |
-| General | Number of recent items (default 20), launcher position, ignore accents when searching (default on), start with Windows |
+| General | Number of recent items (default 20), launcher position, ignore accents when searching (default on), run typed text as a command (default on), start with Windows |
 | Appearance | Theme: follow Windows (default), light or dark. The tray menu follows at the next start |
 | Sources | Custom entries, Desktop, your folders, Quick access folders (grouped: one checkbox switches them all), Start Menu, Firefox bookmarks, Edge favorites, Windows Run history, Windows settings and tools (on / off). *Add folder...* adds a folder; ✕ removes one of yours (the Desktop too) |
 | Entries | One list at a time, picked in a strip with counts: hidden entries (restore), custom entries (edit name and target, delete), aliases (edit, remove), pins (unpin). A filter box narrows every list (name, target, alias or source). Enter in a box saves its row |

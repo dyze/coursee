@@ -131,4 +131,22 @@ public class FallbackClassifierTests
         Assert.Equal(FallbackClassifier.SourceName, FallbackClassifier.Classify("notepad", Never, Never)!.Source);
         Assert.Equal("Typed", FallbackClassifier.SourceName);
     }
+
+    [Fact]
+    public void ACommand_IsBlocked_OnlyWhenTypedCommandsAreOff()
+    {
+        var command = FallbackClassifier.Classify("del c:\\file", Never, Never)!;
+
+        Assert.True(FallbackClassifier.IsBlocked(command, allowCommands: false));
+        Assert.False(FallbackClassifier.IsBlocked(command, allowCommands: true));
+    }
+
+    [Theory]
+    [InlineData("https://example.com")]
+    [InlineData("www.example.com")]
+    [InlineData(@"\\server\share")]
+    public void UrlsAndPaths_AreNeverBlocked(string input)
+    {
+        Assert.False(FallbackClassifier.IsBlocked(FallbackClassifier.Classify(input, Never, Never)!, allowCommands: false));
+    }
 }

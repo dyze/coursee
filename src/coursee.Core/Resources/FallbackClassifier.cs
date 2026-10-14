@@ -57,6 +57,13 @@ public static class FallbackClassifier
         return new Resource(text, text, ResourceKind.Command, SourceName);
     }
 
+    /// <summary>
+    /// True when <paramref name="typed"/> (from <see cref="Classify"/>) would run a command while
+    /// typed commands are off: Enter must not offer it. URLs, folders and files still open.
+    /// </summary>
+    public static bool IsBlocked(Resource typed, bool allowCommands) =>
+        !allowCommands && typed.Kind == ResourceKind.Command;
+
     /// <summary>A URL with a scheme (http, https, ftp) or starting with "www.". Returns the URL to open, or null.</summary>
     private static string? AsUrl(string text)
     {
