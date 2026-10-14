@@ -29,6 +29,7 @@ public sealed class SettingsCatalog
     public const string IgnoreAccentsId = "IgnoreAccents";
     public const string ThemeId = "Theme";
     public const string AddFolderId = "AddFolder";
+    public const string QuickAccessId = "QuickAccess";
     public const string EntriesId = "Entries";
     public const string KeyBindingsId = "KeyBindings";
     public const string DebugLoggingId = "DebugLogging";
@@ -40,7 +41,8 @@ public sealed class SettingsCatalog
     /// All the sources; those that can be switched off get an entry in the Sources tab. The window
     /// makes a new catalog when the sources change (<see cref="SourceCatalog.Changed"/>).
     /// </param>
-    public SettingsCatalog(IEnumerable<IResourceSource> sources)
+    /// <param name="hasQuickAccess">True when Quick access folders are listed: their group gets an entry.</param>
+    public SettingsCatalog(IEnumerable<IResourceSource> sources, bool hasQuickAccess = false)
     {
         var entries = new List<SettingInfo>
         {
@@ -54,7 +56,12 @@ public sealed class SettingsCatalog
         entries.AddRange(sources
             .Where(source => source.CanBeDisabled)
             .Select(source => new SettingInfo(SourceId(source.Name), SourcesTab, source.DisplayName, ["source", "on", "off", source.Name])));
-        entries.Add(new(AddFolderId, SourcesTab, "Add folder...", ["folder", "directory", "source", "add", "quick access"]));
+        if (hasQuickAccess)
+        {
+            entries.Add(new(QuickAccessId, SourcesTab, "Quick access", ["pinned", "explorer", "all", "group"]));
+        }
+
+        entries.Add(new(AddFolderId, SourcesTab, "Add folder...", ["folder", "directory", "source", "add"]));
 
         entries.Add(new(
             EntriesId,

@@ -36,6 +36,29 @@ public sealed class SettingsStoreTests : IDisposable
     }
 
     [Fact]
+    public void SeveralSources_AreSwitchedAtOnce_AndPersisted()
+    {
+        new SettingsStore(FilePath).SetSourcesEnabled(["A", "B"], false);
+
+        var reloaded = new SettingsStore(FilePath);
+
+        Assert.False(reloaded.IsSourceEnabled("A"));
+        Assert.False(reloaded.IsSourceEnabled("B"));
+    }
+
+    [Fact]
+    public void AGroupOfSources_IsOnOffOrMixed()
+    {
+        var store = new SettingsStore(FilePath);
+        store.SetSourceEnabled("B", false);
+
+        Assert.True(store.AreSourcesEnabled(["A", "C"]));
+        Assert.False(store.AreSourcesEnabled(["B"]));
+        Assert.Null(store.AreSourcesEnabled(["A", "B"]));
+        Assert.True(store.AreSourcesEnabled([]));
+    }
+
+    [Fact]
     public void SourceNamesAreCaseInsensitive()
     {
         var store = new SettingsStore(FilePath);

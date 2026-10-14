@@ -256,7 +256,7 @@ public sealed class ShortcutsSourceTests : IDisposable
         var common = Path.Combine(_root, "common");
 
         Assert.Equal(_desktop, ShortcutsSource.Desktop([_desktop, common], new FakeResolver([])).DisplayName);
-        Assert.Equal($"{_desktop} (Quick access)", ShortcutsSource.Desktop([_desktop + Path.DirectorySeparatorChar], new FakeResolver([]), quickAccess: true).DisplayName);
+        Assert.Equal(_desktop, ShortcutsSource.Desktop([_desktop + Path.DirectorySeparatorChar], new FakeResolver([])).DisplayName);
         Assert.Equal("Desktop", ShortcutsSource.Desktop([], new FakeResolver([])).DisplayName);
     }
 

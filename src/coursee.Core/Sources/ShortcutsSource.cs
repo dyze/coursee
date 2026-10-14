@@ -39,6 +39,7 @@ public sealed class ShortcutsSource : IResourceSource
         IShortcutResolver resolver,
         bool includeSubfolders,
         bool includeFilesAndFolders,
+        string? folderEntryName,
         ILog? log)
     {
         Name = name;
@@ -48,54 +49,52 @@ public sealed class ShortcutsSource : IResourceSource
         _resolver = resolver;
         _searchOption = includeSubfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
         _includeFilesAndFolders = includeFilesAndFolders;
+        FolderEntryName = folderEntryName;
         _log = log ?? NullLog.Instance;
     }
 
     /// <summary>
     /// The user's Desktop folders (personal first, then common), top level only: shortcuts, files
-    /// and folders. Shown as the personal folder's path, like a folder source; <paramref name="quickAccess"/>
-    /// when it is listed because it is pinned in Quick access.
+    /// and folders. Shown as the personal folder's path, like a folder source.
+    /// With <paramref name="folderEntryName"/>, the personal folder itself is listed too, under that name.
     /// </summary>
-    public static ShortcutsSource Desktop(IEnumerable<string> folders, IShortcutResolver resolver, ILog? log = null, bool quickAccess = false)
+    public static ShortcutsSource Desktop(IEnumerable<string> folders, IShortcutResolver resolver, ILog? log = null, string? folderEntryName = null)
     {
         var list = folders.ToList();
         var path = list.Count > 0 ? FolderSources.Normalize(list[0]) : DesktopName;
-        return new(
-            DesktopName,
-            quickAccess ? $"{path} (Quick access)" : path,
-            SourceIcons.Desktop,
-            list,
-            resolver,
-            includeSubfolders: false,
-            includeFilesAndFolders: true,
-            log);
+        return new(DesktopName, path, SourceIcons.Desktop, list, resolver, includeSubfolders: false, includeFilesAndFolders: true, folderEntryName, log);
     }
 
     /// <summary>
     /// A folder added by the user, or pinned in Explorer's Quick access: top level only, like the
     /// Desktop. Named after its path (see <see cref="FolderSources"/>).
+    /// With <paramref name="folderEntryName"/>, the folder itself is listed too, under that name.
     /// </summary>
-    public static ShortcutsSource Folder(string folder, bool quickAccess, IShortcutResolver resolver, ILog? log = null)
+    public static ShortcutsSource Folder(string folder, bool quickAccess, IShortcutResolver resolver, ILog? log = null, string? folderEntryName = null)
     {
         var path = FolderSources.Normalize(folder);
         return new(
             FolderSources.NameOf(path),
-            quickAccess ? $"{path} (Quick access)" : path,
+            path,
             quickAccess ? SourceIcons.QuickAccess : SourceIcons.Folder,
             [path],
             resolver,
             includeSubfolders: false,
             includeFilesAndFolders: true,
+            folderEntryName,
             log);
     }
 
     /// <summary>The Start Menu folders (personal and common), subfolders included.</summary>
     public static ShortcutsSource StartMenu(IEnumerable<string> folders, IShortcutResolver resolver, ILog? log = null) =>
-        new(StartMenuName, "Start Menu shortcuts", SourceIcons.StartMenu, folders, resolver, includeSubfolders: true, includeFilesAndFolders: false, log);
+        new(StartMenuName, "Start Menu shortcuts", SourceIcons.StartMenu, folders, resolver, includeSubfolders: true, includeFilesAndFolders: false, folderEntryName: null, log);
 
     public string Name { get; }
 
     public string DisplayName { get; }
+
+    /// <summary>The name of the row of the (first) folder itself, or null when the folder is not listed.</summary>
+    public string? FolderEntryName { get; }
 
     public bool CanBeDisabled => true;
 
@@ -105,6 +104,11 @@ public sealed class ShortcutsSource : IResourceSource
     {
         var resources = new List<Resource>();
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        if (FolderEntryName is not null && _folders.Count > 0 && Directory.Exists(_folders[0]))
+        {
+            resources.Add(new Resource(FolderEntryName, _folders[0], ResourceKind.Folder, Name));
+        }
 
         foreach (var folder in _folders)
         {

@@ -117,9 +117,29 @@ public sealed class SettingsStore
 
     public bool IsSourceEnabled(string sourceName) => !_disabledSources.Contains(sourceName);
 
-    public void SetSourceEnabled(string sourceName, bool enabled)
+    /// <summary>The state of a group of sources: true when all are on, false when none is, null when some are.</summary>
+    public bool? AreSourcesEnabled(IEnumerable<string> sourceNames)
     {
-        var changed = enabled ? _disabledSources.Remove(sourceName) : _disabledSources.Add(sourceName);
+        var states = sourceNames.Select(IsSourceEnabled).Distinct().ToList();
+        return states.Count switch
+        {
+            0 => true,
+            1 => states[0],
+            _ => null,
+        };
+    }
+
+    public void SetSourceEnabled(string sourceName, bool enabled) => SetSourcesEnabled([sourceName], enabled);
+
+    /// <summary>Switches several sources at once (a group in Settings), saving once.</summary>
+    public void SetSourcesEnabled(IEnumerable<string> sourceNames, bool enabled)
+    {
+        var changed = false;
+        foreach (var name in sourceNames)
+        {
+            changed |= enabled ? _disabledSources.Remove(name) : _disabledSources.Add(name);
+        }
+
         if (changed)
         {
             Save();

@@ -22,9 +22,14 @@ public sealed class SourceCatalogTests : IDisposable
     {
         public List<string> Pinned { get; set; } = [];
 
+        /// <summary>The name Explorer shows, by path; else the folder name.</summary>
+        public Dictionary<string, string> Shown { get; } = [];
+
         public Exception? Error { get; set; }
 
-        public IReadOnlyList<string> PinnedFolders() => Error is null ? Pinned.ToList() : throw Error;
+        public IReadOnlyList<PinnedFolder> PinnedFolders() => Error is null
+            ? Pinned.Select(path => new PinnedFolder(path, Shown.GetValueOrDefault(path, Path.GetFileName(path)))).ToList()
+            : throw Error;
     }
 
     private sealed class NoShortcuts : IShortcutResolver
@@ -182,8 +187,38 @@ public sealed class SourceCatalogTests : IDisposable
 
         Assert.Equal(new[] { "Custom", FolderSources.NameOf(_code), "Desktop", "Start Menu" }, Names(catalog));
         Assert.Equal(SourceIcons.Desktop, catalog.All[2].Icon);
-        Assert.Equal($"{_desktop} (Quick access)", catalog.All[2].DisplayName);
         Assert.False(catalog.CanRemove("Desktop"));
+        Assert.True(catalog.IsQuickAccess("Desktop"));
+    }
+
+    [Fact]
+    public void IsQuickAccess_OnlyForPinnedFoldersNotListedOtherwise()
+    {
+        _quickAccess.Pinned = [_code, _notes, _desktop];
+        var catalog = Catalog();
+        catalog.AddFolder(_notes);
+        catalog.SyncQuickAccess();
+
+        Assert.True(catalog.IsQuickAccess(FolderSources.NameOf(_code)));
+        Assert.False(catalog.IsQuickAccess(FolderSources.NameOf(_notes)));
+        Assert.False(catalog.IsQuickAccess("Desktop"));
+        Assert.False(catalog.IsQuickAccess("Start Menu"));
+    }
+
+    [Fact]
+    public void TheDesktopMovingToQuickAccess_IsAChange_EvenInTheSamePlace()
+    {
+        _quickAccess.Pinned = [_desktop];
+        var catalog = Catalog();
+        catalog.SyncQuickAccess();
+        var raised = 0;
+        catalog.Changed += () => raised++;
+
+        catalog.RemoveFolder("Desktop");
+
+        Assert.Equal(new[] { "Custom", "Desktop", "Start Menu" }, Names(catalog));
+        Assert.Equal(1, raised);
+        Assert.True(catalog.IsQuickAccess("Desktop"));
     }
 
     [Fact]
@@ -264,6 +299,46 @@ public sealed class SourceCatalogTests : IDisposable
         var source = catalog.All.Single(s => s.Name == FolderSources.NameOf(_code));
         Assert.Equal(SourceIcons.Folder, source.Icon);
         Assert.True(catalog.CanRemove(source.Name));
+    }
+
+    [Fact]
+    public void EveryFolderSource_ListsTheFolderItself()
+    {
+        _quickAccess.Pinned = [_notes];
+        var catalog = Catalog();
+        catalog.AddFolder(_code);
+        catalog.SyncQuickAccess();
+
+        Assert.Contains(catalog.All[1].GetResources(), r => r.Name == "desktop" && r.Target == _desktop && r.Kind == ResourceKind.Folder);
+        Assert.Contains(catalog.All[2].GetResources(), r => r.Name == "code" && r.Target == _code);
+        Assert.Contains(catalog.All[3].GetResources(), r => r.Name == "notes" && r.Target == _notes);
+    }
+
+    [Fact]
+    public void AFolderIsNamedAsExplorerShowsIt_EvenWhenTheUserAddedIt()
+    {
+        _quickAccess.Pinned = [_desktop, _code];
+        _quickAccess.Shown[_desktop] = "Bureau";
+        _quickAccess.Shown[_code] = "Code";
+        var catalog = Catalog();
+
+        catalog.SyncQuickAccess();
+
+        Assert.Equal("Bureau (desktop)", ((ShortcutsSource)catalog.All[1]).FolderEntryName);
+        Assert.Equal("code", ((ShortcutsSource)catalog.All[2]).FolderEntryName);
+    }
+
+    [Fact]
+    public void ARenamedPin_IsAChange_AndRenamesTheRow()
+    {
+        _quickAccess.Pinned = [_code];
+        var catalog = Catalog();
+        catalog.SyncQuickAccess();
+
+        _quickAccess.Shown[_code] = "Projets";
+
+        Assert.True(catalog.SyncQuickAccess());
+        Assert.Equal("Projets (code)", ((ShortcutsSource)catalog.All[2]).FolderEntryName);
     }
 
     [Fact]

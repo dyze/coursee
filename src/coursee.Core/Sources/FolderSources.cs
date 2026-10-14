@@ -23,6 +23,25 @@ public static class FolderSources
     /// <summary>The path as compared and stored: trimmed, without a trailing separator (<c>D:\</c> stays).</summary>
     public static string Normalize(string folder) => Path.TrimEndingDirectorySeparator(folder.Trim());
 
+    /// <summary>
+    /// The name of the row of the folder itself: its folder name, or the drive (<c>D:\</c>). With
+    /// the name Explorer shows, when it differs (a translated Desktop): both, <c>Bureau (Desktop)</c>,
+    /// so that either finds it.
+    /// </summary>
+    public static string EntryName(string folder, string? shownName = null)
+    {
+        var path = Normalize(folder);
+        var own = Path.GetFileName(path);
+        if (own.Length == 0)
+        {
+            own = path;
+        }
+
+        return string.IsNullOrWhiteSpace(shownName) || string.Equals(shownName.Trim(), own, StringComparison.OrdinalIgnoreCase)
+            ? own
+            : $"{shownName.Trim()} ({own})";
+    }
+
     public static bool AreSame(string folder, string other) =>
         string.Equals(Normalize(folder), Normalize(other), StringComparison.OrdinalIgnoreCase);
 

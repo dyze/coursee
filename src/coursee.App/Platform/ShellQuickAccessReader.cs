@@ -15,9 +15,9 @@ public sealed class ShellQuickAccessReader : IQuickAccessReader
     private const string QuickAccessFolder = "shell:::{679f85cb-0220-4080-b29b-5540cc05aab6}";
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(5);
 
-    public IReadOnlyList<string> PinnedFolders()
+    public IReadOnlyList<PinnedFolder> PinnedFolders()
     {
-        IReadOnlyList<string> folders = [];
+        IReadOnlyList<PinnedFolder> folders = [];
         Exception? error = null;
         var thread = new Thread(() =>
         {
@@ -50,7 +50,7 @@ public sealed class ShellQuickAccessReader : IQuickAccessReader
         return folders;
     }
 
-    private static List<string> Read()
+    private static List<PinnedFolder> Read()
     {
         var type = Type.GetTypeFromProgID("Shell.Application")
             ?? throw new InvalidOperationException("The Windows Shell is not available");
@@ -68,16 +68,16 @@ public sealed class ShellQuickAccessReader : IQuickAccessReader
 
             items = ((dynamic)folder).Items();
 
-            var folders = new List<string>();
+            var folders = new List<PinnedFolder>();
             int count = ((dynamic)items!).Count;
             for (var index = 0; index < count; index++)
             {
                 object item = ((dynamic)items).Item(index);
                 try
                 {
-                    if (PinnedFolderPath(item) is { } path)
+                    if (AsPinnedFolder(item) is { } pinned)
                     {
-                        folders.Add(path);
+                        folders.Add(pinned);
                     }
                 }
                 finally
@@ -100,13 +100,16 @@ public sealed class ShellQuickAccessReader : IQuickAccessReader
         }
     }
 
-    /// <summary>The path of a pinned file system folder, else null. Virtual ones (This PC, Gallery) have no full path.</summary>
-    private static string? PinnedFolderPath(object item)
+    /// <summary>A pinned file system folder, with the name Explorer shows; else null. Virtual ones (This PC, Gallery) have no full path.</summary>
+    private static PinnedFolder? AsPinnedFolder(object item)
     {
         dynamic shellItem = item;
         bool isFolder = shellItem.IsFolder;
         string? path = shellItem.Path;
         object? pinned = shellItem.ExtendedProperty("System.Home.IsPinned");
-        return isFolder && pinned is true && path is not null && Path.IsPathFullyQualified(path) ? path : null;
+        string? name = shellItem.Name;
+        return isFolder && pinned is true && path is not null && Path.IsPathFullyQualified(path)
+            ? new PinnedFolder(path, string.IsNullOrWhiteSpace(name) ? Path.GetFileName(path) : name)
+            : null;
     }
 }

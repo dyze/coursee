@@ -66,13 +66,54 @@ public sealed class FolderSourcesTests : IDisposable
         Assert.All(source.GetResources(), r => Assert.Equal(source.Name, r.Source));
     }
 
+    [Theory]
+    [InlineData(@"C:\Users\me\Desktop", null, "Desktop")]
+    [InlineData(@"C:\Users\me\Desktop\", " ", "Desktop")]
+    [InlineData(@"C:\Users\me\Desktop", "desktop", "Desktop")]
+    [InlineData(@"C:\Users\me\Desktop", "Bureau", "Bureau (Desktop)")]
+    public void EntryName_IsTheFolderName_WithTheShownNameWhenItDiffers(string folder, string? shown, string expected)
+    {
+        // Backslashes are separators on Windows only.
+        var path = folder.Replace('\\', Path.DirectorySeparatorChar);
+
+        Assert.Equal(expected, FolderSources.EntryName(path, shown));
+    }
+
     [Fact]
-    public void QuickAccessFolder_HasItsOwnIconAndLabel()
+    public void EntryName_OfADrive_IsTheDrive()
+    {
+        var root = Path.GetPathRoot(Path.GetTempPath())!;
+
+        Assert.Equal(FolderSources.Normalize(root), FolderSources.EntryName(root));
+    }
+
+    [Fact]
+    public void FolderSource_WithAnEntryName_ListsTheFolderItself()
+    {
+        Directory.CreateDirectory(_root);
+
+        var source = ShortcutsSource.Folder(_root, quickAccess: false, new NoShortcuts(), folderEntryName: "Work");
+
+        var entry = Assert.Single(source.GetResources());
+        Assert.Equal(new Resource("Work", _root, ResourceKind.Folder, source.Name), entry);
+        Assert.Equal("Work", source.FolderEntryName);
+    }
+
+    [Fact]
+    public void FolderSource_OfAMissingFolder_ListsNothing()
+    {
+        var source = ShortcutsSource.Folder(Path.Combine(_root, "gone"), quickAccess: false, new NoShortcuts(), folderEntryName: "Gone");
+
+        Assert.Empty(source.GetResources());
+    }
+
+    [Fact]
+    public void QuickAccessFolder_HasItsOwnIcon_AndItsPathAsLabel()
     {
         var source = ShortcutsSource.Folder(_root, quickAccess: true, new NoShortcuts());
 
         Assert.Equal(SourceIcons.QuickAccess, source.Icon);
-        Assert.Equal($"{_root} (Quick access)", source.DisplayName);
+        Assert.Equal(_root, source.DisplayName);
     }
 
     public void Dispose()

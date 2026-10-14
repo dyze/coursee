@@ -154,13 +154,21 @@ public class SettingsCatalogTests
         Assert.Equal(SettingsCatalog.KeysTab, Catalog().All.Single(entry => entry.Id == SettingsCatalog.KeyBindingsId).Tab);
     }
 
-    [Theory]
-    [InlineData("folder")]
-    [InlineData("quick access")]
-    public void Find_FindsAddFolder_InTheSourcesTab(string query)
+    [Fact]
+    public void Find_FindsAddFolder_InTheSourcesTab()
     {
-        Assert.Equal(SettingsCatalog.AddFolderId, Assert.Single(Catalog().Find(query)).Id);
+        Assert.Equal(SettingsCatalog.AddFolderId, Assert.Single(Catalog().Find("folder")).Id);
         Assert.Equal(SettingsCatalog.SourcesTab, Catalog().All.Single(entry => entry.Id == SettingsCatalog.AddFolderId).Tab);
+    }
+
+    [Fact]
+    public void TheQuickAccessGroup_HasAnEntry_OnlyWhenListed()
+    {
+        var withGroup = new SettingsCatalog([], hasQuickAccess: true);
+
+        Assert.Equal(SettingsCatalog.QuickAccessId, Assert.Single(withGroup.Find("quick access")).Id);
+        Assert.Contains(withGroup.Find("pinned"), entry => entry.Id == SettingsCatalog.QuickAccessId);
+        Assert.Empty(Catalog().Find("quick access"));
     }
 
     [Fact]

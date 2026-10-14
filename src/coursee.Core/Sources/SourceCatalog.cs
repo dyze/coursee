@@ -23,8 +23,9 @@ public enum AddFolderResult
 /// <item>the Quick access folders not listed yet (local ones only; a pinned Desktop is the Desktop source),</item>
 /// <item>the sources given as <c>last</c>.</item>
 /// </list>
-/// A folder is listed once: the first wins. Each folder source is kept while listed, so its
-/// shortcuts are not resolved again. Thread-safe: Quick access is read on a background thread.
+/// A folder is listed once: the first wins. Each folder source also lists the folder itself, under
+/// the name Explorer shows when it is pinned (<see cref="FolderSources.EntryName"/>). Each is kept
+/// while listed (and named the same), so its shortcuts are not resolved again. Thread-safe: Quick access is read on a background thread.
 /// </summary>
 public sealed class SourceCatalog
 {
@@ -37,12 +38,11 @@ public sealed class SourceCatalog
     private readonly IReadOnlyList<IResourceSource> _first;
     private readonly IReadOnlyList<IResourceSource> _last;
     private readonly ILog _log;
-    private readonly ShortcutsSource _desktop;
-    private readonly ShortcutsSource _pinnedDesktop;
     private readonly Dictionary<string, ShortcutsSource> _folderSources = new(StringComparer.OrdinalIgnoreCase);
     private readonly Lock _gate = new();
-    private IReadOnlyList<string> _pinned = [];
+    private IReadOnlyList<PinnedFolder> _pinned = [];
     private volatile IReadOnlyList<IResourceSource> _all = [];
+    private volatile IReadOnlySet<string> _quickAccessNames = new HashSet<string>();
 
     /// <param name="desktopFolders">The personal and common Desktop folders.</param>
     public SourceCatalog(
@@ -61,8 +61,6 @@ public sealed class SourceCatalog
         _first = first;
         _last = last;
         _log = log ?? NullLog.Instance;
-        _desktop = ShortcutsSource.Desktop(desktopFolders, resolver, log);
-        _pinnedDesktop = ShortcutsSource.Desktop(desktopFolders, resolver, log, quickAccess: true);
         Rebuild();
     }
 
@@ -77,6 +75,12 @@ public sealed class SourceCatalog
 
     /// <summary>True for a folder the user added (the Desktop included): it can be removed. Quick access folders cannot.</summary>
     public bool CanRemove(string sourceName) => StoredEntryOf(sourceName) is not null;
+
+    /// <summary>
+    /// True for a source listed because it is pinned in Quick access (the Desktop too, when it
+    /// is not one of the user's folders). These come together in <see cref="All"/>.
+    /// </summary>
+    public bool IsQuickAccess(string sourceName) => _quickAccessNames.Contains(sourceName);
 
     /// <summary>
     /// Adds a folder chosen by the user, at the end of their folders. One of the Desktop folders
@@ -132,7 +136,7 @@ public sealed class SourceCatalog
     /// </summary>
     public bool SyncQuickAccess()
     {
-        IReadOnlyList<string> read;
+        IReadOnlyList<PinnedFolder> read;
         try
         {
             read = _quickAccess.PinnedFolders();
@@ -144,14 +148,15 @@ public sealed class SourceCatalog
         }
 
         var pinned = read
-            .Select(FolderSources.Normalize)
-            .Where(folder => folder.Length > 0 && !FolderSources.IsNetwork(folder))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Select(folder => folder with { Path = FolderSources.Normalize(folder.Path) })
+            .Where(folder => folder.Path.Length > 0 && !FolderSources.IsNetwork(folder.Path))
+            .DistinctBy(folder => folder.Path, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
         lock (_gate)
         {
-            if (pinned.SequenceEqual(_pinned, StringComparer.OrdinalIgnoreCase))
+            // A renamed one counts too: its row is named after it.
+            if (pinned.SequenceEqual(_pinned))
             {
                 return false;
             }
@@ -196,10 +201,18 @@ public sealed class SourceCatalog
     {
         var sources = new List<IResourceSource>(_first);
         var listed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var quickAccessNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        void AddDesktop(ShortcutsSource desktop)
+        // The name Explorer shows, for every pinned folder: also the one of a folder the user added.
+        var shownNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var folder in _pinned)
         {
-            sources.Add(desktop);
+            shownNames[folder.Path] = folder.Name;
+        }
+
+        void AddDesktop()
+        {
+            sources.Add(DesktopSource(shownNames));
             listed.UnionWith(_desktopFolders.Select(FolderSources.Normalize));
         }
 
@@ -207,25 +220,27 @@ public sealed class SourceCatalog
         {
             if (string.Equals(entry, SettingsStore.DesktopFolder, StringComparison.OrdinalIgnoreCase))
             {
-                AddDesktop(_desktop);
+                AddDesktop();
             }
             else if (listed.Add(FolderSources.Normalize(entry)))
             {
-                sources.Add(FolderSource(entry, quickAccess: false));
+                sources.Add(FolderSource(entry, quickAccess: false, shownNames));
             }
         }
 
         // A pinned Desktop is the Desktop source, both Desktop folders, with its usual name.
-        foreach (var folder in _pinned.Where(listed.Add))
+        foreach (var folder in _pinned.Select(pinned => pinned.Path).Where(listed.Add))
         {
             if (IsDesktopFolder(folder))
             {
-                AddDesktop(_pinnedDesktop);
+                AddDesktop();
             }
             else
             {
-                sources.Add(FolderSource(folder, quickAccess: true));
+                sources.Add(FolderSource(folder, quickAccess: true, shownNames));
             }
+
+            quickAccessNames.Add(sources[^1].Name);
         }
 
         sources.AddRange(_last);
@@ -237,32 +252,51 @@ public sealed class SourceCatalog
             _folderSources.Remove(gone);
         }
 
-        if (sources.SequenceEqual(_all))
+        // The Desktop can move between the user's folders and Quick access without changing place.
+        if (sources.SequenceEqual(_all) && quickAccessNames.SetEquals(_quickAccessNames))
         {
             return false;
         }
 
+        _quickAccessNames = quickAccessNames;
         _all = sources;
         return true;
     }
 
-    /// <summary>The folder's source, the one already made when it has not changed side (user or Quick access).</summary>
-    private ShortcutsSource FolderSource(string folder, bool quickAccess)
+    private ShortcutsSource DesktopSource(Dictionary<string, string> shownNames)
     {
-        var name = FolderSources.NameOf(folder);
-        var icon = quickAccess ? SourceIcons.QuickAccess : SourceIcons.Folder;
-        if (_folderSources.TryGetValue(name, out var existing) && existing.Icon == icon)
+        var personal = _desktopFolders.Count > 0 ? _desktopFolders[0] : ShortcutsSource.DesktopName;
+        return Kept(
+            ShortcutsSource.DesktopName,
+            SourceIcons.Desktop,
+            FolderSources.EntryName(personal, shownNames.GetValueOrDefault(FolderSources.Normalize(personal))),
+            entryName => ShortcutsSource.Desktop(_desktopFolders, _resolver, _log, entryName));
+    }
+
+    private ShortcutsSource FolderSource(string folder, bool quickAccess, Dictionary<string, string> shownNames) =>
+        Kept(
+            FolderSources.NameOf(folder),
+            quickAccess ? SourceIcons.QuickAccess : SourceIcons.Folder,
+            FolderSources.EntryName(folder, shownNames.GetValueOrDefault(FolderSources.Normalize(folder))),
+            entryName => ShortcutsSource.Folder(folder, quickAccess, _resolver, _log, entryName));
+
+    /// <summary>The source already made, when it has not changed side (user or Quick access) nor name; else a new one.</summary>
+    private ShortcutsSource Kept(string name, string icon, string entryName, Func<string, ShortcutsSource> make)
+    {
+        if (_folderSources.TryGetValue(name, out var existing) && existing.Icon == icon && existing.FolderEntryName == entryName)
         {
             return existing;
         }
 
-        var made = ShortcutsSource.Folder(folder, quickAccess, _resolver, _log);
+        var made = make(entryName);
         _folderSources[name] = made;
         return made;
     }
 
-    private void LogPinnedChange(IReadOnlyList<string> before, IReadOnlyList<string> after)
+    private void LogPinnedChange(IReadOnlyList<PinnedFolder> beforeFolders, IReadOnlyList<PinnedFolder> afterFolders)
     {
+        var before = beforeFolders.Select(folder => folder.Path).ToList();
+        var after = afterFolders.Select(folder => folder.Path).ToList();
         var added = after.Except(before, StringComparer.OrdinalIgnoreCase).ToList();
         var removed = before.Except(after, StringComparer.OrdinalIgnoreCase).ToList();
         var parts = new List<string> { $"{after.Count} pinned folders" };

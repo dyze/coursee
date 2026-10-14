@@ -49,7 +49,9 @@ public partial class SettingsWindow : Window
     private readonly Action _onSourcesChanged;
     private readonly Action<Window> _openLog;
     private readonly Button _addFolderButton;
+    private readonly Dictionary<string, CheckBox> _quickAccessCheckBoxes = new(StringComparer.OrdinalIgnoreCase);
     private SettingsCatalog _catalog;
+    private CheckBox? _quickAccessCheckBox;
     private bool _capturingHotkey;
     private bool _focusHotkey;
     private bool _loading;
@@ -117,11 +119,16 @@ public partial class SettingsWindow : Window
 
     /// <summary>
     /// Fills the Sources tab: a checkbox per source that can be switched off, with a remove button
-    /// for the user's folders, then the Add folder button. Called again when the sources change.
+    /// for the user's folders, then the Add folder button. The Quick access folders come together
+    /// (see <see cref="SourceCatalog"/>), indented under a checkbox that switches them all.
+    /// Called again when the sources change.
     /// </summary>
     private void ShowSources()
     {
-        _catalog = new SettingsCatalog(_sources.All);
+        var switchable = _sources.All.Where(s => s.CanBeDisabled).ToList();
+        _quickAccessCheckBoxes.Clear();
+        _quickAccessCheckBox = null;
+        _catalog = new SettingsCatalog(_sources.All, hasQuickAccess: switchable.Any(s => _sources.IsQuickAccess(s.Name)));
 
         // The section title and the Add folder button stay, so the button keeps the focus.
         var rows = SourcesSection.Children.OfType<UIElement>().Skip(1).Where(child => child != _addFolderButton).ToList();
@@ -131,10 +138,20 @@ public partial class SettingsWindow : Window
             SourcesSection.Children.Add(_addFolderButton);
         }
 
-        foreach (var source in _sources.All.Where(s => s.CanBeDisabled))
+        void AddRow(UIElement row) => SourcesSection.Children.Insert(SourcesSection.Children.Count - 1, row);
+
+        foreach (var source in switchable)
         {
-            SourcesSection.Children.Insert(SourcesSection.Children.Count - 1, SourceRow(source));
+            var inQuickAccess = _sources.IsQuickAccess(source.Name);
+            if (inQuickAccess && _quickAccessCheckBox is null)
+            {
+                AddRow(QuickAccessRow());
+            }
+
+            AddRow(SourceRow(source, inQuickAccess));
         }
+
+        ShowQuickAccessState();
 
         if (IsLoaded)
         {
@@ -142,24 +159,52 @@ public partial class SettingsWindow : Window
         }
     }
 
-    private StackPanel SourceRow(IResourceSource source)
+    /// <summary>The group of the Quick access folders: ticked when all are on, filled when some are.</summary>
+    private CheckBox QuickAccessRow()
+    {
+        var checkBox = new CheckBox
+        {
+            Content = SourceLabel(SourceIcons.QuickAccess, "Quick access"),
+            Tag = SettingsCatalog.QuickAccessId,
+            Margin = new Thickness(0, 10, 0, 0),
+            ToolTip = "The folders pinned in Explorer's Quick access: unpin one there to remove it",
+        };
+        checkBox.Click += (_, _) => QuickAccessCheckBox_Click(checkBox);
+        _quickAccessCheckBox = checkBox;
+        return checkBox;
+    }
+
+    private void ShowQuickAccessState()
+    {
+        if (_quickAccessCheckBox is not null)
+        {
+            _quickAccessCheckBox.IsChecked = _settings.AreSourcesEnabled(_quickAccessCheckBoxes.Keys);
+        }
+    }
+
+    /// <param name="inQuickAccess">Indented under the Quick access group.</param>
+    private StackPanel SourceRow(IResourceSource source, bool inQuickAccess)
     {
         var name = source.Name;
         var row = new StackPanel
         {
             Orientation = Orientation.Horizontal,
             Tag = SettingsCatalog.SourceId(name),
-            Margin = new Thickness(0, 10, 0, 0),
+            Margin = new Thickness(inQuickAccess ? 28 : 0, inQuickAccess ? 6 : 10, 0, 0),
         };
 
         var checkBox = new CheckBox
         {
-            Content = SourceLabel(source),
+            Content = SourceLabel(source.Icon, source.DisplayName),
             IsChecked = _settings.IsSourceEnabled(name),
             VerticalAlignment = VerticalAlignment.Center,
         };
         checkBox.Click += (_, _) => SourceCheckBox_Click(checkBox, name);
         row.Children.Add(checkBox);
+        if (inQuickAccess)
+        {
+            _quickAccessCheckBoxes[name] = checkBox;
+        }
 
         if (_sources.CanRemove(name))
         {
@@ -181,18 +226,18 @@ public partial class SettingsWindow : Window
     }
 
     /// <summary>The name of a source after its icon, the one its rows show in the launcher.</summary>
-    private static StackPanel SourceLabel(IResourceSource source)
+    private static StackPanel SourceLabel(string icon, string text)
     {
         var label = new StackPanel { Orientation = Orientation.Horizontal };
         label.Children.Add(new TextBlock
         {
-            Text = source.Icon,
+            Text = icon,
             FontFamily = new System.Windows.Media.FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"),
             Width = 22,
             VerticalAlignment = VerticalAlignment.Center,
             Opacity = 0.7,
         });
-        label.Children.Add(new TextBlock { Text = source.DisplayName, VerticalAlignment = VerticalAlignment.Center });
+        label.Children.Add(new TextBlock { Text = text, VerticalAlignment = VerticalAlignment.Center });
         return label;
     }
 
@@ -497,6 +542,33 @@ public partial class SettingsWindow : Window
             ShowMessage(ex.Message);
             checkBox.IsChecked = !wanted;
         }
+
+        ShowQuickAccessState();
+    }
+
+    /// <summary>Switches every Quick access folder; a partly ticked group is switched on.</summary>
+    private void QuickAccessCheckBox_Click(CheckBox checkBox)
+    {
+        var wanted = checkBox.IsChecked == true;
+
+        try
+        {
+            _settings.SetSourcesEnabled(_quickAccessCheckBoxes.Keys, wanted);
+            _log.Info("Settings", $"Quick access folders {(wanted ? "on" : "off")}");
+            _onSourcesChanged();
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            _log.Error("Settings", "Cannot change the Quick access folders", ex);
+            ShowMessage(ex.Message);
+        }
+
+        foreach (var (name, child) in _quickAccessCheckBoxes)
+        {
+            child.IsChecked = _settings.IsSourceEnabled(name);
+        }
+
+        ShowQuickAccessState();
     }
 
     private void AddFolderButton_Click(object sender, RoutedEventArgs e)
