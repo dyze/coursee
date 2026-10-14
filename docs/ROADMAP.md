@@ -84,29 +84,21 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 8. **Alias icon like the pin.** Done: an entry with an alias always shows its alias icon, filled, as a pinned entry shows its pin.
 
 ## 0.7 (to define)
-1. **Warning.** At first display, show a warning that tells user that an entry could harm the system. The developer rejects any responsibility about that.
-2. **Disable fallback actions.** Because they could harm the system (e.g. "del c:\file"). The user can disable fallback actions
-3. **Detect updates.** Once a day, the app checks for updates. If there is one, it is shown thru the settings icon. When pressing it, the update tab is highlighted. In this tab, there is a link (github repo) to invite user to download a new installers.
-4. **Release notes.** A release notes is maintained and committed. This file is provided inside installer and its opening is proposed at end of installer.
-5. **End user manual.** A html manual is shipped with installer and available thru a "?" icon from App.
-6. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
-7. **Paths.** Show in settings the paths to relevant files: user settings, entries... Add for each a button to "explore to".
-8. **Portable.**  Package binaries for portable usage.
-9. **Source: Explorer Quick access.** Not implemented. The folders pinned in Explorer's *Quick access*: the standard ones (Desktop, Downloads, Documents, Pictures, Music, Videos) and the user's own pins. Opened in Explorer; switchable in **Sources**, with its own icon.
-   - Read in `App` through Explorer's shell interface (COM, the Quick access namespace `shell:::{679f85cb-0220-4080-b29b-5540cc05aab6}`), behind an interface in `Core`, like the Run history. Windows keeps no simple file for this list.
-   - Only folders: recent files that Quick access also shows are skipped (recents come from coursee only).
-   - Loaded in the background like the other sources; if Explorer's shell cannot be read, the source is logged (Warning) and gives no entries.
+1. **Link to website.** Add link to github web site and issue tab.
+2. **Warning.** At first display, show a warning that tells user that an entry could harm the system. The developer rejects any responsibility about that.
+3. **Disable fallback actions.** Because they could harm the system (e.g. "del c:\file"). The user can disable fallback actions
+4. **Detect updates.** Once a day, the app checks for updates. If there is one, it is shown thru the settings icon. When pressing it, the update tab is highlighted. In this tab, there is a link (github repo) to invite user to download a new installers.
+5. **Release notes.** A release notes is maintained and committed. This file is provided inside installer and its opening is proposed at end of installer.
+6. **End user manual.** A html manual is shipped with installer and available thru a "?" icon from App.
+7. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
+8. **Paths.** Show in settings the paths to relevant files: user settings, entries... Add for each a button to "explore to".
+9. **Portable.**  Package binaries for portable usage.
+10. **Source: Explorer Quick access.** Not implemented. The folders pinned in Explorer's *Quick access*: the standard ones (Desktop, Downloads, Documents, Pictures, Music, Videos) and the user's own pins. Opened in Explorer; switchable in **Sources**, with its own icon.
 
 ## 0.8 (to define)
-Game launcher sources. **Installed games only**; owned but not installed games are out of scope. coursee only reads local files and the registry: no sign-in, no API key. Signing in, when a game needs it, is left to the launcher.
-
-| Source | Read from | Opened with |
-| ------ | --------- | ----------- |
-| **Steam** | `SteamPath` (registry), `steamapps\libraryfolders.vdf` (every library), one `appmanifest_<appid>.acf` per game | `steam://rungameid/<appid>` |
-| **Epic Games** | `.item` manifests (JSON) in `%ProgramData%\Epic\EpicGamesLauncher\Data\Manifests` | `com.epicgames.launcher://apps/<AppName>?action=launch&silent=true` |
-| **GOG** | `HKLM\SOFTWARE\WOW6432Node\GOG.com\Games\<id>` | GOG Galaxy (`/command=runGame /gameId=<id>`) if installed, else the game's exe |
-
-1. **One source per launcher**, each an `IResourceSource`, switchable in **Sources**, with its own icon. A launcher that is not installed gives no entries, without error.
-2. **Tolerant reading.** These formats are not documented and may change: a file that cannot be read is logged (Warning) and skipped; the other games and sources are not affected.
-3. **Icons.** The game's exe icon when it can be found, else the source icon.
-4. **Open question.** Parse the files ourselves, or use the GameFinder NuGet package (covers all three; check its license). A new dependency needs the owner's approval.
+1. Game launcher sources. **Installed games only**; owned but not installed games are out of scope. coursee only reads local files and the registry: no sign-in, no API key. Signing in, when a game needs it, is left to the launcher.
+	- **One source per launcher**, each an `IResourceSource`, switchable in **Sources**, with its own icon. A launcher that is not installed gives no entries, without error.
+	- **Tolerant reading.** These formats are not documented and may change: a file that cannot be read is logged (Warning) and skipped; the other games and sources are not affected.
+	- **Icons.** The game's exe icon when it can be found, else the source icon.
+2. **Donate.** Add a link to donate to the developer.
+3. **Sign installer.** To make it more secure, use a certificate to sign all installers coming from the developer.

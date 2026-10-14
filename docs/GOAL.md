@@ -4,7 +4,8 @@
 A personal Windows launcher: press a global hotkey, a compact window appears with a search box, type to find a resource, press Enter to open it.
 
 ## Who it's for
-Just me. Personal tool, optimised for my own workflow, not for distribution.
+Short term: Just me. Personal tool, optimised for my own workflow, not for distribution.
+Long term: when sufficiently mature, open it to public
 
 ## How it works
 
