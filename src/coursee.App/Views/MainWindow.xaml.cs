@@ -281,9 +281,14 @@ public partial class MainWindow : Window
         }
 
         ProcessStartInfo start;
-        // A Windows setting is a command too: an ms-settings: page, a console, or a program with arguments.
-        if (resource.Kind is ResourceKind.Command or ResourceKind.Setting)
+        if (resource.Kind == ResourceKind.Command)
         {
+            start = CommandStart.For(resource.Target);
+            _log.Debug("Action", $"Command: {start.FileName} | {start.Arguments}");
+        }
+        else if (resource.Kind == ResourceKind.Setting)
+        {
+            // An ms-settings: page, a console, or a program with arguments.
             var (fileName, arguments) = CommandLine.Split(resource.Target);
             start = new ProcessStartInfo(fileName, arguments);
         }

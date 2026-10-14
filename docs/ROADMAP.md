@@ -81,6 +81,7 @@ All items are implemented, waiting for the owner's `build.cmd` run and test.
    * Custom entries are edited (name, target) and deleted in the **Entries** tab. A new target keeps the entry's pin, alias and recent history. Deleting one leaves its pin and alias, like a removed shortcut.
 4. **Entries tab.** A new Settings tab listing hidden entries (to restore), custom entries (to edit or delete), aliases (to edit or remove) and pins (to unpin).
 5. **Keys tab.** A new Settings tab lists the supported keys, read only. The hotkey moves there from General, and stays changeable.
+6. **Commands like Win+R.** Done (fix): a typed or Run history command starts in the user's folder, and a program whose name has spaces runs without quotes (`kill rds.cmd`): the shortest part up to a space that is a file in that folder or in PATH (with PATHEXT) is the program.
 
 ## 0.7 (to define)
 1. **Warning.** At first display, show a warning that tells user that an entry could harm the system. The developer rejects any responsibility about that.

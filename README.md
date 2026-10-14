@@ -47,7 +47,7 @@ Two lines under the search box say which keys apply to the selected item: what E
 
 **Tray icon.** Click: show the launcher. Menu: Show, Settings, Log window, Quit.
 
-**Typed text.** When nothing matches, Enter acts like Win+R: it opens a URL, folder or file, or runs the text as a command. Network paths (`\\server\share`) are opened without being checked, so typing them never freezes the window.
+**Typed text.** When nothing matches, Enter acts like Win+R: it opens a URL, folder or file, or runs the text as a command. Like Win+R, a command starts in your user folder, and its program is found there or in PATH even when its name has spaces (`kill rds.cmd`, no quotes needed). Network paths (`\\server\share`) are opened without being checked, so typing them never freezes the window.
 
 ## Settings
 
