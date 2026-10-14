@@ -247,8 +247,17 @@ public sealed class ShortcutsSourceTests : IDisposable
 
         Assert.True(desktop.CanBeDisabled);
         Assert.True(startMenu.CanBeDisabled);
-        Assert.Equal("Desktop", desktop.DisplayName);
         Assert.Equal("Start Menu shortcuts", startMenu.DisplayName);
+    }
+
+    [Fact]
+    public void Desktop_IsShownAsItsPersonalFolder_LikeAFolderSource()
+    {
+        var common = Path.Combine(_root, "common");
+
+        Assert.Equal(_desktop, ShortcutsSource.Desktop([_desktop, common], new FakeResolver([])).DisplayName);
+        Assert.Equal($"{_desktop} (Quick access)", ShortcutsSource.Desktop([_desktop + Path.DirectorySeparatorChar], new FakeResolver([]), quickAccess: true).DisplayName);
+        Assert.Equal("Desktop", ShortcutsSource.Desktop([], new FakeResolver([])).DisplayName);
     }
 
     public void Dispose()

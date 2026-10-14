@@ -18,7 +18,7 @@ namespace Coursee.UI.Views;
 
 public partial class MainWindow : Window
 {
-    private readonly IReadOnlyList<IResourceSource> _sources;
+    private readonly SourceCatalog _sources;
     private readonly RecentStore _recents;
     private readonly EntryStore _entries;
     private readonly CustomEntryEditor _customEntries;
@@ -39,7 +39,7 @@ public partial class MainWindow : Window
     /// <param name="browsers">Finds the browser a bookmark came from, to open it there.</param>
     /// <param name="createSettings">Creates the Settings window, shown as a dialog over the launcher.</param>
     public MainWindow(
-        IReadOnlyList<IResourceSource> sources,
+        SourceCatalog sources,
         RecentStore recents,
         EntryStore entries,
         CustomEntryEditor customEntries,
@@ -59,7 +59,7 @@ public partial class MainWindow : Window
         _createSettings = createSettings;
 
         // Before the XAML, which uses it in the rows of the list.
-        Resources.Add("SourceIcon", new SourceIconConverter(new SourceIcons(sources)));
+        Resources.Add("SourceIcon", new SourceIconConverter(new SourceIcons(() => sources.All)));
         InitializeComponent();
         VersionText.Text = $"coursee {AppVersion.Of(typeof(MainWindow).Assembly)}";
     }
@@ -113,16 +113,10 @@ public partial class MainWindow : Window
         RefreshResources();
     }
 
-    /// <summary>A source was switched on or off in Settings: forget what it had, and reload.</summary>
-    public void OnSourceToggled(string sourceName)
-    {
-        _monitor.Reset(sourceName);
-        RefreshResources();
-    }
-
     /// <summary>
-    /// Reloads the enabled sources on a background thread, then updates the list. Only one
-    /// refresh runs at a time; a request made meanwhile runs once the current one ends.
+    /// Reads Quick access again, then reloads the enabled sources, both on a background thread,
+    /// then updates the list. Only one refresh runs at a time; a request made meanwhile (a source
+    /// switched on or off, a folder added) runs once the current one ends.
     /// </summary>
     public async void RefreshResources()
     {
@@ -138,7 +132,8 @@ public partial class MainWindow : Window
             do
             {
                 _refreshAgain = false;
-                var enabled = _sources.Where(s => _settings.IsSourceEnabled(s.Name)).ToList();
+                await Task.Run(() => _sources.SyncQuickAccess());
+                var enabled = _sources.All.Where(s => _settings.IsSourceEnabled(s.Name)).ToList();
                 var results = await Task.Run(() => SourceLoader.Load(enabled));
                 ApplyResults(results);
             }
@@ -176,6 +171,8 @@ public partial class MainWindow : Window
             lists.Add(result.Resources);
         }
 
+        // A source switched off or gone (folder removed, unpinned) is logged as loaded when it comes back.
+        _monitor.Keep(results.Select(result => result.SourceName));
         _all = SourceLoader.Merge(lists);
 
         // Not under an open row box: the list is rebuilt when it closes.

@@ -54,14 +54,25 @@ public class SourceMonitorTests
     }
 
     [Fact]
-    public void Reset_MakesTheNextObservationAFreshLoad()
+    public void ASourceNotKept_IsLoadedAfreshWhenItComesBack()
     {
         var monitor = new SourceMonitor(_log);
         monitor.Observe("S", Items("a"));
-        monitor.Reset("S");
+        monitor.Keep(["T"]);
         monitor.Observe("S", Items("a"));
 
         Assert.Contains("loaded", _log.Entries[1].Message);
+    }
+
+    [Fact]
+    public void AKeptSource_IsStillCompared_IgnoringCase()
+    {
+        var monitor = new SourceMonitor(_log);
+        monitor.Observe("S", Items("a"));
+        monitor.Keep(["s"]);
+        monitor.Observe("S", Items("a"));
+
+        Assert.Equal(LogLevel.Debug, _log.Entries[1].Level);
     }
 
     [Fact]

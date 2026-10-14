@@ -7,15 +7,15 @@ coursee.App   (WPF, Windows only)
 │  launcher, settings window, log window, tray icon
 │  adapters: WshShortcutResolver, RegistryRunHistoryReader, RegistryAutoStart,
 │            RegistryBrowserLocator, HotkeyService, SerilogFileLog, SingleInstance,
-│            NativeWindows + WindowPlacer (window positions)
+│            NativeWindows + WindowPlacer (window positions), ShellQuickAccessReader
 │
-│  implements ▼  IShortcutResolver · IRunHistoryReader · IAutoStart · IHotkeyRegistrar · IBrowserLocator · ILog
+│  implements ▼  IShortcutResolver · IRunHistoryReader · IQuickAccessReader · IAutoStart · IHotkeyRegistrar · IBrowserLocator · ILog
 │
 coursee.Core  (no Windows dependency, fully unit-tested on any OS)
    SearchEngine · RecentStore · EntryStore · CustomEntryStore · CustomEntryEditor · SettingsStore · SettingsCatalog · KeyBindings
-   SourceLoader · SourceMonitor · FallbackClassifier
+   SourceCatalog · SourceLoader · SourceMonitor · FallbackClassifier
    ResourceActions · PlacementRules · PlacementStore
-   sources (IResourceSource): CustomSource · ShortcutsSource (Desktop, Start Menu) · FirefoxBookmarksSource · EdgeFavoritesSource · RunHistorySource
+   sources (IResourceSource): CustomSource · ShortcutsSource (Desktop, folders, Start Menu) · FirefoxBookmarksSource · EdgeFavoritesSource · RunHistorySource
                               · WindowsSettingsSource (fixed list, ResourceKind.Setting)
 ```
 
@@ -34,7 +34,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `Recents/` | `RecentStore`, `Frecency` (recency plus frequency) |
 | `Entries/` | `EntryStore`: what the user set on entries (pins, aliases as `EntryAlias`, hidden entries as `HiddenEntry`); custom entries: `CustomEntry`, `CustomEntryStore`, `CustomEntryEditor`; `EntryFilter` (the filter of Settings > Entries) |
 | `Settings/` | `SettingsStore`, `SettingsCatalog` (the entries of the Settings window, their tabs, and the search that finds them), `KeyBindings` (the keys listed in Settings > Keys) |
-| `Sources/` | `IResourceSource`, `SourceLoader`, `SourceMonitor`, `SourceIcons` (the icon of each source, found by name for a row), and each source with the interface it needs from `App` (`CustomSource` reads `CustomEntryStore`); `BookmarkUrls` and `ChromiumBookmarks` (Edge's file format, shared by Chrome) for the browser sources |
+| `Sources/` | `IResourceSource`, `SourceCatalog` (the current list of sources, see [Folder sources](#folder-sources)), `FolderSources` (their naming rules), `IQuickAccessReader`, `SourceLoader`, `SourceMonitor`, `SourceIcons` (the icon of each source, found by name for a row), and each source with the interface it needs from `App` (`CustomSource` reads `CustomEntryStore`); `BookmarkUrls` and `ChromiumBookmarks` (Edge's file format, shared by Chrome) for the browser sources |
 | `Platform/` | The other interfaces `App` implements (`IAutoStart`, `IHotkeyRegistrar`, `IBrowserLocator`) and their rules (`AutoStartCommand`, `HotkeyGesture`) |
 | `Logging/` | `ILog`, `LogEntry`, `RingLog`, `CompositeLog`, `FilteredLog` |
 | `Placement/` | Window positions: `WindowPlacement`, `PlacementRules`, `PlacementStore` (see [Window positions](#window-positions)) |
@@ -65,7 +65,8 @@ Shared build settings and the version are in `Directory.Build.props`; output goe
 ```
 hotkey ─► window shows the cached list at once
              │
-             └─► background: SourceLoader.Load(enabled sources)
+             └─► background: SourceCatalog.SyncQuickAccess (pinned folders may have changed)
+                 then SourceLoader.Load(enabled sources)
                    ├─ a failing source is logged and skipped, the others still load
                    ├─ SourceMonitor logs items added / removed per source
                    └─ SourceLoader.Merge: same name + target listed once (first source wins)
@@ -117,10 +118,32 @@ Results are sorted by total score, then by name, and capped at 50. Matching igno
 - What an entry is (URL, folder, file, network path, command) is not stored: `CustomEntry.ToResource` decides it at each load with `FallbackClassifier`, as for typed text. The stored target is the one that is opened (`www.x` is stored as `https://www.x`), so pins and aliases, keyed by target, match.
 - `CustomEntryEditor.Create` makes one from the typed text (the + button, Ctrl+N, whenever the search box has text; the launcher adds the typed text's row first when something matched). `Edit` changes name and target, and moves what was set on the entry: pin, alias and hidden state (`EntryStore.Move`), recent history (`RecentStore.Move`, merged with an item that already had the new target). Deleting an entry leaves its pin and alias, like a shortcut removed from the Desktop.
 
+## Folder sources
+The list of sources changes while coursee runs, so `SourceCatalog` owns it; the launcher, Settings and `SourceIcons` read `SourceCatalog.All`.
+
+```
+settings.json "Folders" ─┐
+  ["Desktop", "D:\code"] ├─► SourceCatalog ─► All ─► launcher refresh, Sources tab, SourceIcons
+IQuickAccessReader ──────┘      │
+  (ShellQuickAccessReader)      └─► Changed ─► Sources tab rebuilt
+first (Custom) · last (Start Menu, Firefox, Edge, Run, Windows settings): fixed, from App.xaml.cs
+```
+
+| Topic | Rule |
+| --- | --- |
+| Order | first · the user's folders (`Folders`, the Desktop by default) · Quick access folders · last. A folder is listed once, the first wins: the Desktop covers both Desktop folders. A pinned Desktop is the Desktop source (its name, icon and both folders), shown with its path and no remove button like the other Quick access folders |
+| A folder source | `ShortcutsSource.Folder`: top level only, shortcuts, files and folders, like the Desktop. Kept while listed, so shortcuts are not resolved again |
+| Name | `Folder:<path>` (`FolderSources`), the same for a user and a Quick access folder: recents, hidden entries and the on / off state follow a folder from one to the other. The Desktop keeps `Desktop`, written `"Desktop"` in `Folders` |
+| Add, remove | Settings > Sources. Choosing a Desktop folder adds the Desktop. Removing forgets the folder's off state; its pins and aliases stay. Quick access folders have no remove button: unpin them in Explorer |
+| Network | Never listed (`FolderSources.IsNetwork`: `\\server\share`, mapped drives): an offline one blocks for seconds. Refused on add, skipped from Quick access |
+| Quick access | Read at each launcher refresh, on a background thread. `ShellQuickAccessReader` runs the Shell COM object on its own STA thread (5 s timeout) and keeps folders whose `System.Home.IsPinned` is true (Windows 11; frequent folders are left out). A failed read keeps the last folders read, and is logged (Warning) |
+| Icons | Folder `\uE8B7`, Quick access `\uE80F`. A recent item from a folder that is gone gets the folder icon |
+| Logs | Quick access changes at Info (category `Quick access`); a source that is off or gone is forgotten by `SourceMonitor.Keep`, and logged as loaded when it comes back |
+
 ## Adding a source
 1. In `Core/Sources`, implement `IResourceSource`: a stable `Name` (it is also the key stored in `settings.json`), a `DisplayName` for Settings, `CanBeDisabled` (true gives it a checkbox in **Sources**), an `Icon` (a Segoe Fluent Icons glyph, kept in `SourceIcons` with the others so each stays distinct; shown on its rows and next to its checkbox), and `GetResources()` returning `Resource` records. Take an optional `ILog`.
 2. If it needs Windows, define an interface in `Core` (like `IRunHistoryReader`) and implement it in `App`.
-3. Register it in the `sources` array in `App.xaml.cs`. Order matters for duplicates: the first source wins.
+3. Register it in `App.xaml.cs`, in the `first` or `last` list of the `SourceCatalog` (before or after the folder sources). Order matters for duplicates: the first source wins.
 4. Add xUnit tests in `tests/coursee.Core.Tests`, with a fake for any interface from step 2.
 5. Update `README.md` and [ROADMAP.md](ROADMAP.md).
 

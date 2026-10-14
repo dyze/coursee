@@ -20,8 +20,18 @@ public sealed class SourceMonitor
         _log = log;
     }
 
-    /// <summary>Forgets what was seen for a source (for example when it was switched off).</summary>
-    public void Reset(string sourceName) => _previous.Remove(sourceName);
+    /// <summary>
+    /// Forgets what was seen for every other source: switched off, or gone (a folder removed or
+    /// unpinned). One that comes back is logged as loaded again.
+    /// </summary>
+    public void Keep(IEnumerable<string> sourceNames)
+    {
+        var kept = sourceNames.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var gone in _previous.Keys.Where(name => !kept.Contains(name)).ToList())
+        {
+            _previous.Remove(gone);
+        }
+    }
 
     /// <summary>Compares the source's current resources with the previous refresh and logs the difference.</summary>
     public void Observe(string sourceName, IReadOnlyList<Resource> resources)

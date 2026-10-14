@@ -47,6 +47,28 @@ public class SourceIconsTests
     }
 
     [Fact]
+    public void AFolderSourceThatIsGone_HasTheFolderIcon_AndItsPathAsLabel()
+    {
+        var name = FolderSources.NameOf(@"D:\code");
+
+        Assert.Equal(SourceIcons.Folder, Icons().IconOf(name));
+        Assert.Equal(@"D:\code", Icons().LabelOf(name));
+    }
+
+    [Fact]
+    public void TheIcons_FollowTheCurrentSources()
+    {
+        IReadOnlyList<IResourceSource> current = [new IconSource("A", "First", "1")];
+        var icons = new SourceIcons(() => current);
+        Assert.Equal("1", icons.IconOf("A"));
+
+        current = [new IconSource("B", "Second", "2")];
+
+        Assert.Equal("2", icons.IconOf("B"));
+        Assert.Equal(string.Empty, icons.IconOf("A"));
+    }
+
+    [Fact]
     public void TwoSourcesWithTheSameName_TheFirstWins()
     {
         var icons = new SourceIcons([new IconSource("A", "First", "1"), new IconSource("A", "Second", "2")]);
@@ -62,6 +84,8 @@ public class SourceIconsTests
         [
             ShortcutsSource.Desktop([], resolver),
             ShortcutsSource.StartMenu([], resolver),
+            ShortcutsSource.Folder("D:\\a", quickAccess: false, resolver),
+            ShortcutsSource.Folder("D:\\b", quickAccess: true, resolver),
             new FirefoxBookmarksSource(null),
             new EdgeFavoritesSource(null),
             new RunHistorySource(new NoRunHistory()),

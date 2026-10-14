@@ -100,18 +100,24 @@ public partial class App : Application
             log.Debug("Edge", $"Profile: {edgeProfile}");
         }
 
-        IResourceSource[] sources =
-        [
+        // Order matters: an item found twice is listed once, as the first one.
+        var sources = new SourceCatalog(
+            settings,
+            shortcutResolver,
+            desktops,
+            new ShellQuickAccessReader(),
             // The user's own entries first: one with the same name and target as a shortcut is listed as theirs.
-            new CustomSource(customEntries),
-            // Order matters: an item on both the Desktop and the Start Menu is listed once, as the Desktop one.
-            ShortcutsSource.Desktop(desktops, shortcutResolver, log),
-            ShortcutsSource.StartMenu(startMenus, shortcutResolver, log),
-            new FirefoxBookmarksSource(firefoxProfile, log),
-            new EdgeFavoritesSource(edgeProfile, log),
-            new RunHistorySource(new RegistryRunHistoryReader(), log),
-            new WindowsSettingsSource(),
-        ];
+            first: [new CustomSource(customEntries)],
+            // After the folder sources (the Desktop, the user's folders, Quick access).
+            last:
+            [
+                ShortcutsSource.StartMenu(startMenus, shortcutResolver, log),
+                new FirefoxBookmarksSource(firefoxProfile, log),
+                new EdgeFavoritesSource(edgeProfile, log),
+                new RunHistorySource(new RegistryRunHistoryReader(), log),
+                new WindowsSettingsSource(),
+            ],
+            log);
 
         var recents = new RecentStore(Path.Combine(dataDirectory, "recents.json"), settings.RecentsCapacity);
 
@@ -146,7 +152,7 @@ public partial class App : Application
                     autoStart,
                     hotkey,
                     logHub,
-                    onSourceToggled: OnSourceToggled,
+                    onSourcesChanged: () => _window?.RefreshResources(),
                     openLog: OpenLogWindow);
                 placer.Attach(created, "Settings", RestoreMode.SizeOverOwner);
                 return created;
@@ -200,8 +206,6 @@ public partial class App : Application
             Dispatcher.BeginInvoke(() => window.ShowFromOutside());
         }
     }
-
-    private void OnSourceToggled(string sourceName) => _window?.OnSourceToggled(sourceName);
 
     /// <summary>
     /// An auto start entry written by an older version starts this copy without <see cref="AutoStartCommand.HiddenArgument"/>,

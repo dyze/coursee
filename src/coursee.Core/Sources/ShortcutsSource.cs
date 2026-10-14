@@ -10,12 +10,12 @@ public interface IShortcutResolver
 }
 
 /// <summary>
-/// Exposes the targets of the .lnk shortcuts found in some folders: the Desktop, or the Start
-/// Menu (subfolders included). The target is what is shown and searched; the .lnk itself is
+/// Exposes the targets of the .lnk shortcuts found in some folders: the Desktop, a folder source,
+/// or the Start Menu (subfolders included). The target is what is shown and searched; the .lnk itself is
 /// what is opened, so the shortcut's arguments and working folder are kept. Shortcuts whose
 /// target no longer exists, and uninstall shortcuts, are skipped. Resolving a shortcut is slow,
-/// so each one is resolved again only when its file changes. The Desktop also lists the files
-/// and folders placed on it directly (not hidden or system ones). Not thread-safe: call from
+/// so each one is resolved again only when its file changes. The Desktop and folder sources also
+/// list the files and folders placed in them directly (not hidden or system ones). Not thread-safe: call from
 /// one thread at a time.
 /// </summary>
 public sealed class ShortcutsSource : IResourceSource
@@ -51,9 +51,43 @@ public sealed class ShortcutsSource : IResourceSource
         _log = log ?? NullLog.Instance;
     }
 
-    /// <summary>The user's Desktop folders (personal and common), top level only: shortcuts, files and folders.</summary>
-    public static ShortcutsSource Desktop(IEnumerable<string> folders, IShortcutResolver resolver, ILog? log = null) =>
-        new(DesktopName, "Desktop", SourceIcons.Desktop, folders, resolver, includeSubfolders: false, includeFilesAndFolders: true, log);
+    /// <summary>
+    /// The user's Desktop folders (personal first, then common), top level only: shortcuts, files
+    /// and folders. Shown as the personal folder's path, like a folder source; <paramref name="quickAccess"/>
+    /// when it is listed because it is pinned in Quick access.
+    /// </summary>
+    public static ShortcutsSource Desktop(IEnumerable<string> folders, IShortcutResolver resolver, ILog? log = null, bool quickAccess = false)
+    {
+        var list = folders.ToList();
+        var path = list.Count > 0 ? FolderSources.Normalize(list[0]) : DesktopName;
+        return new(
+            DesktopName,
+            quickAccess ? $"{path} (Quick access)" : path,
+            SourceIcons.Desktop,
+            list,
+            resolver,
+            includeSubfolders: false,
+            includeFilesAndFolders: true,
+            log);
+    }
+
+    /// <summary>
+    /// A folder added by the user, or pinned in Explorer's Quick access: top level only, like the
+    /// Desktop. Named after its path (see <see cref="FolderSources"/>).
+    /// </summary>
+    public static ShortcutsSource Folder(string folder, bool quickAccess, IShortcutResolver resolver, ILog? log = null)
+    {
+        var path = FolderSources.Normalize(folder);
+        return new(
+            FolderSources.NameOf(path),
+            quickAccess ? $"{path} (Quick access)" : path,
+            quickAccess ? SourceIcons.QuickAccess : SourceIcons.Folder,
+            [path],
+            resolver,
+            includeSubfolders: false,
+            includeFilesAndFolders: true,
+            log);
+    }
 
     /// <summary>The Start Menu folders (personal and common), subfolders included.</summary>
     public static ShortcutsSource StartMenu(IEnumerable<string> folders, IShortcutResolver resolver, ILog? log = null) =>

@@ -26,18 +26,22 @@ public enum LauncherPosition
 
 /// <summary>
 /// User settings persisted as JSON: which sources are disabled (every source is on by default),
-/// the global hotkey, how many recent items to keep, the theme, where the launcher appears and whether
+/// the folders searched (see <see cref="Folders"/>), the global hotkey, how many recent items to keep, the theme, where the launcher appears and whether
 /// searching ignores accents. A missing, corrupt or partial file
 /// means defaults for whatever cannot be read.
 /// </summary>
 public sealed class SettingsStore
 {
+    /// <summary>The Desktop in <see cref="Folders"/>: both Desktop folders (personal and common).</summary>
+    public const string DesktopFolder = "Desktop";
+
     public const int DefaultRecentsCapacity = 20;
     private const int MinRecentsCapacity = 1;
     private const int MaxRecentsCapacity = 100;
 
     private readonly string _path;
     private readonly HashSet<string> _disabledSources;
+    private readonly List<string> _folders;
 
     public SettingsStore(string path)
     {
@@ -45,6 +49,10 @@ public sealed class SettingsStore
 
         var data = Load(path);
         _disabledSources = new HashSet<string>(data?.DisabledSources ?? [], StringComparer.OrdinalIgnoreCase);
+        _folders = (data?.Folders ?? [DesktopFolder])
+            .Where(folder => !string.IsNullOrWhiteSpace(folder))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
         Hotkey = HotkeyGesture.TryParse(data?.Hotkey, out var gesture) ? gesture : HotkeyGesture.Default;
         RecentsCapacity = (data?.RecentsCapacity is int capacity and >= MinRecentsCapacity and <= MaxRecentsCapacity)
             ? capacity
@@ -75,6 +83,37 @@ public sealed class SettingsStore
 
     /// <summary>When on, searching ignores accents (<c>evene</c> finds <c>Événements</c>). On by default.</summary>
     public bool IgnoreAccents { get; private set; }
+
+    /// <summary>
+    /// The folders the user added as sources, in the order added: <see cref="DesktopFolder"/> or a
+    /// path. Only the Desktop by default; it can be removed like the others.
+    /// </summary>
+    public IReadOnlyList<string> Folders => _folders.ToList();
+
+    /// <summary>Adds a folder at the end. False when it is already there (ignoring case).</summary>
+    public bool AddFolder(string folder)
+    {
+        if (_folders.Contains(folder, StringComparer.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        _folders.Add(folder);
+        Save();
+        return true;
+    }
+
+    /// <summary>False when the folder was not there.</summary>
+    public bool RemoveFolder(string folder)
+    {
+        if (_folders.RemoveAll(existing => string.Equals(existing, folder, StringComparison.OrdinalIgnoreCase)) == 0)
+        {
+            return false;
+        }
+
+        Save();
+        return true;
+    }
 
     public bool IsSourceEnabled(string sourceName) => !_disabledSources.Contains(sourceName);
 
@@ -143,7 +182,8 @@ public sealed class SettingsStore
             DebugLogging,
             Theme.ToString(),
             LauncherPosition.ToString(),
-            IgnoreAccents);
+            IgnoreAccents,
+            _folders);
         File.WriteAllText(_path, JsonSerializer.Serialize(data));
     }
 
@@ -168,5 +208,6 @@ public sealed class SettingsStore
         bool? DebugLogging = null,
         string? Theme = null,
         string? LauncherPosition = null,
-        bool? IgnoreAccents = null);
+        bool? IgnoreAccents = null,
+        List<string>? Folders = null);
 }

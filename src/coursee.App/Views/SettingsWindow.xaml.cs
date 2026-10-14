@@ -45,18 +45,19 @@ public partial class SettingsWindow : Window
     private readonly IHotkeyRegistrar _hotkeys;
     private readonly LogHub _logHub;
     private readonly ILog _log;
-    private readonly SettingsCatalog _catalog;
-    private readonly Action<string> _onSourceToggled;
+    private readonly SourceCatalog _sources;
+    private readonly Action _onSourcesChanged;
     private readonly Action<Window> _openLog;
-    private readonly Dictionary<string, CheckBox> _sourceCheckBoxes = [];
+    private readonly Button _addFolderButton;
+    private SettingsCatalog _catalog;
     private bool _capturingHotkey;
     private bool _focusHotkey;
     private bool _loading;
 
-    /// <param name="sources">All the sources; those that can be switched off get a checkbox.</param>
-    /// <param name="onSourceToggled">Called with the source name after it was switched on or off.</param>
+    /// <param name="sources">All the sources; those that can be switched off get a checkbox, the user's folders a remove button too.</param>
+    /// <param name="onSourcesChanged">Called after a source was switched on or off, or a folder added or removed.</param>
     public SettingsWindow(
-        IReadOnlyList<IResourceSource> sources,
+        SourceCatalog sources,
         SettingsStore settings,
         RecentStore recents,
         EntryStore entries,
@@ -65,7 +66,7 @@ public partial class SettingsWindow : Window
         IAutoStart autoStart,
         IHotkeyRegistrar hotkeys,
         LogHub logHub,
-        Action<string> onSourceToggled,
+        Action onSourcesChanged,
         Action<Window> openLog)
     {
         _settings = settings;
@@ -74,29 +75,33 @@ public partial class SettingsWindow : Window
         _hotkeys = hotkeys;
         _logHub = logHub;
         _log = logHub.Filter;
-        _onSourceToggled = onSourceToggled;
+        _sources = sources;
+        _onSourcesChanged = onSourcesChanged;
         _openLog = openLog;
-        _catalog = new SettingsCatalog(sources);
+        _catalog = new SettingsCatalog(sources.All);
         InitializeComponent();
 
         RecentsComboBox.ItemsSource = SettingsStore.RecentsCapacityChoices;
         ThemeComboBox.ItemsSource = ThemeOptions;
         LauncherPositionComboBox.ItemsSource = PositionOptions;
-        foreach (var source in sources.Where(s => s.CanBeDisabled))
+        _addFolderButton = new Button
         {
-            var name = source.Name;
-            var checkBox = new CheckBox
-            {
-                Content = SourceLabel(source),
-                Tag = SettingsCatalog.SourceId(name),
-                Margin = new Thickness(0, 10, 0, 0),
-            };
-            checkBox.Click += (_, _) => SourceCheckBox_Click(checkBox, name);
-            SourcesSection.Children.Add(checkBox);
-            _sourceCheckBoxes[name] = checkBox;
-        }
+            Content = "Add folder...",
+            Tag = SettingsCatalog.AddFolderId,
+            Margin = new Thickness(0, 14, 0, 0),
+            Padding = new Thickness(12, 4, 12, 4),
+            HorizontalAlignment = HorizontalAlignment.Left,
+            ToolTip = "Search the files and folders at the top of a folder, like the Desktop",
+        };
+        _addFolderButton.Click += AddFolderButton_Click;
+        ShowSources();
 
-        EntriesHost.Content = new EntriesPanel(entries, customEntries, customEntryEditor, new SourceIcons(sources), _log, ShowMessage);
+        // Quick access is read in the background: a folder pinned or unpinned meanwhile shows up here.
+        Action onChanged = () => Dispatcher.BeginInvoke(() => ShowSources());
+        sources.Changed += onChanged;
+        Closed += (_, _) => sources.Changed -= onChanged;
+
+        EntriesHost.Content = new EntriesPanel(entries, customEntries, customEntryEditor, new SourceIcons(() => sources.All), _log, ShowMessage);
 
         var keyBindings = new ListCollectionView(KeyBindings.All.ToList());
         keyBindings.GroupDescriptions.Add(new PropertyGroupDescription(nameof(Core.Settings.KeyBinding.Area)));
@@ -108,6 +113,71 @@ public partial class SettingsWindow : Window
 
         Loaded += (_, _) => (_focusHotkey ? (UIElement)HotkeyButton : FindBox).Focus();
         Closed += (_, _) => StopCapturingHotkey();
+    }
+
+    /// <summary>
+    /// Fills the Sources tab: a checkbox per source that can be switched off, with a remove button
+    /// for the user's folders, then the Add folder button. Called again when the sources change.
+    /// </summary>
+    private void ShowSources()
+    {
+        _catalog = new SettingsCatalog(_sources.All);
+
+        // The section title and the Add folder button stay, so the button keeps the focus.
+        var rows = SourcesSection.Children.OfType<UIElement>().Skip(1).Where(child => child != _addFolderButton).ToList();
+        rows.ForEach(SourcesSection.Children.Remove);
+        if (!SourcesSection.Children.Contains(_addFolderButton))
+        {
+            SourcesSection.Children.Add(_addFolderButton);
+        }
+
+        foreach (var source in _sources.All.Where(s => s.CanBeDisabled))
+        {
+            SourcesSection.Children.Insert(SourcesSection.Children.Count - 1, SourceRow(source));
+        }
+
+        if (IsLoaded)
+        {
+            UpdateSections();
+        }
+    }
+
+    private StackPanel SourceRow(IResourceSource source)
+    {
+        var name = source.Name;
+        var row = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Tag = SettingsCatalog.SourceId(name),
+            Margin = new Thickness(0, 10, 0, 0),
+        };
+
+        var checkBox = new CheckBox
+        {
+            Content = SourceLabel(source),
+            IsChecked = _settings.IsSourceEnabled(name),
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        checkBox.Click += (_, _) => SourceCheckBox_Click(checkBox, name);
+        row.Children.Add(checkBox);
+
+        if (_sources.CanRemove(name))
+        {
+            var remove = new Button
+            {
+                Content = "\uE711", // Cancel
+                FontFamily = new System.Windows.Media.FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"),
+                Margin = new Thickness(10, 0, 0, 0),
+                Padding = new Thickness(6, 3, 6, 3),
+                VerticalAlignment = VerticalAlignment.Center,
+                ToolTip = $"Remove {source.DisplayName}",
+            };
+            System.Windows.Automation.AutomationProperties.SetName(remove, $"Remove {source.DisplayName}");
+            remove.Click += (_, _) => RemoveFolder(name, source.DisplayName);
+            row.Children.Add(remove);
+        }
+
+        return row;
     }
 
     /// <summary>The name of a source after its icon, the one its rows show in the launcher.</summary>
@@ -138,10 +208,6 @@ public partial class SettingsWindow : Window
         IgnoreAccentsCheckBox.IsChecked = _settings.IgnoreAccents;
         ThemeComboBox.SelectedItem = ThemeOptions.First(option => option.Value == _settings.Theme);
         LauncherPositionComboBox.SelectedItem = PositionOptions.First(option => option.Value == _settings.LauncherPosition);
-        foreach (var (name, checkBox) in _sourceCheckBoxes)
-        {
-            checkBox.IsChecked = _settings.IsSourceEnabled(name);
-        }
 
         ShowHotkey();
         _loading = false;
@@ -423,7 +489,7 @@ public partial class SettingsWindow : Window
         {
             _settings.SetSourceEnabled(sourceName, wanted);
             _log.Info("Settings", $"Source '{sourceName}' {(wanted ? "on" : "off")}");
-            _onSourceToggled(sourceName);
+            _onSourcesChanged();
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
         {
@@ -431,6 +497,59 @@ public partial class SettingsWindow : Window
             ShowMessage(ex.Message);
             checkBox.IsChecked = !wanted;
         }
+    }
+
+    private void AddFolderButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.OpenFolderDialog { Title = "Add a folder to search" };
+        if (dialog.ShowDialog(this) != true)
+        {
+            return;
+        }
+
+        var folder = dialog.FolderName;
+        try
+        {
+            switch (_sources.AddFolder(folder))
+            {
+                case AddFolderResult.Added:
+                    _log.Info("Settings", $"Folder source added: {folder}");
+                    _onSourcesChanged();
+                    break;
+                case AddFolderResult.AlreadyAdded:
+                    ShowMessage($"{folder} is already searched.");
+                    break;
+                case AddFolderResult.NetworkFolder:
+                    ShowMessage($"{folder} is on the network. Network folders are not searched: listing them can block coursee when the network is slow.");
+                    break;
+            }
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            _log.Error("Settings", $"Cannot add folder source {folder}", ex);
+            ShowMessage(ex.Message);
+        }
+    }
+
+    /// <summary>Removes a folder the user added. Its pins, aliases and recents stay, like those of a removed shortcut.</summary>
+    private void RemoveFolder(string sourceName, string displayName)
+    {
+        try
+        {
+            if (_sources.RemoveFolder(sourceName))
+            {
+                _log.Info("Settings", $"Folder source removed: {displayName}");
+                _onSourcesChanged();
+            }
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            _log.Error("Settings", $"Cannot remove folder source {displayName}", ex);
+            ShowMessage(ex.Message);
+        }
+
+        // Its row goes, with the focused button.
+        _addFolderButton.Focus();
     }
 
     private void RecentsComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

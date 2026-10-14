@@ -10,7 +10,7 @@ A personal Windows launcher. Press a global hotkey, type in the compact search w
 
 ## Status
 
-Searches your own custom entries, the Desktop (shortcuts, files and folders), Start Menu shortcuts, Firefox bookmarks, Edge favorites, the Windows Run history and Windows settings pages and tools. Also: recents, pins, aliases, hidden entries, row actions, tray icon, settings, installer.
+Searches your own custom entries, the Desktop and your own folders (shortcuts, files and folders), the folders pinned in Explorer's Quick access, Start Menu shortcuts, Firefox bookmarks, Edge favorites, the Windows Run history and Windows settings pages and tools. Also: recents, pins, aliases, hidden entries, row actions, tray icon, settings, installer.
 
 ## Install
 
@@ -57,7 +57,7 @@ Gear button in the launcher, or tray menu > Settings. A dialog over the launcher
 | --- | --- |
 | General | Number of recent items (default 20), launcher position, ignore accents when searching (default on), start with Windows |
 | Appearance | Theme: follow Windows (default), light or dark. The tray menu follows at the next start |
-| Sources | Custom entries, Desktop, Start Menu, Firefox bookmarks, Edge favorites, Windows Run history, Windows settings and tools (on / off) |
+| Sources | Custom entries, Desktop, your folders, Quick access folders, Start Menu, Firefox bookmarks, Edge favorites, Windows Run history, Windows settings and tools (on / off). *Add folder...* adds a folder; ✕ removes one of yours (the Desktop too) |
 | Entries | One list at a time, picked in a strip with counts: hidden entries (restore), custom entries (edit name and target, delete), aliases (edit, remove), pins (unpin). A filter box narrows every list (name, target, alias or source). Enter in a box saves its row |
 | Keys | Hotkey (must include Ctrl, Alt or Win), and the list of keys (read only) |
 | Logging | Detailed (debug) logging, open the log window |
@@ -91,6 +91,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#search).
 - **Instant window.** Sources are reloaded in the background each time the launcher opens: it shows the previous list at once, and new or removed items appear a moment later.
 - **Desktop and Start Menu shortcuts** are searched by their target, but opened through the shortcut itself, so their arguments and working folder are kept. Uninstall shortcuts are skipped, and a program found in both places is listed once.
 - **Files and folders on the Desktop** (top level, not hidden or system ones) are listed too, by their name with its extension, and open as with a double click: `kill rds.cmd` runs.
+- **Folder sources** work like the Desktop: shortcuts, files and folders at the top level, no subfolders. Each folder pinned in Explorer's *Quick access* is one too, and follows Explorer: unpin it there to remove it (Settings only switches it off). A folder already listed (the Desktop, one of yours) is listed once. A pinned Desktop is the usual Desktop source: removed with ✕, it stays while pinned. Network folders are never searched: an offline one could block coursee. Quick access is read on Windows 11 only.
 - **Firefox**: default profile only, bookmarks only (no folders), opened in Firefox.
 - **Edge**: last used profile only, favorites only (no folders), opened in Edge.
 - **Windows settings**: a fixed list of settings pages (Installed apps, Network, Display, Windows Update...), consoles (Services, Device Manager, Event Viewer...) and Control Panel items, opened directly. coursee never changes a setting. Names say what they are for, so "uninstall" finds *Installed apps*.

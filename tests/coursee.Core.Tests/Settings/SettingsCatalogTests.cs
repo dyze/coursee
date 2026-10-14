@@ -25,7 +25,7 @@ public class SettingsCatalogTests
     [Fact]
     public void EverySwitchableSource_GetsAnEntryInTheSourcesTab()
     {
-        var sources = Catalog().All.Where(entry => entry.Tab == SettingsCatalog.SourcesTab).ToList();
+        var sources = Catalog().All.Where(entry => entry.Tab == SettingsCatalog.SourcesTab && entry.Id != SettingsCatalog.AddFolderId).ToList();
 
         Assert.Equal(new[] { "Firefox bookmarks", "Windows Run history (Win+R)" }, sources.Select(entry => entry.Label));
         Assert.Equal(SettingsCatalog.SourceId("Firefox"), sources[0].Id);
@@ -154,11 +154,20 @@ public class SettingsCatalogTests
         Assert.Equal(SettingsCatalog.KeysTab, Catalog().All.Single(entry => entry.Id == SettingsCatalog.KeyBindingsId).Tab);
     }
 
+    [Theory]
+    [InlineData("folder")]
+    [InlineData("quick access")]
+    public void Find_FindsAddFolder_InTheSourcesTab(string query)
+    {
+        Assert.Equal(SettingsCatalog.AddFolderId, Assert.Single(Catalog().Find(query)).Id);
+        Assert.Equal(SettingsCatalog.SourcesTab, Catalog().All.Single(entry => entry.Id == SettingsCatalog.AddFolderId).Tab);
+    }
+
     [Fact]
     public void Find_KeepsTheCatalogOrder()
     {
         var found = Catalog().Find("source");
 
-        Assert.Equal(new[] { SettingsCatalog.SourceId("Firefox"), SettingsCatalog.SourceId("Windows Run") }, found.Select(entry => entry.Id));
+        Assert.Equal(new[] { SettingsCatalog.SourceId("Firefox"), SettingsCatalog.SourceId("Windows Run"), SettingsCatalog.AddFolderId }, found.Select(entry => entry.Id));
     }
 }
