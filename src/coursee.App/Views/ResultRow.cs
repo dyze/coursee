@@ -31,6 +31,11 @@ public sealed class ResultRow(Resource resource, bool isPinned, string? alias) :
 
     public string? Alias { get; } = alias;
 
+    /// <summary>Shows the alias icon filled, and always.</summary>
+    public bool HasAlias => Alias is not null;
+
+    public bool HasNoAlias => !HasAlias;
+
     /// <summary>Typed text has no entry of its own: no pin icon.</summary>
     public bool CanPin => ResourceActions.CanPin(Resource);
 

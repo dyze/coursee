@@ -62,6 +62,15 @@
         </DataTrigger>
       </Style.Triggers>
     </Style>
+
+    <!-- Likewise, the alias icon of an entry with an alias is always shown. -->
+    <Style x:Key="AliasButton" TargetType="Button" BasedOn="{StaticResource RevealedRowIconButton}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding HasAlias}" Value="True">
+          <Setter Property="Visibility" Value="Visible" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
   </Window.Resources>
 
   <Grid Margin="12">
@@ -203,11 +212,24 @@
                   <TextBlock Text="&#xE841;" Visibility="{Binding IsPinned, Converter={StaticResource VisibleWhen}}" />
                 </Grid>
               </Button>
-              <Button Style="{StaticResource RevealedRowIconButton}"
-                      Content="&#xE8EC;"
+              <Button Style="{StaticResource AliasButton}"
                       IsEnabled="{Binding CanSetAlias}"
                       ToolTip="{Binding AliasToolTip}"
-                      Click="AliasButton_Click" />
+                      Click="AliasButton_Click">
+                <!-- With an alias: a filled tag, drawn here (the font has no filled tag) over the shape of its Tag glyph (E8EC). -->
+                <Grid>
+                  <TextBlock Text="&#xE8EC;" Visibility="{Binding HasNoAlias, Converter={StaticResource VisibleWhen}}" />
+                  <Path Width="13"
+                        Height="13"
+                        Stretch="Uniform"
+                        Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                        Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                        StrokeThickness="1"
+                        StrokeLineJoin="Round"
+                        Data="F0 M8.5,0.5 L15.5,0.5 L15.5,8 L7.6,15.6 L0.4,8.4 Z M13.2,4.3 A1.6,1.6 0 1 0 10,4.3 A1.6,1.6 0 1 0 13.2,4.3 Z"
+                        Visibility="{Binding HasAlias, Converter={StaticResource VisibleWhen}}" />
+                </Grid>
+              </Button>
               <Button Style="{StaticResource RevealedRowIconButton}"
                       Content="&#xED1A;"
                       IsEnabled="{Binding CanHide}"
