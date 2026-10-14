@@ -240,13 +240,14 @@ public sealed class ShortcutsSourceTests : IDisposable
     }
 
     [Fact]
-    public void DesktopIsAlwaysOn_StartMenuCanBeSwitchedOff()
+    public void DesktopAndStartMenu_CanBeSwitchedOff()
     {
         var desktop = ShortcutsSource.Desktop([_desktop], new FakeResolver([]));
         var startMenu = ShortcutsSource.StartMenu([_desktop], new FakeResolver([]));
 
-        Assert.False(desktop.CanBeDisabled);
+        Assert.True(desktop.CanBeDisabled);
         Assert.True(startMenu.CanBeDisabled);
+        Assert.Equal("Desktop", desktop.DisplayName);
         Assert.Equal("Start Menu shortcuts", startMenu.DisplayName);
     }
 

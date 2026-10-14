@@ -35,7 +35,6 @@ public sealed class ShortcutsSource : IResourceSource
         string name,
         string displayName,
         string icon,
-        bool canBeDisabled,
         IEnumerable<string> folders,
         IShortcutResolver resolver,
         bool includeSubfolders,
@@ -45,7 +44,6 @@ public sealed class ShortcutsSource : IResourceSource
         Name = name;
         DisplayName = displayName;
         Icon = icon;
-        CanBeDisabled = canBeDisabled;
         _folders = folders.ToList();
         _resolver = resolver;
         _searchOption = includeSubfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
@@ -53,19 +51,19 @@ public sealed class ShortcutsSource : IResourceSource
         _log = log ?? NullLog.Instance;
     }
 
-    /// <summary>The user's Desktop folders (personal and common), top level only: shortcuts, files and folders. Always on.</summary>
+    /// <summary>The user's Desktop folders (personal and common), top level only: shortcuts, files and folders.</summary>
     public static ShortcutsSource Desktop(IEnumerable<string> folders, IShortcutResolver resolver, ILog? log = null) =>
-        new(DesktopName, "Desktop", SourceIcons.Desktop, canBeDisabled: false, folders, resolver, includeSubfolders: false, includeFilesAndFolders: true, log);
+        new(DesktopName, "Desktop", SourceIcons.Desktop, folders, resolver, includeSubfolders: false, includeFilesAndFolders: true, log);
 
     /// <summary>The Start Menu folders (personal and common), subfolders included.</summary>
     public static ShortcutsSource StartMenu(IEnumerable<string> folders, IShortcutResolver resolver, ILog? log = null) =>
-        new(StartMenuName, "Start Menu shortcuts", SourceIcons.StartMenu, canBeDisabled: true, folders, resolver, includeSubfolders: true, includeFilesAndFolders: false, log);
+        new(StartMenuName, "Start Menu shortcuts", SourceIcons.StartMenu, folders, resolver, includeSubfolders: true, includeFilesAndFolders: false, log);
 
     public string Name { get; }
 
     public string DisplayName { get; }
 
-    public bool CanBeDisabled { get; }
+    public bool CanBeDisabled => true;
 
     public string Icon { get; }
 
