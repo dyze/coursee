@@ -10,7 +10,7 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 | 0.4     | Done   | Launcher position, list keys, Windows settings source, icons, keyboard-only Settings |
 | 0.5     | Done   | Accents ignored, copy, most used first, pins, aliases                                |
 | 0.6     | Done   | Coverage, hide entries, custom entries, Entries and Keys tabs, Desktop files         |
-| 0.7     | Planned | About tab, update check, safety notice, folder sources                              |
+| 0.7     | Done   | Folder sources, Quick access, safety notice, typed commands switch, About, updates   |
 
 ## 0.1
 1. **Hotkey and window.** A global hotkey toggles the compact window. Only one copy of coursee runs: starting it again shows the launcher of the running copy.
@@ -84,7 +84,7 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 7. **Desktop files and folders.** Done: the Desktop source also lists the files and folders placed directly on the Desktop (top level, not hidden or system), not only its shortcuts. They open as they are. In Settings it is named *Desktop*, and can be switched off like the other sources (until now it was always on).
 8. **Alias icon like the pin.** Done: an entry with an alias always shows its alias icon, filled, as a pinned entry shows its pin.
 
-## 0.7 (to define)
+## 0.7
 Theme: getting ready for other users.
 
 1. **About tab.** Done. A new Settings tab: version, links to the GitHub repository and its issues page.

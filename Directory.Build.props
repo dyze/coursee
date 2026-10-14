@@ -6,7 +6,7 @@
     <!-- Maps the local repo path (and the user name in it) to /_/ in DLLs, PDBs and their Source Link data. -->
     <DeterministicSourcePaths>true</DeterministicSourcePaths>
     <!-- Single source of truth for the version (0.1, then 0.2, ...). Stamped into every assembly. -->
-    <Version>0.6</Version>
+    <Version>0.7</Version>
     <!-- Lets the Windows-only WPF project be restored/built on non-Windows machines (CI). -->
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <!-- All build output goes to the artifacts/ folder. -->
