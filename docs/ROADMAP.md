@@ -94,6 +94,10 @@ All items are implemented, waiting for the owner's `build.cmd` run and test.
 6. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
 7. **Paths.** Show in settings the paths to relevant files: user settings, entries... Add for each a button to "explore to".
 8. **Portable.**  Package binaries for portable usage.
+9. **Source: Explorer Quick access.** Not implemented. The folders pinned in Explorer's *Quick access*: the standard ones (Desktop, Downloads, Documents, Pictures, Music, Videos) and the user's own pins. Opened in Explorer; switchable in **Sources**, with its own icon.
+   - Read in `App` through Explorer's shell interface (COM, the Quick access namespace `shell:::{679f85cb-0220-4080-b29b-5540cc05aab6}`), behind an interface in `Core`, like the Run history. Windows keeps no simple file for this list.
+   - Only folders: recent files that Quick access also shows are skipped (recents come from coursee only).
+   - Loaded in the background like the other sources; if Explorer's shell cannot be read, the source is logged (Warning) and gives no entries.
 
 ## 0.8 (to define)
 Game launcher sources. **Installed games only**; owned but not installed games are out of scope. coursee only reads local files and the registry: no sign-in, no API key. Signing in, when a game needs it, is left to the launcher.
