@@ -87,9 +87,9 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 ## 0.7 (to define)
 Theme: getting ready for other users.
 
-1. **About tab.** A new Settings tab: version, links to the GitHub repository and its issues page.
+1. **About tab.** Done. A new Settings tab: version, links to the GitHub repository and its issues page.
 2. **Update check.** Once a day, coursee asks GitHub for the latest release. If it is newer, the Settings button shows a mark and the About tab says so, with a link to download the installer. Nothing is downloaded or installed by coursee. A setting turns the check off. 
-3. **Paths.** The About tab lists coursee's files (settings, entries, logs), each with a *Show in folder* button.
+3. **Paths.** Done. The About tab lists coursee's files (settings, entries, logs), each with a *Show in folder* button.
 4. **Safety notice.** Done. The first time the launcher shows, a notice says that typed text and commands run with the user's rights and can harm the system, and that coursee comes without warranty. Acknowledged once (`SafetyNoticeSeen`).
 5. **Turn off typed commands.** Done. A setting (Settings > General, and offered by the notice) stops typed text from being run as a command (`del c:\file`). Typed URLs, folders and files still open. Run history entries are not affected.
 6. **Folder sources.** Done (see [ARCHITECTURE.md](ARCHITECTURE.md#folder-sources)). Network folders are never listed; Quick access needs Windows 11. One source per folder: its top-level files, folders and shortcuts are listed, like the Desktop source (subfolders not included). In **Sources**, *Add folder…* adds one, ✕ removes it, its checkbox switches it off. Desktop is the default folder and can be removed like any other.

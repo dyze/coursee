@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using Coursee.Core;
 using Coursee.Core.Entries;
 using Coursee.Core.Logging;
 using Coursee.Core.Platform;
@@ -68,6 +70,7 @@ public partial class SettingsWindow : Window
         IAutoStart autoStart,
         IHotkeyRegistrar hotkeys,
         LogHub logHub,
+        AppFiles files,
         Action onSourcesChanged,
         Action<Window> openLog)
     {
@@ -102,6 +105,8 @@ public partial class SettingsWindow : Window
         Action onChanged = () => Dispatcher.BeginInvoke(() => ShowSources());
         sources.Changed += onChanged;
         Closed += (_, _) => sources.Changed -= onChanged;
+
+        ShowAbout(files);
 
         EntriesHost.Content = new EntriesPanel(entries, customEntries, customEntryEditor, new SourceIcons(() => sources.All), _log, ShowMessage);
 
@@ -223,6 +228,85 @@ public partial class SettingsWindow : Window
         }
 
         return row;
+    }
+
+    /// <summary>The About tab: version, links, and a row per file with its path and a Show in folder button.</summary>
+    private void ShowAbout(AppFiles files)
+    {
+        AboutVersionText.Text = $"coursee {AppVersion.Of(typeof(SettingsWindow).Assembly)}";
+        RepositoryLink.NavigateUri = new Uri(ProjectLinks.Repository);
+        IssuesLink.NavigateUri = new Uri(ProjectLinks.Issues);
+
+        foreach (var file in files.All)
+        {
+            var row = FilesGrid.RowDefinitions.Count;
+            FilesGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+            var label = new TextBlock { Text = file.Label, Margin = new Thickness(0, 4, 12, 4), VerticalAlignment = VerticalAlignment.Center };
+
+            // Read only, but selectable: the path can be copied.
+            var path = new TextBox
+            {
+                Text = file.Path,
+                IsReadOnly = true,
+                BorderThickness = new Thickness(0),
+                Background = System.Windows.Media.Brushes.Transparent,
+                VerticalAlignment = VerticalAlignment.Center,
+                ToolTip = file.Path,
+            };
+
+            var show = new Button
+            {
+                Content = "Show in folder",
+                Margin = new Thickness(8, 4, 0, 4),
+                Padding = new Thickness(10, 2, 10, 2),
+            };
+            System.Windows.Automation.AutomationProperties.SetName(show, $"Show {file.Label} in folder");
+            show.Click += (_, _) => ShowInFolder(file);
+
+            Grid.SetRow(label, row);
+            Grid.SetRow(path, row);
+            Grid.SetColumn(path, 1);
+            Grid.SetRow(show, row);
+            Grid.SetColumn(show, 2);
+            FilesGrid.Children.Add(label);
+            FilesGrid.Children.Add(path);
+            FilesGrid.Children.Add(show);
+        }
+    }
+
+    private void ShowInFolder(AppFile file)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo("explorer.exe", AppFiles.ShowInFolderArguments(file.Path)));
+            _log.Info("Action", $"Show in folder: {file.Path}");
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or IOException)
+        {
+            _log.Error("Action", $"Show in folder failed for {file.Path}", ex);
+            ShowMessage(ex.Message);
+        }
+    }
+
+    /// <summary>Opens a link of the About tab in the default browser.</summary>
+    private void Link_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not System.Windows.Documents.Hyperlink { NavigateUri: { } uri })
+        {
+            return;
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
+            _log.Info("Action", $"Open link: {uri.AbsoluteUri}");
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or IOException)
+        {
+            _log.Error("Action", $"Cannot open {uri.AbsoluteUri}", ex);
+            ShowMessage(ex.Message);
+        }
     }
 
     /// <summary>The name of a source after its icon, the one its rows show in the launcher.</summary>

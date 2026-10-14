@@ -28,7 +28,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 
 | `coursee.Core` | Content |
 | --- | --- |
-| *(root)* | `AppVersion` |
+| *(root)* | `AppVersion`; `AppFiles` (where every file of coursee is: the only place their names are written, listed in Settings > About); `ProjectLinks` (website, issues) |
 | `Resources/` | `Resource` and what can be done with it: `ResourceActions`, `ActionLabels` (the wording, and the `ResourceAction` behind the row icon), `FallbackClassifier`, `CommandLine` (program and arguments), `ProgramFinder` (the program's file, in the user's folder or PATH, so `kill rds.cmd` needs no quotes), `Browsers` |
 | `Search/` | `SearchEngine`, `SearchBoosts` (what raises a result above its match), `TextFolding` (accents removed before matching), `ListNavigation` (moving the selection in the result list) |
 | `Recents/` | `RecentStore`, `Frecency` (recency plus frequency) |

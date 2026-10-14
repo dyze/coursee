@@ -21,6 +21,7 @@ public sealed class SettingsCatalog
     public const string EntriesTab = "Entries";
     public const string KeysTab = "Keys";
     public const string LoggingTab = "Logging";
+    public const string AboutTab = "About";
 
     public const string HotkeyId = "Hotkey";
     public const string RecentsCapacityId = "RecentsCapacity";
@@ -35,6 +36,8 @@ public sealed class SettingsCatalog
     public const string KeyBindingsId = "KeyBindings";
     public const string DebugLoggingId = "DebugLogging";
     public const string LogWindowId = "LogWindow";
+    public const string AboutId = "About";
+    public const string FilesId = "Files";
 
     private const string SourceIdPrefix = "Source:";
 
@@ -74,12 +77,14 @@ public sealed class SettingsCatalog
         entries.Add(new(KeyBindingsId, KeysTab, "Key bindings", ["shortcut", "keyboard", "keys", "help"]));
         entries.Add(new(DebugLoggingId, LoggingTab, "Detailed (debug) logging", ["log", "verbose", "trace"]));
         entries.Add(new(LogWindowId, LoggingTab, "Open log window", ["log", "view", "errors"]));
+        entries.Add(new(AboutId, AboutTab, "Version, website and issues", ["github", "web", "link", "bug", "report", "help", "feedback"]));
+        entries.Add(new(FilesId, AboutTab, "coursee's files", ["path", "location", "data", "json", "explorer", "program", "show"]));
 
         All = entries;
     }
 
     /// <summary>The tabs, in the order they are shown.</summary>
-    public IReadOnlyList<string> Tabs { get; } = [GeneralTab, AppearanceTab, SourcesTab, EntriesTab, KeysTab, LoggingTab];
+    public IReadOnlyList<string> Tabs { get; } = [GeneralTab, AppearanceTab, SourcesTab, EntriesTab, KeysTab, LoggingTab, AboutTab];
 
     public IReadOnlyList<SettingInfo> All { get; }
 

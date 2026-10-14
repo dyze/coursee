@@ -135,6 +135,7 @@ public class SettingsCatalogTests
                 SettingsCatalog.EntriesTab,
                 SettingsCatalog.KeysTab,
                 SettingsCatalog.LoggingTab,
+                SettingsCatalog.AboutTab,
             },
             Catalog().Tabs);
     }
@@ -152,6 +153,18 @@ public class SettingsCatalogTests
     {
         Assert.Contains(Catalog().Find(query), entry => entry.Id == SettingsCatalog.KeyBindingsId);
         Assert.Equal(SettingsCatalog.KeysTab, Catalog().All.Single(entry => entry.Id == SettingsCatalog.KeyBindingsId).Tab);
+    }
+
+    [Theory]
+    [InlineData("github", SettingsCatalog.AboutId)]
+    [InlineData("issues", SettingsCatalog.AboutId)]
+    [InlineData("version", SettingsCatalog.AboutId)]
+    [InlineData("path", SettingsCatalog.FilesId)]
+    [InlineData("json", SettingsCatalog.FilesId)]
+    public void Find_FindsTheAboutTab(string query, string id)
+    {
+        Assert.Equal(id, Assert.Single(Catalog().Find(query)).Id);
+        Assert.Equal(SettingsCatalog.AboutTab, Catalog().All.Single(entry => entry.Id == id).Tab);
     }
 
     [Fact]

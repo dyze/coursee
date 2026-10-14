@@ -39,15 +39,15 @@ public partial class App : Application
             return;
         }
 
-        var dataDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "coursee");
-        var settings = new SettingsStore(Path.Combine(dataDirectory, "settings.json"));
+        var files = new AppFiles(
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "coursee"),
+            AppContext.BaseDirectory);
+        var settings = new SettingsStore(files.Settings);
 
         // Before any window or the tray menu is created.
         AppTheme.ApplyToTrayMenu(settings.Theme);
         AppTheme.Apply(settings.Theme);
-        _logHub = new LogHub(Path.Combine(dataDirectory, "logs"), settings.DebugLogging);
+        _logHub = new LogHub(files.Logs, settings.DebugLogging);
         var log = _logHub.Filter;
         log.Info("App", $"coursee {AppVersion.Of(typeof(App).Assembly)} started"
             + (settings.DebugLogging ? " (debug logging on)" : string.Empty));
@@ -69,7 +69,7 @@ public partial class App : Application
             Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu),
         };
         var shortcutResolver = new WshShortcutResolver();
-        var customEntries = new CustomEntryStore(Path.Combine(dataDirectory, "custom.json"));
+        var customEntries = new CustomEntryStore(files.CustomEntries);
 
         var firefoxRoot = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -119,16 +119,16 @@ public partial class App : Application
             ],
             log);
 
-        var recents = new RecentStore(Path.Combine(dataDirectory, "recents.json"), settings.RecentsCapacity);
+        var recents = new RecentStore(files.Recents, settings.RecentsCapacity);
 
-        var entries = new EntryStore(Path.Combine(dataDirectory, "entries.json"));
+        var entries = new EntryStore(files.Entries);
         var customEntryEditor = new CustomEntryEditor(customEntries, entries, recents);
 
         var executablePath = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "coursee.exe");
 
         var autoStart = new RegistryAutoStart(executablePath);
         UpgradeAutoStart(autoStart, log);
-        var placer = new WindowPlacer(new PlacementStore(Path.Combine(dataDirectory, "windows.json")), log);
+        var placer = new WindowPlacer(new PlacementStore(files.WindowPositions), log);
         var logHub = _logHub;
         _hotkey = new HotkeyService(() => _window?.Toggle());
         var hotkey = _hotkey;
@@ -152,6 +152,7 @@ public partial class App : Application
                     autoStart,
                     hotkey,
                     logHub,
+                    files,
                     onSourcesChanged: () => _window?.RefreshResources(),
                     openLog: OpenLogWindow);
                 placer.Attach(created, "Settings", RestoreMode.SizeOverOwner);
