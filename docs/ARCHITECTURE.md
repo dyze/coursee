@@ -58,7 +58,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `coverlet.msbuild` | Tests | Coverage of `Core`, build fails below 95 % lines |
 | `dotnet-reportgenerator-globaltool` | Local tool (`.config/dotnet-tools.json`) | HTML coverage report (`build.cmd`) |
 
-Shared build settings and the version are in `Directory.Build.props`; output goes to `artifacts/`. The installer is built with [Inno Setup](https://jrsoftware.org/isinfo.php) (`build/installer.cmd`, `build/installer/coursee.iss`), a tool installed on the PC, not a package.
+Shared build settings and the version are in `Directory.Build.props`; output goes to `artifacts/`. Builds are deterministic and `DeterministicSourcePaths` replaces the local repo path with `/_/` in DLLs, PDBs and their Source Link data, so no local path (or user name) ships. The installer is built with [Inno Setup](https://jrsoftware.org/isinfo.php) (`build/installer.cmd`, `build/installer/coursee.iss`), a tool installed on the PC, not a package.
 
 ## Data flow
 
