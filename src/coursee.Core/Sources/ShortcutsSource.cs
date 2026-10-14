@@ -14,8 +14,9 @@ public interface IShortcutResolver
 /// Menu (subfolders included). The target is what is shown and searched; the .lnk itself is
 /// what is opened, so the shortcut's arguments and working folder are kept. Shortcuts whose
 /// target no longer exists, and uninstall shortcuts, are skipped. Resolving a shortcut is slow,
-/// so each one is resolved again only when its file changes. Not thread-safe: call from one
-/// thread at a time.
+/// so each one is resolved again only when its file changes. The Desktop also lists the files
+/// and folders placed on it directly (not hidden or system ones). Not thread-safe: call from
+/// one thread at a time.
 /// </summary>
 public sealed class ShortcutsSource : IResourceSource
 {
@@ -25,6 +26,7 @@ public sealed class ShortcutsSource : IResourceSource
     private readonly IReadOnlyList<string> _folders;
     private readonly IShortcutResolver _resolver;
     private readonly SearchOption _searchOption;
+    private readonly bool _includeFilesAndFolders;
     private readonly ILog _log;
     private readonly Dictionary<string, (DateTime Stamp, string? Target)> _resolved =
         new(StringComparer.OrdinalIgnoreCase);
@@ -37,6 +39,7 @@ public sealed class ShortcutsSource : IResourceSource
         IEnumerable<string> folders,
         IShortcutResolver resolver,
         bool includeSubfolders,
+        bool includeFilesAndFolders,
         ILog? log)
     {
         Name = name;
@@ -46,16 +49,17 @@ public sealed class ShortcutsSource : IResourceSource
         _folders = folders.ToList();
         _resolver = resolver;
         _searchOption = includeSubfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+        _includeFilesAndFolders = includeFilesAndFolders;
         _log = log ?? NullLog.Instance;
     }
 
-    /// <summary>The user's Desktop folders (personal and common), top level only. Always on.</summary>
+    /// <summary>The user's Desktop folders (personal and common), top level only: shortcuts, files and folders. Always on.</summary>
     public static ShortcutsSource Desktop(IEnumerable<string> folders, IShortcutResolver resolver, ILog? log = null) =>
-        new(DesktopName, "Desktop shortcuts", SourceIcons.Desktop, canBeDisabled: false, folders, resolver, includeSubfolders: false, log);
+        new(DesktopName, "Desktop", SourceIcons.Desktop, canBeDisabled: false, folders, resolver, includeSubfolders: false, includeFilesAndFolders: true, log);
 
     /// <summary>The Start Menu folders (personal and common), subfolders included.</summary>
     public static ShortcutsSource StartMenu(IEnumerable<string> folders, IShortcutResolver resolver, ILog? log = null) =>
-        new(StartMenuName, "Start Menu shortcuts", SourceIcons.StartMenu, canBeDisabled: true, folders, resolver, includeSubfolders: true, log);
+        new(StartMenuName, "Start Menu shortcuts", SourceIcons.StartMenu, canBeDisabled: true, folders, resolver, includeSubfolders: true, includeFilesAndFolders: false, log);
 
     public string Name { get; }
 
@@ -104,6 +108,11 @@ public sealed class ShortcutsSource : IResourceSource
 
                 resources.Add(new Resource(name, target, kind, Name, shortcut));
             }
+
+            if (_includeFilesAndFolders)
+            {
+                resources.AddRange(FilesAndFolders(folder));
+            }
         }
 
         // Forget shortcuts that were deleted.
@@ -136,6 +145,29 @@ public sealed class ShortcutsSource : IResourceSource
         try
         {
             return Directory.EnumerateFiles(folder, "*.lnk", options).ToList();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _log.Warn(Name, $"Cannot list {folder}: {ex.GetType().Name}: {ex.Message}");
+            return [];
+        }
+    }
+
+    /// <summary>What is on the folder besides shortcuts, opened as it is (a script runs, a folder opens).</summary>
+    private IEnumerable<Resource> FilesAndFolders(string folder)
+    {
+        // The default options skip hidden and system entries, such as desktop.ini.
+        var options = new EnumerationOptions { IgnoreInaccessible = true };
+        try
+        {
+            return Directory.EnumerateFileSystemEntries(folder, "*", options)
+                .Where(path => !path.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase))
+                .Select(path => new Resource(
+                    Path.GetFileName(path),
+                    path,
+                    Directory.Exists(path) ? ResourceKind.Folder : ResourceKind.File,
+                    Name))
+                .ToList();
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

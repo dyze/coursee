@@ -82,6 +82,7 @@ All items are implemented, waiting for the owner's `build.cmd` run and test.
 4. **Entries tab.** A new Settings tab listing hidden entries (to restore), custom entries (to edit or delete), aliases (to edit or remove) and pins (to unpin).
 5. **Keys tab.** A new Settings tab lists the supported keys, read only. The hotkey moves there from General, and stays changeable.
 6. **Commands like Win+R.** Done (fix): a typed or Run history command starts in the user's folder, and a program whose name has spaces runs without quotes (`kill rds.cmd`): the shortest part up to a space that is a file in that folder or in PATH (with PATHEXT) is the program.
+7. **Desktop files and folders.** Done: the Desktop source also lists the files and folders placed directly on the Desktop (top level, not hidden or system), not only its shortcuts. They open as they are. In Settings it is named *Desktop*.
 
 ## 0.7 (to define)
 1. **Warning.** At first display, show a warning that tells user that an entry could harm the system. The developer rejects any responsibility about that.

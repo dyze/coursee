@@ -10,7 +10,7 @@ A personal Windows launcher. Press a global hotkey, type in the compact search w
 
 ## Status
 
-Searches your own custom entries, Desktop and Start Menu shortcuts, Firefox bookmarks, Edge favorites, the Windows Run history and Windows settings pages and tools. Also: recents, pins, aliases, hidden entries, row actions, tray icon, settings, installer.
+Searches your own custom entries, the Desktop (shortcuts, files and folders), Start Menu shortcuts, Firefox bookmarks, Edge favorites, the Windows Run history and Windows settings pages and tools. Also: recents, pins, aliases, hidden entries, row actions, tray icon, settings, installer.
 
 ## Install
 
@@ -90,6 +90,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#search).
 - **Custom entries** are your own name for a URL, folder, file or command. What the target is, and so what Enter does, is decided like for typed text. Changing a target in Settings > Entries keeps the entry's pin, alias and recent history; deleting an entry keeps its pin and alias, like a removed shortcut.
 - **Instant window.** Sources are reloaded in the background each time the launcher opens: it shows the previous list at once, and new or removed items appear a moment later.
 - **Desktop and Start Menu shortcuts** are searched by their target, but opened through the shortcut itself, so their arguments and working folder are kept. Uninstall shortcuts are skipped, and a program found in both places is listed once.
+- **Files and folders on the Desktop** (top level, not hidden or system ones) are listed too, by their name with its extension, and open as with a double click: `kill rds.cmd` runs.
 - **Firefox**: default profile only, bookmarks only (no folders), opened in Firefox.
 - **Edge**: last used profile only, favorites only (no folders), opened in Edge.
 - **Windows settings**: a fixed list of settings pages (Installed apps, Network, Display, Windows Update...), consoles (Services, Device Manager, Event Viewer...) and Control Panel items, opened directly. coursee never changes a setting. Names say what they are for, so "uninstall" finds *Installed apps*.

@@ -126,12 +126,49 @@ public sealed class ShortcutsSourceTests : IDisposable
     }
 
     [Fact]
-    public void IgnoresNonShortcutFiles()
+    public void StartMenu_IgnoresNonShortcutFiles()
     {
         File.WriteAllText(Path.Combine(_desktop, "readme.txt"), "x");
-        var source = ShortcutsSource.Desktop([_desktop], new FakeResolver([]));
+        Directory.CreateDirectory(Path.Combine(_desktop, "Programs"));
+        var source = ShortcutsSource.StartMenu([_desktop], new FakeResolver([]));
 
         Assert.Empty(source.GetResources());
+    }
+
+    [Fact]
+    public void Desktop_ListsItsFilesAndFolders_OpenedAsTheyAre()
+    {
+        var script = Path.Combine(_desktop, "kill rds.cmd");
+        File.WriteAllText(script, "x");
+        var folder = Path.Combine(_desktop, "rds data files");
+        Directory.CreateDirectory(folder);
+        var source = ShortcutsSource.Desktop([_desktop], new FakeResolver([]));
+
+        var result = source.GetResources().OrderBy(r => r.Name).ToList();
+
+        Assert.Equal(
+            new[]
+            {
+                new Resource("kill rds.cmd", script, ResourceKind.File, "Desktop"),
+                new Resource("rds data files", folder, ResourceKind.Folder, "Desktop"),
+            },
+            result);
+    }
+
+    [Fact]
+    public void Desktop_SkipsHiddenFiles_AndListsShortcutsOnce()
+    {
+        var hidden = Path.Combine(_desktop, "desktop.ini");
+        File.WriteAllText(hidden, "x");
+        File.SetAttributes(hidden, FileAttributes.Hidden);
+        var file = Path.Combine(_root, "notes.txt");
+        File.WriteAllText(file, "x");
+        var shortcut = Shortcut("Notes");
+        var source = ShortcutsSource.Desktop([_desktop], new FakeResolver(new() { [shortcut] = file }));
+
+        var resource = Assert.Single(source.GetResources());
+
+        Assert.Equal(new Resource("Notes", file, ResourceKind.File, "Desktop", shortcut), resource);
     }
 
     [Fact]
@@ -152,7 +189,9 @@ public sealed class ShortcutsSourceTests : IDisposable
         File.WriteAllText(nested, string.Empty);
         var source = ShortcutsSource.Desktop([_desktop], new FakeResolver(new() { [nested] = file }));
 
-        Assert.Empty(source.GetResources());
+        // The subfolder itself is listed, not the shortcut inside it.
+        var resource = Assert.Single(source.GetResources());
+        Assert.Equal(new Resource("Tools", Path.GetDirectoryName(nested)!, ResourceKind.Folder, "Desktop"), resource);
     }
 
     [Fact]
