@@ -96,13 +96,17 @@ Theme: getting ready for other users.
    * **Quick access.** Each folder pinned in Explorer's *Quick access* (the standard ones and the user's own pins) is a folder source too, kept in sync with Explorer: pinning `D:\code` there makes its files searchable. These have a checkbox only (no ✕); they are removed by unpinning them in Explorer. An entry found in two folder sources (Desktop added and pinned) is listed once.
 
 ## 0.8 (to define)
-1. **Portable.**  Package binaries for portable usage. It will available thru github releases.
-2. **Source: Packaged apps.** Store / MSIX apps (1Password, Windows Terminal, Calculator...) have no `.lnk` in the Start Menu folders, so the Start Menu source misses them. This source lists the installed packaged apps, as Windows Start does, and opens them by their app ID (`shell:AppsFolder\<AppUserModelID>`). An app also found by the Start Menu source is listed once. Switchable in **Sources**, with its own icon.
-3. **Game launcher sources**. Installed games only; owned but not installed games are out of scope. coursee only reads local files and the registry: no sign-in, no API key. Signing in, when a game needs it, is left to the launcher.
-	- **One source per launcher**, each an `IResourceSource`, switchable in **Sources**, with its own icon. A launcher that is not installed gives no entries, without error.
+Theme: distribution and new sources.
+
+1. **Portable.** Each GitHub release also has a `.zip`: the self-contained coursee.exe and a `portable.txt` marker. When the marker is next to the exe, coursee keeps its data (settings, entries, logs) in a `data` folder beside it instead of `%LOCALAPPDATA%\coursee`, so it runs from a USB stick. In a portable copy, the update check links to the `.zip` instead of the installer.
+2. **Release notes.** The sections of released versions move from ROADMAP.md, as they are, to a new `RELEASENOTES.md`, most recent version first. ROADMAP.md keeps the version table and the sections of planned versions. The installer and the `.zip` include the file; the last page of setup offers to open it. The About tab shows it as plain text.
+3. **Source: Packaged apps.** Store / MSIX apps (1Password, Windows Terminal, Calculator, Xbox / Game Pass games...) have no `.lnk` in the Start Menu folders, so the Start Menu source misses them. This source lists the installed packaged apps, as Windows Start does, and opens them by their app ID (`shell:AppsFolder\<AppUserModelID>`). Run as administrator and *Show in folder* do not apply. Switchable in **Sources**, with its own icon.
+4. **Game launcher sources.** Installed games of Steam, Epic Games and GOG Galaxy; owned but not installed games are out of scope. coursee only reads local files and the registry: no sign-in, no API key. Signing in, when a game needs it, is left to the launcher.
+	- **One source per launcher**, each an `IResourceSource`, switchable in **Sources** (on by default), with its own icon. A launcher that is not installed gives no entries, without error.
+	- **Started by the launcher.** A game opens through its launcher's link (`steam://rungameid/<id>`, `com.epicgames.launcher://apps/<id>?action=launch`...), so the launcher still handles updates and checks. The row says *Launch game*; Ctrl+C copies the link.
+	- **Games only.** Tools Steam lists as apps (Proton, Steamworks Common Redistributables...) are skipped.
 	- **Tolerant reading.** These formats are not documented and may change: a file that cannot be read is logged (Warning) and skipped; the other games and sources are not affected.
-	- **Icons.** The game's exe icon when it can be found, else the source icon.
-4. **Release notes.** A release notes is maintained and committed. This file is provided inside installer and its opening is proposed at end of installer.
+5. **Listed once.** A packaged app or a game also found by the Start Menu source (same name, ignoring case) is listed once, as the Start Menu entry.
 
 ## 0.9 (to define)
 1. **Donate.** Add a link to donate to the developer.
@@ -110,3 +114,4 @@ Theme: getting ready for other users.
 3. **End user manual.** A html manual is shipped with installer and available thru a "?" icon from App.
 4. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
 5. **Outlook contacts source.** User can summon the display of email composing window with selected contact fed as recipient.
+6. **Entry icons.** Rows show the entry's own icon (a game's or a file's exe icon) when it can be found, else the source icon.

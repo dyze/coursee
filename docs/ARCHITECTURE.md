@@ -143,6 +143,15 @@ first (Custom) · last (Start Menu, Firefox, Edge, Run, Windows settings): fixed
 | Icons | Folder `\uE8B7`, Quick access `\uE80F`. A recent item from a folder that is gone gets the folder icon |
 | Logs | Quick access changes at Info (category `Quick access`); a source that is off or gone is forgotten by `SourceMonitor.Keep`, and logged as loaded when it comes back |
 
+## Packaged apps (planned, 0.8)
+Not implemented yet. Scope: [ROADMAP.md](ROADMAP.md#08-to-define).
+
+| Topic | Rule |
+| --- | --- |
+| Reading | `IPackagedAppReader` (Core), implemented in App by a Shell reader, like `ShellQuickAccessReader`: it lists `shell:AppsFolder` on its own STA thread (with a timeout) and keeps the items that have a `System.AppUserModel.PackageFamilyName` (the other items are desktop apps, already found by the Start Menu source). Each gives its shown name and `System.AppUserModel.ID` |
+| Why not `PackageManager` | WinRT would need a versioned target framework (`net10.0-windows10.0.19041.0`) and its projection DLLs (about 20 to 25 MB more in a self-contained build), and lists packages rather than what Start shows |
+| Target | `shell:AppsFolder\<AppUserModelID>` |
+
 ## Adding a source
 1. In `Core/Sources`, implement `IResourceSource`: a stable `Name` (it is also the key stored in `settings.json`), a `DisplayName` for Settings, `CanBeDisabled` (true gives it a checkbox in **Sources**), an `Icon` (a Segoe Fluent Icons glyph, kept in `SourceIcons` with the others so each stays distinct; shown on its rows and next to its checkbox), and `GetResources()` returning `Resource` records. Take an optional `ILog`.
 2. If it needs Windows, define an interface in `Core` (like `IRunHistoryReader`) and implement it in `App`.
