@@ -97,15 +97,44 @@ public class SourceLoaderTests
         Assert.Equal(new[] { work, home }, SourceLoader.Merge([[work, home]]));
     }
 
-    [Theory]
-    [InlineData(ResourceKind.App, @"shell:AppsFolder\1Password")]
-    [InlineData(ResourceKind.Game, "steam://rungameid/620")]
-    public void Merge_AnAppOrGameWithTheNameOfAnEarlierItem_IsListedOnce(ResourceKind kind, string target)
+    [Fact]
+    public void Merge_AnAppWithTheNameOfAnEarlierItem_IsListedOnce_AsThatItem()
     {
-        var startMenu = new Resource("Portal 2", @"C:\Games\portal2.exe", ResourceKind.File, "Start Menu", @"C:\Start\Portal 2.lnk");
-        var app = new Resource("portal 2", target, kind, "Packaged apps");
+        var startMenu = new Resource("1Password", @"C:\1Password\1Password.exe", ResourceKind.File, "Start Menu", @"C:\Start\1Password.lnk");
+        var app = new Resource("1password", @"shell:AppsFolder\1Password", ResourceKind.App, "Packaged apps");
 
         Assert.Equal(startMenu, Assert.Single(SourceLoader.Merge([[startMenu], [app]])));
+    }
+
+    [Fact]
+    public void Merge_AGameWithTheNameOfAnEarlierShortcut_TakesItsPlace()
+    {
+        var desktop = new Resource("Notes", @"C:\notes.txt", ResourceKind.File, "Desktop");
+        var shortcut = new Resource("Foundation", @"C:\GOG Galaxy\GalaxyClient.exe", ResourceKind.File, "Start Menu", @"C:\Start\Foundation.lnk");
+        var game = new Resource("foundation", @"""C:\GOG Galaxy\GalaxyClient.exe"" /command=runGame /gameId=1", ResourceKind.Game, "GOG");
+
+        Assert.Equal(new[] { desktop, game }, SourceLoader.Merge([[desktop, shortcut], [game]]));
+    }
+
+    [Theory]
+    [InlineData(ResourceKind.File, null)]
+    [InlineData(ResourceKind.Folder, @"C:\Start\Portal 2.lnk")]
+    [InlineData(ResourceKind.App, null)]
+    public void Merge_AGameWithTheNameOfAnEarlierItemThatIsNoShortcut_IsListedOnce_AsThatItem(ResourceKind kind, string? launchPath)
+    {
+        var earlier = new Resource("Portal 2", @"C:\Games\Portal 2", kind, "Custom", launchPath);
+        var game = new Resource("portal 2", "steam://rungameid/620", ResourceKind.Game, "Steam");
+
+        Assert.Equal(earlier, Assert.Single(SourceLoader.Merge([[earlier], [game]])));
+    }
+
+    [Fact]
+    public void Merge_ASecondGameWithTheSameName_IsLeftOut()
+    {
+        var steam = new Resource("Portal 2", "steam://rungameid/620", ResourceKind.Game, "Steam");
+        var gog = new Resource("Portal 2", @"""C:\g.exe""", ResourceKind.Game, "GOG");
+
+        Assert.Equal(steam, Assert.Single(SourceLoader.Merge([[steam], [gog]])));
     }
 
     [Fact]

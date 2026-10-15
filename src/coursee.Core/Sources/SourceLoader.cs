@@ -41,24 +41,40 @@ public static class SourceLoader
     /// since they are usually different shortcuts (two browser profiles, say).
     /// An app or a game is also left out when an earlier item has its name: its target (an app ID,
     /// a launcher link) never equals the one of the shortcut that the Start Menu has for it.
+    /// A game takes the place of that shortcut, though, so that it is listed as a game.
     /// </summary>
     public static IReadOnlyList<Resource> Merge(IEnumerable<IReadOnlyList<Resource>> lists)
     {
         var seen = new HashSet<(string, string)>(NameTargetComparer.Instance);
-        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var firstByName = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         var merged = new List<Resource>();
         foreach (var resource in lists.SelectMany(list => list))
         {
-            var listedByName = resource.Kind is ResourceKind.App or ResourceKind.Game && names.Contains(resource.Name);
-            if (seen.Add((resource.Name, resource.Target)) && !listedByName)
+            if (!seen.Add((resource.Name, resource.Target)))
             {
-                names.Add(resource.Name);
-                merged.Add(resource);
+                continue;
             }
+
+            if (resource.Kind is ResourceKind.App or ResourceKind.Game && firstByName.TryGetValue(resource.Name, out var earlier))
+            {
+                if (resource.Kind == ResourceKind.Game && IsShortcut(merged[earlier]))
+                {
+                    merged[earlier] = resource;
+                }
+
+                continue;
+            }
+
+            firstByName.TryAdd(resource.Name, merged.Count);
+            merged.Add(resource);
         }
 
         return merged;
     }
+
+    /// <summary>A .lnk file of the Desktop, the Start Menu or a folder: opened through its file.</summary>
+    private static bool IsShortcut(Resource resource) =>
+        resource.Kind == ResourceKind.File && !string.IsNullOrWhiteSpace(resource.LaunchPath);
 
     private sealed class NameTargetComparer : IEqualityComparer<(string Name, string Target)>
     {

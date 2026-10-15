@@ -172,11 +172,11 @@ One source per launcher, in `Core/Games`, after the Start Menu in the `last` lis
 | --- | --- | --- | --- | --- |
 | `SteamSource` | Steam's folder (`HKCU\Software\Valve\Steam\SteamPath`, `RegistryGameLaunchers.SteamFolder`), the libraries of `steamapps\libraryfolders.vdf` (both formats), each `appmanifest_<id>.acf`, parsed by `VdfNode` | `steam://rungameid/<appid>` | `StateFlags` without the fully installed bit (4); tools by name: Steamworks Common Redistributables, Steam Linux Runtime, Proton | `` (Game) |
 | `EpicSource` | `%ProgramData%\Epic\EpicGamesLauncher\Data\Manifests\*.item` (JSON) | `com.epicgames.launcher://apps/<CatalogNamespace>%3A<CatalogItemId>%3A<AppName>?action=launch&silent=true` | `bIsIncompleteInstall`; add-ons (`MainGameAppName` of another app); `AppCategories` without `games` (engines) | `` (XboxOneConsole) |
-| `GogSource` | `IGogGamesReader`: `RegistryGameLaunchers` reads `HKLM\SOFTWARE\GOG.com\Games\*` in the 32-bit view (`WOW6432Node`) | `"<exe>" <launchParam>`: GOG Galaxy has no documented launch link, and GOG games have no DRM | add-ons (`dependsOn`) | `` (Library) |
+| `GogSource` | `IGogGamesReader`: `RegistryGameLaunchers` reads `HKLM\SOFTWARE\GOG.com\Games\*` and GOG Galaxy's program (`GalaxyClient\paths\client` + `clientExecutable`, if the file exists) in the 32-bit view (`WOW6432Node`) | With GOG Galaxy and a `gameID`: `"<GalaxyClient.exe>" /command=runGame /gameId=<gameID> /path="<path>"`, the command of its own shortcuts (no documented link). Else `"<exe>" <launchParam>` (GOG games have no DRM) | add-ons (`dependsOn`) | `` (Library) |
 
 Enter on a game: `ResourceActions.GameStart` splits the target (`CommandLine`); a program starts in its own folder.
 
-**Listed once by name.** `SourceLoader.Merge` also leaves out an app or a game (`ResourceKind.App`, `Game`) when an earlier item has its name: its target never equals the one of the shortcut the Start Menu (or a folder) has for it.
+**Listed once by name.** `SourceLoader.Merge` also leaves out an app or a game (`ResourceKind.App`, `Game`) when an earlier item has its name: its target never equals the one of the shortcut the Start Menu (or a folder) has for it. A game takes the place of that item when it is a shortcut (`File` with a `LaunchPath`), so it is listed as a game; any other item (a custom entry, say) stays.
 
 ## Portable copy
 - `AppFiles.For` picks the data folder: `<exe folder>\data` when `portable.txt` (`AppFiles.PortableMarker`) is next to coursee.exe, else `%LOCALAPPDATA%\coursee`. The start line of the log says `(portable)`.

@@ -118,5 +118,7 @@ public class SourceIconsTests
     private sealed class NoGogGames : IGogGamesReader
     {
         public IReadOnlyList<IReadOnlyDictionary<string, string>> Games() => [];
+
+        public string? GalaxyClient() => null;
     }
 }

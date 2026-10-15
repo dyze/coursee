@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Source: Packaged apps.** Store / MSIX apps (1Password, Windows Terminal, Calculator, Xbox / Game Pass games...) have no `.lnk` in the Start Menu folders, so the Start Menu source missed them. This source lists the installed packaged apps, as Windows Start does, and opens them by their app ID (`shell:AppsFolder\<AppUserModelID>`). Run as administrator and *Show in folder* do not apply. Switchable in **Sources**, with its own icon.
 - **Game launcher sources.** Installed games of Steam, Epic Games and GOG; owned but not installed games are out of scope. coursee only reads local files and the registry: no sign-in, no API key. Signing in, when a game needs it, is left to the launcher.
   - **One source per launcher**, switchable in **Sources** (on by default), with its own icon. A launcher that is not installed gives no entries, without error.
-  - **Started by the launcher.** A game opens through its launcher's link (`steam://rungameid/<id>`, `com.epicgames.launcher://apps/<id>?action=launch`...), so the launcher still handles updates and checks. GOG Galaxy has no such link, and GOG games have no DRM: they start from their own program, as GOG's registry gives it. The row says *Launch game*; Ctrl+C copies the link.
+  - **Started by the launcher.** A game opens through its launcher's link (`steam://rungameid/<id>`, `com.epicgames.launcher://apps/<id>?action=launch`...), so the launcher still handles updates and checks. GOG Galaxy has no such link: a GOG game starts with the command of GOG Galaxy's own shortcuts (`GalaxyClient.exe /command=runGame /gameId=<id> /path=<folder>`). Without GOG Galaxy (offline installers), it starts from its own program, as GOG's registry gives it (GOG games have no DRM). The row says *Launch game*; Ctrl+C copies the link.
   - **Games only.** Tools Steam lists as apps (Proton, Steamworks Common Redistributables...) are skipped, and so are Epic's add-ons and engines.
   - **Tolerant reading.** These formats are not documented and may change: a file that cannot be read is logged (Warning) and skipped; the other games and sources are not affected.
 
@@ -24,7 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **About buttons.** *Website (GitHub)*, *Report an issue* and *Show changelog* are buttons, side by side.
 - **Up to date in green.** "You have the latest version" shows in green, as a newer release shows in yellow.
 - **Log window in the tray menu** is ticked while the window is open; a click shows or closes it.
-- **Listed once by name.** A packaged app or a game also found by an earlier source, such as the Start Menu (same name, ignoring case), is listed once, as that entry.
+- **Listed once by name.** A packaged app or a game also found by an earlier source, such as the Start Menu (same name, ignoring case), is listed once, as that entry. A game replaces a shortcut, though, so a GOG game shows as a game rather than as its Start Menu or Desktop shortcut.
 - **8 files instead of 264.** `coursee.exe` now holds the app and the .NET runtime, next to six native DLLs (WPF, SQLite) and the changelog. Still self-contained: no .NET runtime to install. No `.pdb` files or translated framework messages.
 
 ### Fixed

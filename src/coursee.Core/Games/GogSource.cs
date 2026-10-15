@@ -5,18 +5,23 @@ using Coursee.Core.Sources;
 namespace Coursee.Core.Games;
 
 /// <summary>
-/// Reads the games GOG installs register (<c>HKLM\SOFTWARE\WOW6432Node\GOG.com\Games</c>): one set
-/// of raw values per game (<c>gameName</c>, <c>exe</c>, <c>launchParam</c>...).
+/// Reads what GOG registers (<c>HKLM\SOFTWARE\WOW6432Node\GOG.com</c>): one set of raw values per
+/// installed game (<c>gameName</c>, <c>gameID</c>, <c>exe</c>, <c>path</c>...), and GOG Galaxy's program.
 /// </summary>
 public interface IGogGamesReader
 {
     IReadOnlyList<IReadOnlyDictionary<string, string>> Games();
+
+    /// <summary>The full path of <c>GalaxyClient.exe</c>, or null when GOG Galaxy is not installed.</summary>
+    string? GalaxyClient();
 }
 
 /// <summary>
-/// The games installed from GOG, with GOG Galaxy or GOG's offline installers. GOG Galaxy has no
-/// documented link to start a game, and GOG games have no DRM, so a game starts from its own
-/// program, with the arguments GOG registered. Add-ons (registered with <c>dependsOn</c>) are left out.
+/// The games installed from GOG, with GOG Galaxy or GOG's offline installers. With GOG Galaxy
+/// installed, a game starts through it, as the shortcuts GOG Galaxy makes do
+/// (<c>GalaxyClient.exe /command=runGame /gameId=... /path=...</c>). Without it, a game starts from
+/// its own program (GOG games have no DRM), with the arguments GOG registered.
+/// Add-ons (registered with <c>dependsOn</c>) are left out.
 /// </summary>
 public sealed class GogSource : IResourceSource
 {
@@ -42,9 +47,11 @@ public sealed class GogSource : IResourceSource
     public IReadOnlyList<Resource> GetResources()
     {
         IReadOnlyList<IReadOnlyDictionary<string, string>> games;
+        string? galaxy;
         try
         {
             games = _reader.Games();
+            galaxy = _reader.GalaxyClient();
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
         {
@@ -53,13 +60,13 @@ public sealed class GogSource : IResourceSource
         }
 
         return games
-            .Select(AsGame)
+            .Select(game => AsGame(game, galaxy))
             .OfType<Resource>()
             .DistinctBy(game => game.Target, StringComparer.OrdinalIgnoreCase)
             .ToList();
     }
 
-    private static Resource? AsGame(IReadOnlyDictionary<string, string> values)
+    private static Resource? AsGame(IReadOnlyDictionary<string, string> values, string? galaxy)
     {
         var name = Value(values, "gameName");
         var program = Value(values, "exe");
@@ -68,9 +75,26 @@ public sealed class GogSource : IResourceSource
             return null;
         }
 
+        return new Resource(name, ThroughGalaxy(values, galaxy) ?? FromProgram(values, program), ResourceKind.Game, SourceName);
+    }
+
+    /// <summary>The command line of GOG Galaxy's own shortcuts, or null without GOG Galaxy or a game ID.</summary>
+    private static string? ThroughGalaxy(IReadOnlyDictionary<string, string> values, string? galaxy)
+    {
+        var id = Value(values, "gameID");
+        if (galaxy is null || id is null)
+        {
+            return null;
+        }
+
+        var folder = Value(values, "path");
+        return $"\"{galaxy}\" /command=runGame /gameId={id}" + (folder is null ? string.Empty : $" /path=\"{folder}\"");
+    }
+
+    private static string FromProgram(IReadOnlyDictionary<string, string> values, string program)
+    {
         var arguments = Value(values, "launchParam");
-        var commandLine = $"\"{program}\"" + (arguments is null ? string.Empty : " " + arguments);
-        return new Resource(name, commandLine, ResourceKind.Game, SourceName);
+        return $"\"{program}\"" + (arguments is null ? string.Empty : " " + arguments);
     }
 
     /// <summary>A value that is not blank (the registry often holds empty ones), else null.</summary>
