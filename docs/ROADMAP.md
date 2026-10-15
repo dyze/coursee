@@ -14,11 +14,12 @@ Scope of each planned version. Implemented features move to [CHANGELOG.md](../CH
 | 0.8     | Done   | Portable zip, changelog, packaged apps, Steam, Epic Games and GOG sources            |
 
 ## 0.9 (to define)
-1. **Donate.** Add a link to donate to the developer.
-2. **Sign installer.** To make it more secure, use a certificate to sign all installers coming from the developer.
-3. **End user manual.** A html manual is shipped with installer and available thru a "?" icon from App.
-4. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
-5. **Outlook contacts source.** User can summon the display of email composing window with selected contact fed as recipient.
-6. **Entry icons.** Rows show the entry's own icon (a game's or a file's exe icon) when it can be found, else the source icon.
-7. **Beautify changelog.** Today hard to identify the interesting info reading the md file as is.
-8. **New icons.** Create new icons for UI.
+1. **Switch MIT license.**
+2. **Donate.** Add a link to donate to the developer.
+3. **Sign installer.** To make it more secure, use a certificate to sign all installers coming from the developer.
+4. **End user manual.** A html manual is shipped with installer and available thru a "?" icon from App.
+5. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
+6. **Outlook contacts source.** User can summon the display of email composing window with selected contact fed as recipient.
+7. **Entry icons.** Rows show the entry's own icon (a game's or a file's exe icon) when it can be found, else the source icon.
+8. **Beautify changelog.** Today hard to identify the interesting info reading the md file as is.
+9. **New icons.** Create new icons for UI.
