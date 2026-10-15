@@ -60,6 +60,8 @@ Root: HKCU; Subkey: "{#RunKey}"; ValueType: string; ValueName: "{#AppName}"; \
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "Start coursee now"; Flags: nowait postinstall skipifsilent
+Filename: "{win}\notepad.exe"; Parameters: """{app}\CHANGELOG.md"""; Description: "Open the changelog"; \
+  Flags: nowait postinstall skipifsilent unchecked
 
 [Code]
 // Auto start can also be switched on later from coursee's Settings, without this installer

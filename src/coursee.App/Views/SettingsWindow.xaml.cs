@@ -57,9 +57,8 @@ public partial class SettingsWindow : Window
     private readonly Action<Window> _openLog;
     private readonly Button _addFolderButton;
     private readonly UpdateChecker _updates;
-    private readonly Dictionary<string, CheckBox> _quickAccessCheckBoxes = new(StringComparer.OrdinalIgnoreCase);
+    private string _changelogPath = string.Empty;
     private SettingsCatalog _catalog;
-    private CheckBox? _quickAccessCheckBox;
     private bool _capturingHotkey;
     private bool _focusHotkey;
     private bool _loading;
@@ -100,9 +99,9 @@ public partial class SettingsWindow : Window
         {
             Content = "Add folder...",
             Tag = SettingsCatalog.AddFolderId,
-            Margin = new Thickness(0, 14, 0, 0),
             Padding = new Thickness(12, 4, 12, 4),
             HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Center,
             ToolTip = "Search the files and folders at the top of a folder, like the Desktop",
         };
         _addFolderButton.Click += AddFolderButton_Click;
@@ -130,121 +129,12 @@ public partial class SettingsWindow : Window
         Closed += (_, _) => StopCapturingHotkey();
     }
 
-    /// <summary>
-    /// Fills the Sources tab: a checkbox per source that can be switched off, with a remove button
-    /// for the user's folders, then the Add folder button. The Quick access folders come together
-    /// (see <see cref="SourceCatalog"/>), indented under a checkbox that switches them all.
-    /// Called again when the sources change.
-    /// </summary>
-    private void ShowSources()
-    {
-        var switchable = _sources.All.Where(s => s.CanBeDisabled).ToList();
-        _quickAccessCheckBoxes.Clear();
-        _quickAccessCheckBox = null;
-        _catalog = new SettingsCatalog(_sources.All, hasQuickAccess: switchable.Any(s => _sources.IsQuickAccess(s.Name)));
-
-        // The section title and the Add folder button stay, so the button keeps the focus.
-        var rows = SourcesSection.Children.OfType<UIElement>().Skip(1).Where(child => child != _addFolderButton).ToList();
-        rows.ForEach(SourcesSection.Children.Remove);
-        if (!SourcesSection.Children.Contains(_addFolderButton))
-        {
-            SourcesSection.Children.Add(_addFolderButton);
-        }
-
-        void AddRow(UIElement row) => SourcesSection.Children.Insert(SourcesSection.Children.Count - 1, row);
-
-        foreach (var source in switchable)
-        {
-            var inQuickAccess = _sources.IsQuickAccess(source.Name);
-            if (inQuickAccess && _quickAccessCheckBox is null)
-            {
-                AddRow(QuickAccessRow());
-            }
-
-            AddRow(SourceRow(source, inQuickAccess));
-        }
-
-        ShowQuickAccessState();
-
-        if (IsLoaded)
-        {
-            UpdateSections();
-        }
-    }
-
-    /// <summary>The group of the Quick access folders: ticked when all are on, filled when some are.</summary>
-    private CheckBox QuickAccessRow()
-    {
-        var checkBox = new CheckBox
-        {
-            Content = SourceLabel(SourceIcons.QuickAccess, "Quick access"),
-            Tag = SettingsCatalog.QuickAccessId,
-            Margin = new Thickness(0, 10, 0, 0),
-            ToolTip = "The folders pinned in Explorer's Quick access: unpin one there to remove it",
-        };
-        checkBox.Click += (_, _) => QuickAccessCheckBox_Click(checkBox);
-        _quickAccessCheckBox = checkBox;
-        return checkBox;
-    }
-
-    private void ShowQuickAccessState()
-    {
-        if (_quickAccessCheckBox is not null)
-        {
-            _quickAccessCheckBox.IsChecked = _settings.AreSourcesEnabled(_quickAccessCheckBoxes.Keys);
-        }
-    }
-
-    /// <param name="inQuickAccess">Indented under the Quick access group.</param>
-    private StackPanel SourceRow(IResourceSource source, bool inQuickAccess)
-    {
-        var name = source.Name;
-        var row = new StackPanel
-        {
-            Orientation = Orientation.Horizontal,
-            Tag = SettingsCatalog.SourceId(name),
-            Margin = new Thickness(inQuickAccess ? 28 : 0, inQuickAccess ? 6 : 10, 0, 0),
-        };
-
-        var checkBox = new CheckBox
-        {
-            Content = SourceLabel(source.Icon, source.DisplayName),
-            IsChecked = _settings.IsSourceEnabled(name),
-            VerticalAlignment = VerticalAlignment.Center,
-        };
-        checkBox.Click += (_, _) => SourceCheckBox_Click(checkBox, name);
-        row.Children.Add(checkBox);
-        if (inQuickAccess)
-        {
-            _quickAccessCheckBoxes[name] = checkBox;
-        }
-
-        if (_sources.CanRemove(name))
-        {
-            var remove = new Button
-            {
-                Content = "\uE711", // Cancel
-                FontFamily = new System.Windows.Media.FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"),
-                Margin = new Thickness(10, 0, 0, 0),
-                Padding = new Thickness(6, 3, 6, 3),
-                VerticalAlignment = VerticalAlignment.Center,
-                ToolTip = $"Remove {source.DisplayName}",
-            };
-            System.Windows.Automation.AutomationProperties.SetName(remove, $"Remove {source.DisplayName}");
-            remove.Click += (_, _) => RemoveFolder(name, source.DisplayName);
-            row.Children.Add(remove);
-        }
-
-        return row;
-    }
-
-    /// <summary>The About tab: version, links, and a row per file with its path and a Show in folder button.</summary>
+    /// <summary>The About tab: version, links, changelog, and a row per file with its path and a Show in folder button.</summary>
     private void ShowAbout(AppFiles files)
     {
         AboutVersionText.Text = $"coursee {AppVersion.Of(typeof(SettingsWindow).Assembly)}";
-        RepositoryLink.NavigateUri = new Uri(ProjectLinks.Repository);
-        IssuesLink.NavigateUri = new Uri(ProjectLinks.Issues);
         ShowUpdateStatus();
+        _changelogPath = files.Changelog;
 
         foreach (var file in files.All)
         {
@@ -312,11 +202,15 @@ public partial class SettingsWindow : Window
             link.Click += Link_Click;
             UpdateStatusText.Inlines.Add(link);
         }
+        else if (_updates.LastCheck is { } last)
+        {
+            // Green, as the caution color of a newer release is yellow.
+            UpdateStatusText.SetResourceReference(TextBlock.ForegroundProperty, "SystemFillColorSuccessBrush");
+            UpdateStatusText.Inlines.Add(new System.Windows.Documents.Run($"You have the latest version (checked {last.ToLocalTime():g})."));
+        }
         else
         {
-            UpdateStatusText.Inlines.Add(new System.Windows.Documents.Run(_updates.LastCheck is { } last
-                ? $"You have the latest version (checked {last.ToLocalTime():g})."
-                : "Not checked yet."));
+            UpdateStatusText.Inlines.Add(new System.Windows.Documents.Run("Not checked yet."));
         }
     }
 
@@ -352,14 +246,22 @@ public partial class SettingsWindow : Window
         }
     }
 
-    /// <summary>Opens a link of the About tab in the default browser.</summary>
+    /// <summary>The download link of a newer release.</summary>
     private void Link_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not System.Windows.Documents.Hyperlink { NavigateUri: { } uri })
+        if (sender is System.Windows.Documents.Hyperlink { NavigateUri: { } uri })
         {
-            return;
+            OpenLink(uri);
         }
+    }
 
+    private void RepositoryButton_Click(object sender, RoutedEventArgs e) => OpenLink(new Uri(ProjectLinks.Repository));
+
+    private void IssuesButton_Click(object sender, RoutedEventArgs e) => OpenLink(new Uri(ProjectLinks.Issues));
+
+    /// <summary>Opens a link of the About tab in the default browser.</summary>
+    private void OpenLink(Uri uri)
+    {
         try
         {
             Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
@@ -466,7 +368,7 @@ public partial class SettingsWindow : Window
                     continue;
                 }
 
-                var shown = !searching || (child is FrameworkElement { Tag: string id } && matches.Contains(id));
+                var shown = !searching || Matches(child, matches);
                 child.Visibility = shown ? Visibility.Visible : Visibility.Collapsed;
                 anyShown |= shown;
             }
@@ -488,6 +390,11 @@ public partial class SettingsWindow : Window
         FindBox.Clear();
         ShowTab(SettingsCatalog.EntriesTab);
     }
+
+    /// <summary>A row matches when its id does, or the id of a control in it (Add folder, on the row of a folder).</summary>
+    private static bool Matches(UIElement row, HashSet<string> matches) =>
+        row is FrameworkElement { Tag: string id } && matches.Contains(id)
+        || row is Panel panel && panel.Children.OfType<FrameworkElement>().Any(child => child.Tag is string childId && matches.Contains(childId));
 
     /// <summary>A section title: the only child of a section without a setting id.</summary>
     private static bool IsHeader(UIElement element) => element is FrameworkElement { Tag: null };
@@ -704,51 +611,6 @@ public partial class SettingsWindow : Window
         ShowAutoStart();
     }
 
-    private void SourceCheckBox_Click(CheckBox checkBox, string sourceName)
-    {
-        var wanted = checkBox.IsChecked == true;
-
-        try
-        {
-            _settings.SetSourceEnabled(sourceName, wanted);
-            _log.Info("Settings", $"Source '{sourceName}' {(wanted ? "on" : "off")}");
-            _onSourcesChanged();
-        }
-        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
-        {
-            _log.Error("Settings", $"Cannot change source '{sourceName}'", ex);
-            ShowMessage(ex.Message);
-            checkBox.IsChecked = !wanted;
-        }
-
-        ShowQuickAccessState();
-    }
-
-    /// <summary>Switches every Quick access folder; a partly ticked group is switched on.</summary>
-    private void QuickAccessCheckBox_Click(CheckBox checkBox)
-    {
-        var wanted = checkBox.IsChecked == true;
-
-        try
-        {
-            _settings.SetSourcesEnabled(_quickAccessCheckBoxes.Keys, wanted);
-            _log.Info("Settings", $"Quick access folders {(wanted ? "on" : "off")}");
-            _onSourcesChanged();
-        }
-        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
-        {
-            _log.Error("Settings", "Cannot change the Quick access folders", ex);
-            ShowMessage(ex.Message);
-        }
-
-        foreach (var (name, child) in _quickAccessCheckBoxes)
-        {
-            child.IsChecked = _settings.IsSourceEnabled(name);
-        }
-
-        ShowQuickAccessState();
-    }
-
     private void AddFolderButton_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new Microsoft.Win32.OpenFolderDialog { Title = "Add a folder to search" };
@@ -917,6 +779,12 @@ public partial class SettingsWindow : Window
 
     /// <summary>Opens the log window in front of this dialog, which stays open (to switch debug logging on and watch, say).</summary>
     private void OpenLogButton_Click(object sender, RoutedEventArgs e) => _openLog(this);
+
+    private void ChangelogButton_Click(object sender, RoutedEventArgs e)
+    {
+        _log.Info("Action", "Show changelog");
+        ChangelogWindow.Show(this, Changelog.Read(_changelogPath));
+    }
 
     private void ShowMessage(string message) => MessageDialog.Inform(this, message);
 }

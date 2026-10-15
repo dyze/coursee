@@ -35,6 +35,9 @@ public sealed class AppFiles
 
     public string Logs => Path.Combine(DataDirectory, "logs");
 
+    /// <summary>The changelog, shipped next to coursee.exe.</summary>
+    public string Changelog => Path.Combine(ProgramDirectory, "CHANGELOG.md");
+
     /// <summary>What Settings > About lists, in this order.</summary>
     public IReadOnlyList<AppFile> All =>
     [

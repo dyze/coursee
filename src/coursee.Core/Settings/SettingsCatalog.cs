@@ -31,7 +31,6 @@ public sealed class SettingsCatalog
     public const string AllowTypedCommandsId = "AllowTypedCommands";
     public const string ThemeId = "Theme";
     public const string AddFolderId = "AddFolder";
-    public const string QuickAccessId = "QuickAccess";
     public const string EntriesId = "Entries";
     public const string KeyBindingsId = "KeyBindings";
     public const string DebugLoggingId = "DebugLogging";
@@ -41,13 +40,14 @@ public sealed class SettingsCatalog
     public const string UpdatesId = "Updates";
 
     private const string SourceIdPrefix = "Source:";
+    private const string GroupIdPrefix = "Group:";
 
     /// <param name="sources">
     /// All the sources; those that can be switched off get an entry in the Sources tab. The window
     /// makes a new catalog when the sources change (<see cref="SourceCatalog.Changed"/>).
     /// </param>
-    /// <param name="hasQuickAccess">True when Quick access folders are listed: their group gets an entry.</param>
-    public SettingsCatalog(IEnumerable<IResourceSource> sources, bool hasQuickAccess = false)
+    /// <param name="groups">The groups of the sources listed (see <see cref="SourceGroups"/>): each gets an entry.</param>
+    public SettingsCatalog(IEnumerable<IResourceSource> sources, IEnumerable<SourceGroup>? groups = null)
     {
         var entries = new List<SettingInfo>
         {
@@ -62,10 +62,8 @@ public sealed class SettingsCatalog
         entries.AddRange(sources
             .Where(source => source.CanBeDisabled)
             .Select(source => new SettingInfo(SourceId(source.Name), SourcesTab, source.DisplayName, ["source", "on", "off", source.Name])));
-        if (hasQuickAccess)
-        {
-            entries.Add(new(QuickAccessId, SourcesTab, "Quick access", ["pinned", "explorer", "all", "group"]));
-        }
+        entries.AddRange((groups ?? []).Select(group =>
+            new SettingInfo(GroupId(group.Name), SourcesTab, group.Name, ["all", "group", .. group.Keywords])));
 
         entries.Add(new(AddFolderId, SourcesTab, "Add folder...", ["folder", "directory", "source", "add"]));
 
@@ -78,7 +76,7 @@ public sealed class SettingsCatalog
         entries.Add(new(KeyBindingsId, KeysTab, "Key bindings", ["shortcut", "keyboard", "keys", "help"]));
         entries.Add(new(DebugLoggingId, LoggingTab, "Detailed (debug) logging", ["log", "verbose", "trace"]));
         entries.Add(new(LogWindowId, LoggingTab, "Open log window", ["log", "view", "errors"]));
-        entries.Add(new(AboutId, AboutTab, "Version, website and issues", ["github", "web", "link", "bug", "report", "help", "feedback"]));
+        entries.Add(new(AboutId, AboutTab, "Version, website, issues and changelog", ["github", "web", "link", "bug", "report", "help", "feedback", "release notes", "changes", "what's new"]));
         entries.Add(new(UpdatesId, AboutTab, "Check for updates once a day", ["update", "release", "download", "newer", "network", "internet"]));
         entries.Add(new(FilesId, AboutTab, "coursee's files", ["path", "location", "data", "json", "explorer", "program", "show"]));
 
@@ -92,6 +90,9 @@ public sealed class SettingsCatalog
 
     /// <summary>The id of the checkbox that switches a source on or off.</summary>
     public static string SourceId(string sourceName) => SourceIdPrefix + sourceName;
+
+    /// <summary>The id of the checkbox that switches a group of sources.</summary>
+    public static string GroupId(string groupName) => GroupIdPrefix + groupName;
 
     /// <summary>
     /// The entries matching every word of <paramref name="query"/>, in their usual order. A word

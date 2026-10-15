@@ -163,6 +163,8 @@ public class SettingsCatalogTests
     [InlineData("json", SettingsCatalog.FilesId)]
     [InlineData("update", SettingsCatalog.UpdatesId)]
     [InlineData("download", SettingsCatalog.UpdatesId)]
+    [InlineData("changelog", SettingsCatalog.AboutId)]
+    [InlineData("release notes", SettingsCatalog.AboutId)]
     public void Find_FindsTheAboutTab(string query, string id)
     {
         Assert.Equal(id, Assert.Single(Catalog().Find(query)).Id);
@@ -177,12 +179,15 @@ public class SettingsCatalogTests
     }
 
     [Fact]
-    public void TheQuickAccessGroup_HasAnEntry_OnlyWhenListed()
+    public void AGroup_HasAnEntry_OnlyWhenListed()
     {
-        var withGroup = new SettingsCatalog([], hasQuickAccess: true);
+        var withGroups = new SettingsCatalog([], [SourceGroups.QuickAccess, SourceGroups.Games]);
+        var quickAccess = SettingsCatalog.GroupId("Quick access");
 
-        Assert.Equal(SettingsCatalog.QuickAccessId, Assert.Single(withGroup.Find("quick access")).Id);
-        Assert.Contains(withGroup.Find("pinned"), entry => entry.Id == SettingsCatalog.QuickAccessId);
+        Assert.Equal(quickAccess, Assert.Single(withGroups.Find("quick access")).Id);
+        Assert.Contains(withGroups.Find("pinned"), entry => entry.Id == quickAccess);
+        Assert.Equal(SettingsCatalog.GroupId("Games"), Assert.Single(withGroups.Find("games")).Id);
+        Assert.Equal(SettingsCatalog.SourcesTab, withGroups.All.Single(entry => entry.Id == quickAccess).Tab);
         Assert.Empty(Catalog().Find("quick access"));
     }
 
