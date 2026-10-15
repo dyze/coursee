@@ -70,6 +70,7 @@ Only those listed in `docs/ARCHITECTURE.md#stack`. Ask before adding one.
 - Commit and push only when asked.
 - Create branches only when asked. Otherwise work on `main`.
 - Small commits, [Conventional Commits](https://www.conventionalcommits.org/en) with an imperative subject (`feat: add Firefox bookmarks source`).
+- No AI attribution in commit messages or PR descriptions (no `Co-Authored-By: Claude …`, no "Generated with Claude Code").
 
 ## Definition of done
 Code is written, tests cover the new `Core` behavior, docs are updated, and the owner has run `build.cmd` successfully.
