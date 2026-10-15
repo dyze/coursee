@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.8] - 2026-10-15
+
 ### Added
 - **Portable zip.** Each release also has `coursee-portable-<version>.zip`: the self-contained coursee.exe and a `portable.txt` marker. While the marker is next to the exe, coursee keeps its data (settings, entries, logs) in a `data` folder beside it instead of `%LOCALAPPDATA%\coursee`, so it runs from a USB stick. The update check links to the release page, which has both the installer and the zip.
 - **Changelog.** This file replaces the released versions' sections of the roadmap. The installer and the zip include it; the last page of setup offers to open it, and *Show changelog* in Settings > About opens it in a window of its own.
@@ -140,7 +142,8 @@ Getting ready for other users.
 - **Source: Windows Run history.** The commands previously typed in Win+R, most recent first, are searchable, to ease the move away from Win+R. Switchable in **Sources**.
 - **Logging**, for debugging and feedback: start/stop, changes in each source (items added / removed at each refresh), every action the user triggers, and errors. Written to a size-limited local file and shown live in a **log window** (Settings, section **Logging**) with level and text filters, copy and clear. Info by default; a setting turns on detailed (Debug) logging. Never logged: keystrokes while searching, secrets.
 
-[Unreleased]: https://github.com/dyze/coursee/compare/0.7...HEAD
+[Unreleased]: https://github.com/dyze/coursee/compare/0.8...HEAD
+[0.8]: https://github.com/dyze/coursee/compare/0.7...0.8
 [0.7]: https://github.com/dyze/coursee/compare/0.6...0.7
 [0.6]: https://github.com/dyze/coursee/compare/0.5...0.6
 [0.5]: https://github.com/dyze/coursee/releases/tag/0.5
