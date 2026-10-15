@@ -217,10 +217,13 @@ public partial class MainWindow : Window
             do
             {
                 _refreshAgain = false;
+                var watch = System.Diagnostics.Stopwatch.StartNew();
                 await Task.Run(() => _sources.SyncQuickAccess());
+                _log.Debug(SourceCatalog.QuickAccessCategory, $"Read in {watch.ElapsedMilliseconds} ms");
                 var enabled = _sources.All.Where(s => _settings.IsSourceEnabled(s.Name)).ToList();
                 var results = await Task.Run(() => SourceLoader.Load(enabled));
                 ApplyResults(results);
+                _log.Debug("App", $"Sources refreshed in {watch.ElapsedMilliseconds} ms");
             }
             while (_refreshAgain);
         }
@@ -246,6 +249,7 @@ public partial class MainWindow : Window
                 continue;
             }
 
+            _log.Debug(result.SourceName, $"Read in {result.Duration.TotalMilliseconds:0} ms");
             if (result.Error is not null)
             {
                 _log.Error(result.SourceName, "Source failed", result.Error);

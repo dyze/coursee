@@ -1,9 +1,10 @@
+using System.Diagnostics;
 using Coursee.Core.Resources;
 
 namespace Coursee.Core.Sources;
 
-/// <summary>What one source returned during a refresh, or why it failed.</summary>
-public sealed record SourceResult(string SourceName, IReadOnlyList<Resource> Resources, Exception? Error = null);
+/// <summary>What one source returned during a refresh, or why it failed, and how long it took.</summary>
+public sealed record SourceResult(string SourceName, IReadOnlyList<Resource> Resources, Exception? Error = null, TimeSpan Duration = default);
 
 /// <summary>
 /// Reads every source once. Meant to run on a background thread, so the launcher window
@@ -18,13 +19,15 @@ public static class SourceLoader
         var results = new List<SourceResult>();
         foreach (var source in sources)
         {
+            var watch = Stopwatch.StartNew();
             try
             {
-                results.Add(new SourceResult(source.Name, source.GetResources()));
+                var resources = source.GetResources();
+                results.Add(new SourceResult(source.Name, resources, Duration: watch.Elapsed));
             }
             catch (Exception ex)
             {
-                results.Add(new SourceResult(source.Name, [], ex));
+                results.Add(new SourceResult(source.Name, [], ex, watch.Elapsed));
             }
         }
 

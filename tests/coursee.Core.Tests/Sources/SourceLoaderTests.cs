@@ -28,6 +28,23 @@ public class SourceLoaderTests
         public IReadOnlyList<Resource> GetResources() => throw new InvalidOperationException("boom");
     }
 
+    private sealed class SlowSource(string name) : IResourceSource
+    {
+        public string Name => name;
+
+        public string DisplayName => name;
+
+        public bool CanBeDisabled => true;
+
+        public string Icon => string.Empty;
+
+        public IReadOnlyList<Resource> GetResources()
+        {
+            Thread.Sleep(25);
+            return [];
+        }
+    }
+
     private static Resource R(string name, string source) => new(name, @"C:\" + name, ResourceKind.Folder, source);
 
     [Fact]
@@ -38,6 +55,15 @@ public class SourceLoaderTests
         Assert.Equal(new[] { "A", "B" }, results.Select(r => r.SourceName));
         Assert.Equal("a", Assert.Single(results[0].Resources).Name);
         Assert.All(results, r => Assert.Null(r.Error));
+    }
+
+    [Fact]
+    public void Load_TimesEachSource_FailingOnesToo()
+    {
+        var results = SourceLoader.Load([new SlowSource("Slow"), new FailingSource("Bad")]);
+
+        Assert.True(results[0].Duration >= TimeSpan.FromMilliseconds(20));
+        Assert.True(results[1].Duration >= TimeSpan.Zero);
     }
 
     [Fact]
