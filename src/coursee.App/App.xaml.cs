@@ -41,9 +41,9 @@ public partial class App : Application
             return;
         }
 
-        var files = new AppFiles(
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "coursee"),
-            AppContext.BaseDirectory);
+        var files = AppFiles.For(
+            AppContext.BaseDirectory,
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
         var settings = new SettingsStore(files.Settings);
 
         // Before any window or the tray menu is created.
@@ -52,6 +52,7 @@ public partial class App : Application
         _logHub = new LogHub(files.Logs, settings.DebugLogging);
         var log = _logHub.Filter;
         log.Info("App", $"coursee {AppVersion.Of(typeof(App).Assembly)} started"
+            + (files.IsPortable ? " (portable)" : string.Empty)
             + (settings.DebugLogging ? " (debug logging on)" : string.Empty));
         log.Debug("App", $"Theme: {settings.Theme}");
 

@@ -9,15 +9,35 @@ public sealed record AppFile(string Label, string Path);
 /// </summary>
 public sealed class AppFiles
 {
+    /// <summary>Next to coursee.exe, it makes a portable copy: the data is kept beside the program.</summary>
+    public const string PortableMarker = "portable.txt";
+
     /// <param name="dataDirectory">The user data folder (<c>%LOCALAPPDATA%\coursee</c>).</param>
     /// <param name="programDirectory">The folder of coursee.exe.</param>
-    public AppFiles(string dataDirectory, string programDirectory)
+    /// <param name="isPortable">True when the data is kept beside the program.</param>
+    public AppFiles(string dataDirectory, string programDirectory, bool isPortable = false)
     {
         DataDirectory = dataDirectory;
         ProgramDirectory = programDirectory;
+        IsPortable = isPortable;
+    }
+
+    /// <summary>
+    /// The files of the copy in <paramref name="programDirectory"/>: with the
+    /// <see cref="PortableMarker"/> beside it, the data goes to its <c>data</c> folder (a USB stick,
+    /// say), else to <c>coursee</c> in <paramref name="localAppData"/>.
+    /// </summary>
+    public static AppFiles For(string programDirectory, string localAppData, Func<string, bool>? fileExists = null)
+    {
+        fileExists ??= File.Exists;
+        return fileExists(Path.Combine(programDirectory, PortableMarker))
+            ? new AppFiles(Path.Combine(programDirectory, "data"), programDirectory, isPortable: true)
+            : new AppFiles(Path.Combine(localAppData, "coursee"), programDirectory);
     }
 
     public string DataDirectory { get; }
+
+    public bool IsPortable { get; }
 
     public string ProgramDirectory { get; }
 

@@ -21,6 +21,42 @@ public class AppFilesTests
     }
 
     [Fact]
+    public void AnInstalledCopy_KeepsItsDataInLocalAppData()
+    {
+        var localAppData = Path.Combine(Path.GetTempPath(), "local");
+
+        var files = AppFiles.For(Program, localAppData, _ => false);
+
+        Assert.Equal(Path.Combine(localAppData, "coursee"), files.DataDirectory);
+        Assert.Equal(Program, files.ProgramDirectory);
+        Assert.False(files.IsPortable);
+    }
+
+    [Fact]
+    public void WithTheMarker_TheDataIsKeptBesideTheProgram()
+    {
+        var asked = new List<string>();
+
+        var files = AppFiles.For(Program, Data, path => { asked.Add(path); return true; });
+
+        Assert.Equal(Path.Combine(Program, "portable.txt"), Assert.Single(asked));
+        Assert.Equal(Path.Combine(Program, "data"), files.DataDirectory);
+        Assert.True(files.IsPortable);
+    }
+
+    [Fact]
+    public void ByDefault_TheMarkerIsLookedForOnDisk()
+    {
+        Assert.False(AppFiles.For(Program, Data).IsPortable);
+    }
+
+    [Fact]
+    public void TheChangelog_IsNextToTheProgram()
+    {
+        Assert.Equal(Path.Combine(Program, "CHANGELOG.md"), new AppFiles(Data, Program).Changelog);
+    }
+
+    [Fact]
     public void All_ListsEveryFileOnce_ThenTheProgram()
     {
         var files = new AppFiles(Data, Program);
