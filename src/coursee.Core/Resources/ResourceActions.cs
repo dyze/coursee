@@ -66,6 +66,18 @@ public static class ResourceActions
             : null;
 
     /// <summary>
+    /// Enter on a game: what to start (its launcher's link, or its program), the arguments, and,
+    /// for a program, its folder as the working folder (games load their files from there).
+    /// </summary>
+    public static (string FileName, string Arguments, string? WorkingDirectory) GameStart(Resource game)
+    {
+        var (fileName, arguments) = CommandLine.Split(game.Target);
+        var slash = fileName.LastIndexOfAny(['\\', '/']);
+        var isLink = fileName.Contains("://", StringComparison.Ordinal);
+        return (fileName, arguments, slash > 0 && !isLink ? fileName[..slash] : null);
+    }
+
+    /// <summary>
     /// The first line under the search box: what Enter does, with Ctrl and Shift when they apply.
     /// The other keys are on the second line (<see cref="KeysHint"/>).
     /// </summary>

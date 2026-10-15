@@ -15,6 +15,8 @@ public sealed class ActionGlyphConverter : IValueConverter
         ResourceAction.OpenInBrowser => "\uE8A7", // OpenInNewWindow
         ResourceAction.RunCommand => "\uE756",    // CommandPrompt
         ResourceAction.OpenSetting => "\uE713",   // Setting
+        ResourceAction.OpenApp => "\uE71D",       // AllApps
+        ResourceAction.LaunchGame => "\uE768",    // Play
         _ => "\uE8CE",                            // MapDrive
     };
 

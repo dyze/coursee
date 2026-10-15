@@ -36,15 +36,20 @@ public static class SourceLoader
     /// as an earlier one (for example a program on both the Desktop and the Start Menu) is
     /// listed once: the first source wins. Items with the same target but different names stay,
     /// since they are usually different shortcuts (two browser profiles, say).
+    /// An app or a game is also left out when an earlier item has its name: its target (an app ID,
+    /// a launcher link) never equals the one of the shortcut that the Start Menu has for it.
     /// </summary>
     public static IReadOnlyList<Resource> Merge(IEnumerable<IReadOnlyList<Resource>> lists)
     {
         var seen = new HashSet<(string, string)>(NameTargetComparer.Instance);
+        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var merged = new List<Resource>();
         foreach (var resource in lists.SelectMany(list => list))
         {
-            if (seen.Add((resource.Name, resource.Target)))
+            var listedByName = resource.Kind is ResourceKind.App or ResourceKind.Game && names.Contains(resource.Name);
+            if (seen.Add((resource.Name, resource.Target)) && !listedByName)
             {
+                names.Add(resource.Name);
                 merged.Add(resource);
             }
         }

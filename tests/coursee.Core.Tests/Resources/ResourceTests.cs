@@ -11,6 +11,8 @@ public class ResourceTests
     [InlineData(ResourceKind.Command, "Run command")]
     [InlineData(ResourceKind.NetworkPath, "Open")]
     [InlineData(ResourceKind.Setting, "Open setting")]
+    [InlineData(ResourceKind.App, "Open app")]
+    [InlineData(ResourceKind.Game, "Launch game")]
     public void ActionLabel_DescribesWhatEnterDoes(ResourceKind kind, string expected)
     {
         var resource = new Resource("x", "y", kind, "test");
@@ -44,6 +46,8 @@ public class ResourceTests
     [InlineData(ResourceKind.Command, null, ResourceAction.RunCommand)]
     [InlineData(ResourceKind.NetworkPath, null, ResourceAction.Open)]
     [InlineData(ResourceKind.Setting, null, ResourceAction.OpenSetting)]
+    [InlineData(ResourceKind.App, null, ResourceAction.OpenApp)]
+    [InlineData(ResourceKind.Game, null, ResourceAction.LaunchGame)]
     [InlineData(ResourceKind.File, "Firefox", ResourceAction.OpenFile)]
     public void Action_MatchesTheLabel(ResourceKind kind, string? browser, ResourceAction expected)
     {
@@ -96,6 +100,8 @@ public class ResourceTests
         Assert.Equal(3, (int)ResourceKind.Command);
         Assert.Equal(4, (int)ResourceKind.NetworkPath);
         Assert.Equal(5, (int)ResourceKind.Setting);
+        Assert.Equal(6, (int)ResourceKind.App);
+        Assert.Equal(7, (int)ResourceKind.Game);
     }
 
     [Fact]

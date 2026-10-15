@@ -71,6 +71,36 @@ public class SourceLoaderTests
         Assert.Equal(new[] { work, home }, SourceLoader.Merge([[work, home]]));
     }
 
+    [Theory]
+    [InlineData(ResourceKind.App, @"shell:AppsFolder\1Password")]
+    [InlineData(ResourceKind.Game, "steam://rungameid/620")]
+    public void Merge_AnAppOrGameWithTheNameOfAnEarlierItem_IsListedOnce(ResourceKind kind, string target)
+    {
+        var startMenu = new Resource("Portal 2", @"C:\Games\portal2.exe", ResourceKind.File, "Start Menu", @"C:\Start\Portal 2.lnk");
+        var app = new Resource("portal 2", target, kind, "Packaged apps");
+
+        Assert.Equal(startMenu, Assert.Single(SourceLoader.Merge([[startMenu], [app]])));
+    }
+
+    [Fact]
+    public void Merge_AnAppOrGameWithANewName_IsListed()
+    {
+        var shortcut = new Resource("Notes", @"C:\notes.txt", ResourceKind.File, "Desktop");
+        var app = new Resource("Calculator", @"shell:AppsFolder\Calculator", ResourceKind.App, "Packaged apps");
+        var game = new Resource("Portal 2", "steam://rungameid/620", ResourceKind.Game, "Steam");
+
+        Assert.Equal(new[] { shortcut, app, game }, SourceLoader.Merge([[shortcut], [app], [game]]));
+    }
+
+    [Fact]
+    public void Merge_OtherKinds_StayWhenOnlyTheNameIsTheSame()
+    {
+        var work = new Resource("Docs", @"C:\work\docs", ResourceKind.Folder, "Desktop");
+        var bookmark = new Resource("Docs", "https://docs.example.com", ResourceKind.Url, "Firefox");
+
+        Assert.Equal(new[] { work, bookmark }, SourceLoader.Merge([[work], [bookmark]]));
+    }
+
     [Fact]
     public void Merge_KeepsTheOrder()
     {

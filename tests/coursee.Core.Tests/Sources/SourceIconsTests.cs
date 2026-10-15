@@ -90,6 +90,10 @@ public class SourceIconsTests
             new EdgeFavoritesSource(null),
             new RunHistorySource(new NoRunHistory()),
             new WindowsSettingsSource(),
+            new PackagedAppsSource(new NoApps()),
+            new SteamSource(null),
+            new EpicSource(null),
+            new GogSource(new NoGogGames()),
         ];
 
         Assert.All(sources, source => Assert.False(string.IsNullOrEmpty(source.Icon)));
@@ -104,5 +108,15 @@ public class SourceIconsTests
     private sealed class NoRunHistory : IRunHistoryReader
     {
         public IReadOnlyDictionary<string, string> Read() => new Dictionary<string, string>();
+    }
+
+    private sealed class NoApps : IAppsFolderReader
+    {
+        public IReadOnlyList<AppsFolderItem> Items() => [];
+    }
+
+    private sealed class NoGogGames : IGogGamesReader
+    {
+        public IReadOnlyList<IReadOnlyDictionary<string, string>> Games() => [];
     }
 }

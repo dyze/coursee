@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Interop;
 using Coursee.Core;
 using Coursee.Core.Entries;
+using Coursee.Core.Games;
 using Coursee.Core.Logging;
 using Coursee.Core.Placement;
 using Coursee.Core.Platform;
@@ -117,6 +118,11 @@ public partial class App : Application
                 new EdgeFavoritesSource(edgeProfile, log),
                 new RunHistorySource(new RegistryRunHistoryReader(), log),
                 new WindowsSettingsSource(),
+                // After the Start Menu: an app or a game it already has is listed as its shortcut.
+                new PackagedAppsSource(new ShellAppsFolderReader()),
+                new SteamSource(RegistryGameLaunchers.SteamFolder(), log),
+                new EpicSource(EpicSource.ManifestsFolderIn(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)), log),
+                new GogSource(new RegistryGameLaunchers(), log),
             ],
             log);
 

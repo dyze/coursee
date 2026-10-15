@@ -18,6 +18,10 @@ public sealed class SourceIcons
     public const string Custom = "\uE710";         // Add: made with the + button
     public const string Folder = "\uE8B7";         // Folder: added in Settings > Sources
     public const string QuickAccess = "\uE80F";    // Home: pinned in Explorer's Quick access
+    public const string PackagedApps = "\uE719";   // Shop
+    public const string Steam = "\uE7FC";          // Game
+    public const string Epic = "\uE990";           // XboxOneConsole
+    public const string Gog = "\uE8F1";            // Library
 
     /// <summary>Text typed in the search box (Enter acts on it).</summary>
     public const string Typed = "\uE765";          // KeyboardClassic

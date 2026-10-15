@@ -60,9 +60,35 @@ public class ResourceActionsTests
     [InlineData(ResourceKind.NetworkPath, true)]
     [InlineData(ResourceKind.Url, false)]
     [InlineData(ResourceKind.Command, false)]
+    [InlineData(ResourceKind.App, false)]
+    [InlineData(ResourceKind.Game, false)]
     public void CanShowInFolder_ForFileSystemItemsOnly(ResourceKind kind, bool expected)
     {
         Assert.Equal(expected, ResourceActions.CanShowInFolder(R(kind, @"C:\x")));
+    }
+
+    [Theory]
+    [InlineData(ResourceKind.App, @"shell:AppsFolder\Microsoft.WindowsCalculator_8wekyb3d8bbwe!App")]
+    [InlineData(ResourceKind.Game, @"""C:\GOG Games\Game\game.exe"" -fullscreen")]
+    public void AppsAndGames_DoNotRunAsAdministrator(ResourceKind kind, string target)
+    {
+        Assert.False(ResourceActions.CanRunAsAdministrator(R(kind, target)));
+    }
+
+    [Fact]
+    public void GameStart_ALauncherLink_IsOpenedAsItIs()
+    {
+        Assert.Equal(
+            ("steam://rungameid/620", string.Empty, (string?)null),
+            ResourceActions.GameStart(R(ResourceKind.Game, "steam://rungameid/620", "Steam")));
+    }
+
+    [Fact]
+    public void GameStart_AProgram_RunsInItsFolder_WithItsArguments()
+    {
+        Assert.Equal(
+            (@"C:\GOG Games\Game\game.exe", "-fullscreen", (string?)@"C:\GOG Games\Game"),
+            ResourceActions.GameStart(R(ResourceKind.Game, @"""C:\GOG Games\Game\game.exe"" -fullscreen", "GOG")));
     }
 
     [Fact]

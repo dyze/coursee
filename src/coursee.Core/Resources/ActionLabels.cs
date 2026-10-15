@@ -14,6 +14,8 @@ public enum ResourceAction
     /// <summary>A network path: the shell opens it, file or folder.</summary>
     Open,
     OpenSetting,
+    OpenApp,
+    LaunchGame,
 }
 
 /// <summary>The wording and the action shown to the user for what Enter will do with a resource.</summary>
@@ -29,6 +31,8 @@ public static class ActionLabels
         ResourceKind.Command => "Run command",
         ResourceKind.NetworkPath => "Open",
         ResourceKind.Setting => "Open setting",
+        ResourceKind.App => "Open app",
+        ResourceKind.Game => "Launch game",
         _ => "Open",
     };
 
@@ -41,6 +45,8 @@ public static class ActionLabels
         ResourceKind.Url => ResourceAction.OpenUrl,
         ResourceKind.Command => ResourceAction.RunCommand,
         ResourceKind.Setting => ResourceAction.OpenSetting,
+        ResourceKind.App => ResourceAction.OpenApp,
+        ResourceKind.Game => ResourceAction.LaunchGame,
         _ => ResourceAction.Open,
     };
 }

@@ -23,9 +23,18 @@ public enum ResourceKind
     /// with its arguments), opened through the shell like a command.
     /// </summary>
     Setting,
+
+    /// <summary>A packaged (Store / MSIX) app, opened by its app ID (<c>shell:AppsFolder\...</c>).</summary>
+    App,
+
+    /// <summary>
+    /// An installed game, started through its launcher's link (<c>steam://...</c>) or, for a game
+    /// without one, its program with its arguments.
+    /// </summary>
+    Game,
 }
 
-/// <summary>Something the launcher can open: a file, a folder, a URL, a command or a Windows setting.</summary>
+/// <summary>Something the launcher can open: a file, a folder, a URL, a command, a Windows setting, an app or a game.</summary>
 /// <param name="Name">Display name, matched first when searching.</param>
 /// <param name="Target">Path, URL or command line shown and searched (for a shortcut, what it points to).</param>
 /// <param name="Kind">What the target is.</param>

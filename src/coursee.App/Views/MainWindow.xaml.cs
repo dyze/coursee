@@ -377,6 +377,11 @@ public partial class MainWindow : Window
             var (fileName, arguments) = CommandLine.Split(resource.Target);
             start = new ProcessStartInfo(fileName, arguments);
         }
+        else if (resource.Kind == ResourceKind.Game)
+        {
+            var (fileName, arguments, folder) = ResourceActions.GameStart(resource);
+            start = new ProcessStartInfo(fileName, arguments) { WorkingDirectory = folder ?? string.Empty };
+        }
         else
         {
             // For a shortcut this is the .lnk, so its arguments and working folder are kept.
