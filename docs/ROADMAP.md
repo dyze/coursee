@@ -109,3 +109,4 @@ Theme: getting ready for other users.
 2. **Sign installer.** To make it more secure, use a certificate to sign all installers coming from the developer.
 3. **End user manual.** A html manual is shipped with installer and available thru a "?" icon from App.
 4. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
+5. **Outlook contacts source.** User can summon the display of email composing window with selected contact fed as recipient.
