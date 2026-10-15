@@ -5,22 +5,27 @@ namespace Coursee.UI.Tray;
 
 /// <summary>
 /// The icon in the Windows notification area. A click shows the launcher; the menu offers
-/// Show, Settings, Log window and Quit. Uses WinForms' NotifyIcon, since WPF has none.
+/// Show, Settings, Log window (ticked while it is open: a click shows or hides it) and Quit.
+/// Uses WinForms' NotifyIcon, since WPF has none.
 /// </summary>
 public sealed class TrayIcon : IDisposable
 {
     private readonly Forms.NotifyIcon _icon;
     private readonly Forms.ToolStripMenuItem _showItem;
+    private readonly Forms.ToolStripMenuItem _logItem;
     private readonly Func<string> _hotkeyText;
 
     /// <param name="version">Shown in the tooltip.</param>
     /// <param name="hotkeyText">The current hotkey, read each time the menu opens (it can change in Settings).</param>
+    /// <param name="isLogOpen">Whether the log window is open, read each time the menu opens.</param>
+    /// <param name="toggleLog">Shows the log window, or closes it when it is open.</param>
     public TrayIcon(
         string version,
         Func<string> hotkeyText,
         Action show,
         Action showSettings,
-        Action showLog,
+        Func<bool> isLogOpen,
+        Action toggleLog,
         Action quit)
     {
         _hotkeyText = hotkeyText;
@@ -31,10 +36,15 @@ public sealed class TrayIcon : IDisposable
         var menu = new Forms.ContextMenuStrip();
         menu.Items.Add(_showItem);
         menu.Items.Add(new Forms.ToolStripMenuItem("Settings", null, (_, _) => showSettings()));
-        menu.Items.Add(new Forms.ToolStripMenuItem("Log window", null, (_, _) => showLog()));
+        _logItem = new Forms.ToolStripMenuItem("Log window", null, (_, _) => toggleLog());
+        menu.Items.Add(_logItem);
         menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add(new Forms.ToolStripMenuItem("Quit", null, (_, _) => quit()));
-        menu.Opening += (_, _) => _showItem.ShortcutKeyDisplayString = _hotkeyText();
+        menu.Opening += (_, _) =>
+        {
+            _showItem.ShortcutKeyDisplayString = _hotkeyText();
+            _logItem.Checked = isLogOpen();
+        };
 
         _icon = new Forms.NotifyIcon
         {

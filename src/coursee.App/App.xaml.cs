@@ -190,7 +190,8 @@ public partial class App : Application
             show: () => window.ShowFromOutside(),
             // After the menu has closed: Settings is a dialog, it waits until closed.
             showSettings: () => Dispatcher.BeginInvoke(() => window.ShowSettings()),
-            showLog: () => OpenLogWindow(),
+            isLogOpen: () => _logWindow is not null,
+            toggleLog: ToggleLogWindow,
             quit: () =>
             {
                 log.Info("Action", "Quit from the tray");
@@ -239,6 +240,20 @@ public partial class App : Application
         {
             log.Warn("App", $"Cannot update the auto start entry: {ex.GetType().Name}: {ex.Message}");
         }
+    }
+
+    /// <summary>The tray's Log window item: closes the log window when it is open, else opens it.</summary>
+    private void ToggleLogWindow()
+    {
+        if (_logWindow is { } open)
+        {
+            _logHub?.Filter.Info("Action", "Log window closed from the tray");
+            open.Close();
+            return;
+        }
+
+        _logHub?.Filter.Info("Action", "Log window opened from the tray");
+        OpenLogWindow();
     }
 
     /// <summary>Opens the log window, or brings it to the front when it is already open.</summary>
