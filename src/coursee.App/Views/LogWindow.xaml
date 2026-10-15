@@ -38,11 +38,20 @@
               SelectionMode="Extended"
               FontFamily="Consolas"
               FontSize="12">
+      <!-- Compact rows: the theme's are sized for touch. Based on the GridView row style, which lays out the columns. -->
+      <ListView.ItemContainerStyle>
+        <Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Static GridView.GridViewItemContainerStyleKey}}">
+          <Setter Property="MinHeight" Value="0" />
+          <Setter Property="Height" Value="20" />
+          <Setter Property="Padding" Value="0" />
+          <Setter Property="Margin" Value="0" />
+        </Style>
+      </ListView.ItemContainerStyle>
       <ListView.View>
         <GridView>
           <GridViewColumn Header="Time" Width="100" DisplayMemberBinding="{Binding TimeText}" />
-          <GridViewColumn Header="Level" Width="50" DisplayMemberBinding="{Binding LevelText}" />
-          <GridViewColumn Header="Category" Width="110" DisplayMemberBinding="{Binding Category}" />
+          <GridViewColumn Header="Level" Width="64" DisplayMemberBinding="{Binding LevelText}" />
+          <GridViewColumn Header="Category" Width="220" DisplayMemberBinding="{Binding Category}" />
           <GridViewColumn Header="Message" Width="600" DisplayMemberBinding="{Binding Message}" />
         </GridView>
       </ListView.View>
