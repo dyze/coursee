@@ -73,36 +73,39 @@ Scope of each version. The goal, principles and non-goals are in [GOAL.md](GOAL.
 8. **Log window from Settings.** Settings > Logging > *Open log window* opens the log window in front, and Settings and the launcher stay open (until 0.4 both closed). The log window stays open after Settings is closed.
 
 ## 0.6
-1. **Test coverage.** Done: the build fails below 95 % line coverage of `Core` (`build.cmd`, rule in `CLAUDE.md`), and writes an HTML report.
+1. **Test coverage.** The build fails below 95 % line coverage of `Core` (`build.cmd`, rule in `CLAUDE.md`), and writes an HTML report.
 2. **Hide an entry.** Ctrl+H, or the hide icon on the row, hides the selected entry from results and recents, to remove noise such as duplicate shortcuts or old bookmarks. A hidden entry is that exact row: its source, name and target, so one of two shortcuts to the same program can be hidden. An alias of a hidden entry finds nothing. Typed text cannot be hidden. Hidden entries are restored in the **Entries** tab.
 3. **Custom entries.** Your own name and target (a URL, folder, file or command), as a new **Custom** source, switchable in **Sources**. What the target is (URL, folder...) is decided from it, like typed text.
    * While the search box has text, a **+** button at the right of it, or Ctrl+N, creates a custom entry with the typed text as its target: a box on the typed text's row asks for its name (the typed text by default), Enter saves, Esc cancels. When something matched, that row is added first.
    * Custom entries are edited (name, target) and deleted in the **Entries** tab. A new target keeps the entry's pin, alias and recent history. Deleting one leaves its pin and alias, like a removed shortcut.
 4. **Entries tab.** A new Settings tab listing hidden entries (to restore), custom entries (to edit or delete), aliases (to edit or remove) and pins (to unpin).
 5. **Keys tab.** A new Settings tab lists the supported keys, read only. The hotkey moves there from General, and stays changeable.
-6. **Commands like Win+R.** Done (fix): a typed or Run history command starts in the user's folder, and a program whose name has spaces runs without quotes (`kill rds.cmd`): the shortest part up to a space that is a file in that folder or in PATH (with PATHEXT) is the program.
-7. **Desktop files and folders.** Done: the Desktop source also lists the files and folders placed directly on the Desktop (top level, not hidden or system), not only its shortcuts. They open as they are. In Settings it is named *Desktop*, and can be switched off like the other sources (until now it was always on).
-8. **Alias icon like the pin.** Done: an entry with an alias always shows its alias icon, filled, as a pinned entry shows its pin.
+6. **Commands like Win+R.** A typed or Run history command starts in the user's folder, and a program whose name has spaces runs without quotes (`kill rds.cmd`): the shortest part up to a space that is a file in that folder or in PATH (with PATHEXT) is the program.
+7. **Desktop files and folders.** The Desktop source also lists the files and folders placed directly on the Desktop (top level, not hidden or system), not only its shortcuts. They open as they are. In Settings it is named *Desktop*, and can be switched off like the other sources (until now it was always on).
+8. **Alias icon like the pin.** An entry with an alias always shows its alias icon, filled, as a pinned entry shows its pin.
 
 ## 0.7
 Theme: getting ready for other users.
 
-1. **About tab.** Done. A new Settings tab: version, links to the GitHub repository and its issues page.
-2. **Update check.** Done. Once a day, coursee asks GitHub for the latest release. If it is newer, the Settings button shows a mark and the About tab says so, with a link to download the installer. Nothing is downloaded or installed by coursee. A setting turns the check off. 
-3. **Paths.** Done. The About tab lists coursee's files (settings, entries, logs), each with a *Show in folder* button.
-4. **Safety notice.** Done. The first time the launcher shows, a notice says that typed text and commands run with the user's rights and can harm the system, and that coursee comes without warranty. Acknowledged once (`SafetyNoticeSeen`).
-5. **Turn off typed commands.** Done. A setting (Settings > General, and offered by the notice) stops typed text from being run as a command (`del c:\file`). Typed URLs, folders and files still open. Run history entries are not affected.
-6. **Folder sources.** Done (see [ARCHITECTURE.md](ARCHITECTURE.md#folder-sources)). Network folders are never listed; Quick access needs Windows 11. One source per folder: its top-level files, folders and shortcuts are listed, like the Desktop source (subfolders not included). In **Sources**, *Add folder…* adds one, ✕ removes it, its checkbox switches it off. Desktop is the default folder and can be removed like any other.
+1. **About tab.** A new Settings tab: version, links to the GitHub repository and its issues page.
+2. **Update check.** Once a day, coursee asks GitHub for the latest release. If it is newer, the Settings button shows a mark and the About tab says so, with a link to download the installer. Nothing is downloaded or installed by coursee. A setting turns the check off. 
+3. **Paths.** The About tab lists coursee's files (settings, entries, logs), each with a *Show in folder* button.
+4. **Safety notice.** The first time the launcher shows, a notice says that typed text and commands run with the user's rights and can harm the system, and that coursee comes without warranty. Acknowledged once (`SafetyNoticeSeen`).
+5. **Turn off typed commands.** A setting (Settings > General, and offered by the notice) stops typed text from being run as a command (`del c:\file`). Typed URLs, folders and files still open. Run history entries are not affected.
+6. **Folder sources.** One source per folder: its top-level files, folders and shortcuts are listed, like the Desktop source (subfolders not included). In **Sources**, *Add folder…* adds one, ✕ removes it, its checkbox switches it off. Desktop is the default folder and can be removed like any other. Network folders are never listed; Quick access needs Windows 11. See [ARCHITECTURE.md](ARCHITECTURE.md#folder-sources).
    * **Quick access.** Each folder pinned in Explorer's *Quick access* (the standard ones and the user's own pins) is a folder source too, kept in sync with Explorer: pinning `D:\code` there makes its files searchable. These have a checkbox only (no ✕); they are removed by unpinning them in Explorer. An entry found in two folder sources (Desktop added and pinned) is listed once.
 
 ## 0.8 (to define)
-1. **Portable.**  Package binaries for portable usage.
-2. **Game launcher sources**. Installed games only; owned but not installed games are out of scope. coursee only reads local files and the registry: no sign-in, no API key. Signing in, when a game needs it, is left to the launcher.
+1. **Portable.**  Package binaries for portable usage. It will available thru github releases.
+2. **Source: Packaged apps.** Store / MSIX apps (1Password, Windows Terminal, Calculator...) have no `.lnk` in the Start Menu folders, so the Start Menu source misses them. This source lists the installed packaged apps, as Windows Start does, and opens them by their app ID (`shell:AppsFolder\<AppUserModelID>`). An app also found by the Start Menu source is listed once. Switchable in **Sources**, with its own icon.
+3. **Game launcher sources**. Installed games only; owned but not installed games are out of scope. coursee only reads local files and the registry: no sign-in, no API key. Signing in, when a game needs it, is left to the launcher.
 	- **One source per launcher**, each an `IResourceSource`, switchable in **Sources**, with its own icon. A launcher that is not installed gives no entries, without error.
 	- **Tolerant reading.** These formats are not documented and may change: a file that cannot be read is logged (Warning) and skipped; the other games and sources are not affected.
 	- **Icons.** The game's exe icon when it can be found, else the source icon.
-3. **Donate.** Add a link to donate to the developer.
-4. **Sign installer.** To make it more secure, use a certificate to sign all installers coming from the developer.
-5. **Release notes.** A release notes is maintained and committed. This file is provided inside installer and its opening is proposed at end of installer.
-6. **End user manual.** A html manual is shipped with installer and available thru a "?" icon from App.
-7. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
+4. **Release notes.** A release notes is maintained and committed. This file is provided inside installer and its opening is proposed at end of installer.
+
+## 0.9 (to define)
+1. **Donate.** Add a link to donate to the developer.
+2. **Sign installer.** To make it more secure, use a certificate to sign all installers coming from the developer.
+3. **End user manual.** A html manual is shipped with installer and available thru a "?" icon from App.
+4. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
