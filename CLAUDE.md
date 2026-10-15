@@ -2,7 +2,8 @@
 
 Rules for working on **coursee** together. Read first:
 - `docs/GOAL.md`: goal, principles, non-goals
-- `docs/ROADMAP.md`: scope of each version
+- `docs/ROADMAP.md`: scope of each planned version
+- `CHANGELOG.md`: what each version changed
 - `docs/ARCHITECTURE.md`: projects, stack, search, adding a source, logging
 
 ## Project in one line
@@ -40,7 +41,8 @@ Only those listed in `docs/ARCHITECTURE.md#stack`. Ask before adding one.
 - **Build honesty.** Claude's workspace has no .NET SDK, so it cannot build or run tests. Never claim the code builds; ask the owner to run `build.cmd` and report errors.
 - **Docs.** One home per fact:
   - user-facing behavior → `README.md`
-  - version scope → `docs/ROADMAP.md`
+  - version scope → `docs/ROADMAP.md` (planned features)
+  - changes → `CHANGELOG.md`, following [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): when a feature is implemented, it moves from ROADMAP to `[Unreleased]`, under Added, Changed, Deprecated, Removed, Fixed or Security; at release, `[Unreleased]` becomes `[<version>] - <date>`, most recent version first, with its compare link at the bottom
   - design and internals → `docs/ARCHITECTURE.md`
   - goal and principles → `docs/GOAL.md`
   Prefer diagrams and tables to long descriptions.

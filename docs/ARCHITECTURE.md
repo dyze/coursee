@@ -7,16 +7,18 @@ coursee.App   (WPF, Windows only)
 │  launcher, settings window, log window, tray icon
 │  adapters: WshShortcutResolver, RegistryRunHistoryReader, RegistryAutoStart,
 │            RegistryBrowserLocator, HotkeyService, SerilogFileLog, SingleInstance,
-│            NativeWindows + WindowPlacer (window positions), ShellQuickAccessReader, GitHubReleaseFeed
+│            NativeWindows + WindowPlacer (window positions), ShellFolder: ShellQuickAccessReader + ShellAppsFolderReader,
+│            RegistryGameLaunchers, GitHubReleaseFeed
 │
-│  implements ▼  IShortcutResolver · IRunHistoryReader · IQuickAccessReader · IReleaseFeed · IAutoStart · IHotkeyRegistrar · IBrowserLocator · ILog
+│  implements ▼  IShortcutResolver · IRunHistoryReader · IQuickAccessReader · IAppsFolderReader · IGogGamesReader · IReleaseFeed · IAutoStart · IHotkeyRegistrar · IBrowserLocator · ILog
 │
 coursee.Core  (no Windows dependency, fully unit-tested on any OS)
    SearchEngine · RecentStore · EntryStore · CustomEntryStore · CustomEntryEditor · SettingsStore · SettingsCatalog · KeyBindings
    SourceCatalog · SourceLoader · SourceMonitor · FallbackClassifier
    ResourceActions · PlacementRules · PlacementStore · UpdateChecker · UpdateStore
    sources (IResourceSource): CustomSource · ShortcutsSource (Desktop, folders, Start Menu) · FirefoxBookmarksSource · EdgeFavoritesSource · RunHistorySource
-                              · WindowsSettingsSource (fixed list, ResourceKind.Setting)
+                              · WindowsSettingsSource (fixed list, ResourceKind.Setting) · PackagedAppsSource (ResourceKind.App)
+                              · SteamSource · EpicSource · GogSource (ResourceKind.Game)
 ```
 
 - The sources live in `Core`. When one needs Windows (resolving `.lnk` files, reading the registry), it takes an interface defined in `Core`, and `App` supplies the implementation.
@@ -28,13 +30,14 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 
 | `coursee.Core` | Content |
 | --- | --- |
-| *(root)* | `AppVersion`; `AppFiles` (where every file of coursee is: the only place their names are written, listed in Settings > About); `ProjectLinks` (website, issues) |
+| *(root)* | `AppVersion`; `AppFiles` (where every file of coursee is: the only place their names are written, listed in Settings > About; `AppFiles.For` picks the data folder, see [Portable copy](#portable-copy)); `Changelog` (reads the text shown by Settings > About); `ProjectLinks` (website, issues) |
 | `Resources/` | `Resource` and what can be done with it: `ResourceActions`, `ActionLabels` (the wording, and the `ResourceAction` behind the row icon), `FallbackClassifier`, `CommandLine` (program and arguments), `ProgramFinder` (the program's file, in the user's folder or PATH, so `kill rds.cmd` needs no quotes), `Browsers` |
 | `Search/` | `SearchEngine`, `SearchBoosts` (what raises a result above its match), `TextFolding` (accents removed before matching), `ListNavigation` (moving the selection in the result list) |
 | `Recents/` | `RecentStore`, `Frecency` (recency plus frequency) |
 | `Entries/` | `EntryStore`: what the user set on entries (pins, aliases as `EntryAlias`, hidden entries as `HiddenEntry`); custom entries: `CustomEntry`, `CustomEntryStore`, `CustomEntryEditor`; `EntryFilter` (the filter of Settings > Entries) |
 | `Settings/` | `SettingsStore`, `SettingsCatalog` (the entries of the Settings window, their tabs, and the search that finds them), `KeyBindings` (the keys listed in Settings > Keys) |
 | `Sources/` | `IResourceSource`, `SourceCatalog` (the current list of sources, see [Folder sources](#folder-sources)), `FolderSources` (their naming rules), `IQuickAccessReader`, `SourceLoader`, `SourceMonitor`, `SourceIcons` (the icon of each source, found by name for a row), and each source with the interface it needs from `App` (`CustomSource` reads `CustomEntryStore`); `BookmarkUrls` and `ChromiumBookmarks` (Edge's file format, shared by Chrome) for the browser sources |
+| `Games/` | The game launcher sources, see [Games](#games): `SteamSource` and `VdfNode` (Valve's text format), `EpicSource`, `GogSource` and `IGogGamesReader` |
 | `Platform/` | The other interfaces `App` implements (`IAutoStart`, `IHotkeyRegistrar`, `IBrowserLocator`) and their rules (`AutoStartCommand`, `HotkeyGesture`) |
 | `Logging/` | `ILog`, `LogEntry`, `RingLog`, `CompositeLog`, `FilteredLog` |
 | `Placement/` | Window positions: `WindowPlacement`, `PlacementRules`, `PlacementStore` (see [Window positions](#window-positions)) |
@@ -43,9 +46,9 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `coursee.App` | Content |
 | --- | --- |
 | *(root)* | `App.xaml`: startup and wiring |
-| `Views/` | Windows: `MainWindow` (the launcher; its entry actions in `MainWindow.Entries.cs`), `SettingsWindow`, `LogWindow`; `ResultRow` (a row of the launcher: the resource, its pin and alias, and what its box is open for: `RowEdit`); `EntriesPanel` and `EntryRows` (Settings > Entries); `MessageDialog` (messages and yes / no questions in the app's theme, instead of the Windows `MessageBox`); `AppTheme`; `ActionGlyphConverter` (the Segoe Fluent glyph of each `ResourceAction`), `SourceIconConverter` (the icon of a row's source) |
+| `Views/` | Windows: `MainWindow` (the launcher; its entry actions in `MainWindow.Entries.cs`), `SettingsWindow` (its Sources tab in `SettingsWindow.Sources.cs`), `LogWindow`; `ResultRow` (a row of the launcher: the resource, its pin and alias, and what its box is open for: `RowEdit`); `EntriesPanel` and `EntryRows` (Settings > Entries); `MessageDialog` (messages and yes / no questions in the app's theme, instead of the Windows `MessageBox`); `ChangelogWindow` (Settings > About > *Show changelog*); `AppTheme`; `ActionGlyphConverter` (the Segoe Fluent glyph of each `ResourceAction`), `SourceIconConverter` (the icon of a row's source) |
 | `Tray/` | `TrayIcon` |
-| `Platform/` | Implementations of the `Core` interfaces, `SingleInstance`, and window placement (`NativeWindows`, `WindowPlacer`) |
+| `Platform/` | Implementations of the `Core` interfaces (`ShellFolder` lists a Shell folder on an STA thread, for Quick access and the Apps folder), `SingleInstance`, and window placement (`NativeWindows`, `WindowPlacer`) |
 | `Logging/` | `LogHub`, `SerilogFileLog` |
 | `Assets/` | `coursee.ico` |
 
@@ -61,7 +64,18 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 
 The update check uses .NET's own `HttpClient` (`GitHubReleaseFeed` in App): coursee's only network access, see [GOAL.md](GOAL.md#principles).
 
-Shared build settings and the version are in `Directory.Build.props`; output goes to `artifacts/`. Builds are deterministic and `DeterministicSourcePaths` replaces the local repo path with `/_/` in DLLs, PDBs and their Source Link data, so no local path (or user name) ships. The installer is built with [Inno Setup](https://jrsoftware.org/isinfo.php) (`build/installer.cmd`, `build/installer/coursee.iss`), a tool installed on the PC, not a package.
+Shared build settings and the version are in `Directory.Build.props`; output goes to `artifacts/`. Builds are deterministic and `DeterministicSourcePaths` replaces the local repo path with `/_/` in DLLs, their embedded debug info (`DebugType=embedded`: no `.pdb` files) and Source Link data, so no local path (or user name) ships. The installer is built with [Inno Setup](https://jrsoftware.org/isinfo.php) (`build/installer.cmd`, `build/installer/coursee.iss`), a tool installed on the PC, not a package.
+
+Publishing is self-contained, so the PC needs no .NET runtime (installing one needs administrator rights, and the portable zip must run on any PC). `PublishSingleFile` packs the runtime and every managed DLL into `coursee.exe`; the native DLLs stay next to it, so nothing is unpacked at start. No trimming: WPF and WinForms do not support it. `SatelliteResourceLanguages=en` leaves out the translated framework messages. The setup and the zip get the same 8 files, about 150 MB:
+
+| File | Why |
+| --- | --- |
+| `coursee.exe` | The app and the .NET runtime |
+| `wpfgfx_cor3.dll`, `PresentationNative_cor3.dll`, `D3DCompiler_47_cor3.dll`, `PenImc_cor3.dll`, `vcruntime140_cor3.dll` | WPF's native code |
+| `e_sqlite3.dll` | SQLite, for Firefox bookmarks |
+| `CHANGELOG.md` | See [Changelog](#changelog) |
+
+On an upgrade, `[InstallDelete]` in `coursee.iss` first removes what older versions shipped (DLLs, `.pdb`, `.json`, `createdump.exe`, language folders), since the setup only overwrites files.
 
 ## Data flow
 
@@ -137,20 +151,50 @@ first (Custom) · last (Start Menu, Firefox, Edge, Run, Windows settings): fixed
 | Order | first · the user's folders (`Folders`, the Desktop by default) · Quick access folders · last. A folder is listed once, the first wins: the Desktop covers both Desktop folders. A pinned Desktop is the Desktop source (its name, icon and both folders), shown with its path and no remove button like the other Quick access folders |
 | A folder source | `ShortcutsSource.Folder`: top level only, shortcuts, files and folders, like the Desktop. It also lists the folder itself (the Desktop: the personal one), named as Explorer shows it when pinned: `FolderSources.EntryName` keeps both names when they differ (`Bureau (Desktop)`), so either finds it. Kept while listed, so shortcuts are not resolved again |
 | Name | `Folder:<path>` (`FolderSources`), the same for a user and a Quick access folder: recents, hidden entries and the on / off state follow a folder from one to the other. The Desktop keeps `Desktop`, written `"Desktop"` in `Folders` |
-| Add, remove | Settings > Sources. Quick access folders are indented under a *Quick access* checkbox that switches them all (`SourceCatalog.IsQuickAccess`, `SettingsStore.SetSourcesEnabled`; mixed when some are off). Choosing a Desktop folder adds the Desktop. Removing forgets the folder's off state; its pins and aliases stay. Quick access folders have no remove button: unpin them in Explorer |
+| Add, remove | Settings > Sources. Quick access folders are a group (see [Source groups](#source-groups)). The user's folders (the Desktop included, unless pinned) are the Folders group; *Add folder...* is on its row (alone when there is no folder). Choosing a Desktop folder adds the Desktop. Removing forgets the folder's off state; its pins and aliases stay. Quick access folders have no remove button: unpin them in Explorer |
 | Network | Never listed (`FolderSources.IsNetwork`: `\\server\share`, mapped drives): an offline one blocks for seconds. Refused on add, skipped from Quick access |
 | Quick access | Read at each launcher refresh, on a background thread. `ShellQuickAccessReader` runs the Shell COM object on its own STA thread (5 s timeout) and keeps folders whose `System.Home.IsPinned` is true, with their shown name (`PinnedFolder`) (Windows 11; frequent folders are left out). A failed read keeps the last folders read, and is logged (Warning) |
 | Icons | Folder `\uE8B7`, Quick access `\uE80F`. A recent item from a folder that is gone gets the folder icon |
 | Logs | Quick access changes at Info (category `Quick access`); a source that is off or gone is forgotten by `SourceMonitor.Keep`, and logged as loaded when it comes back |
 
-## Packaged apps (planned, 0.8)
-Not implemented yet. Scope: [ROADMAP.md](ROADMAP.md#08-to-define).
-
+## Packaged apps
 | Topic | Rule |
 | --- | --- |
-| Reading | `IPackagedAppReader` (Core), implemented in App by a Shell reader, like `ShellQuickAccessReader`: it lists `shell:AppsFolder` on its own STA thread (with a timeout) and keeps the items that have a `System.AppUserModel.PackageFamilyName` (the other items are desktop apps, already found by the Start Menu source). Each gives its shown name and `System.AppUserModel.ID` |
+| Reading | `ShellAppsFolderReader` (App, `IAppsFolderReader`) lists `shell:AppsFolder` through `ShellFolder` (STA thread, 10 s timeout): each item's name, app ID (its path there) and `System.AppUserModel.PackageFamilyName`. `PackagedAppsSource` (Core) keeps the items with a package (the others are desktop programs, found by the Start Menu source), once per app ID |
 | Why not `PackageManager` | WinRT would need a versioned target framework (`net10.0-windows10.0.19041.0`) and its projection DLLs (about 20 to 25 MB more in a self-contained build), and lists packages rather than what Start shows |
-| Target | `shell:AppsFolder\<AppUserModelID>` |
+| Target | `shell:AppsFolder\<AppUserModelID>`, `ResourceKind.App` ("Open app"), opened by the shell. No *Show in folder*, no *Run as administrator* |
+| Icon | `` (Shop) |
+
+## Games
+One source per launcher, in `Core/Games`, after the Start Menu in the `last` list. Their files are not documented: a file that cannot be read is logged (Warning) and skipped. A launcher that is not installed gives no entries.
+
+| Source | Reads | Target (`ResourceKind.Game`, "Launch game") | Left out | Icon |
+| --- | --- | --- | --- | --- |
+| `SteamSource` | Steam's folder (`HKCU\Software\Valve\Steam\SteamPath`, `RegistryGameLaunchers.SteamFolder`), the libraries of `steamapps\libraryfolders.vdf` (both formats), each `appmanifest_<id>.acf`, parsed by `VdfNode` | `steam://rungameid/<appid>` | `StateFlags` without the fully installed bit (4); tools by name: Steamworks Common Redistributables, Steam Linux Runtime, Proton | `` (Game) |
+| `EpicSource` | `%ProgramData%\Epic\EpicGamesLauncher\Data\Manifests\*.item` (JSON) | `com.epicgames.launcher://apps/<CatalogNamespace>%3A<CatalogItemId>%3A<AppName>?action=launch&silent=true` | `bIsIncompleteInstall`; add-ons (`MainGameAppName` of another app); `AppCategories` without `games` (engines) | `` (XboxOneConsole) |
+| `GogSource` | `IGogGamesReader`: `RegistryGameLaunchers` reads `HKLM\SOFTWARE\GOG.com\Games\*` in the 32-bit view (`WOW6432Node`) | `"<exe>" <launchParam>`: GOG Galaxy has no documented launch link, and GOG games have no DRM | add-ons (`dependsOn`) | `` (Library) |
+
+Enter on a game: `ResourceActions.GameStart` splits the target (`CommandLine`); a program starts in its own folder.
+
+**Listed once by name.** `SourceLoader.Merge` also leaves out an app or a game (`ResourceKind.App`, `Game`) when an earlier item has its name: its target never equals the one of the shortcut the Start Menu (or a folder) has for it.
+
+## Portable copy
+- `AppFiles.For` picks the data folder: `<exe folder>\data` when `portable.txt` (`AppFiles.PortableMarker`) is next to coursee.exe, else `%LOCALAPPDATA%\coursee`. The start line of the log says `(portable)`.
+- `build\installer.cmd` copies the published app to `artifacts\installer\portable\coursee`, adds the marker and zips that folder (`Compress-Archive`). The update check links to the release page, which has both files.
+
+## Changelog
+[CHANGELOG.md](../CHANGELOG.md), at the repo root, in the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format (workflow in `CLAUDE.md`). `coursee.App.csproj` copies it next to coursee.exe (build and publish), so the setup and the zip ship it; *Show changelog* in Settings > About opens it as text in `ChangelogWindow`, a resizable dialog (`Changelog.Read`, at each opening), and the setup's last page offers to open it in Notepad.
+
+## Source groups
+`SourceGroups` (Core) gives a source its group: by name, as one of the user's folders (`SourceCatalog.CanRemove`), or as a Quick access folder. In Settings > Sources (`SettingsWindow.Sources.cs`), a group's sources come together under its checkbox, at the place of the first one, indented; the checkbox switches them all (`SettingsStore.SetSourcesEnabled`), mixed when some are off. Each group present has an entry in `SettingsCatalog` (`GroupId`). The order of the sources, which decides duplicates, is unchanged.
+
+| Group | Sources | Icon |
+| --- | --- | --- |
+| Folders | The user's folders, the Desktop by default; *Add folder...* on the group's row | `` (FolderOpen) |
+| Quick access | The folders pinned in Explorer | `` (Home) |
+| Windows | Start Menu, Packaged apps, Windows Run, Windows settings | `` (Laptop) |
+| Browsers | Firefox, Edge | `` (Globe) |
+| Games | Steam, Epic Games, GOG | `` (Play) |
 
 ## Adding a source
 1. In `Core/Sources`, implement `IResourceSource`: a stable `Name` (it is also the key stored in `settings.json`), a `DisplayName` for Settings, `CanBeDisabled` (true gives it a checkbox in **Sources**), an `Icon` (a Segoe Fluent Icons glyph, kept in `SourceIcons` with the others so each stays distinct; shown on its rows and next to its checkbox), and `GetResources()` returning `Resource` records. Take an optional `ILog`.
@@ -174,7 +218,7 @@ Not implemented yet. Scope: [ROADMAP.md](ROADMAP.md#08-to-define).
 ## Logging
 - `Core` writes through `ILog` (`log.Info(category, message)`); only `App` knows Serilog.
 - Category: the area (`App`, `Action`, `Hotkey`, a source name, ...).
-- **Info**: every action the user triggers, start/stop, source changes (via `SourceMonitor`). **Warning/Error**: failures. **Debug**: details.
+- **Info**: every action the user triggers, start/stop, source changes (via `SourceMonitor`). **Warning/Error**: failures. **Debug**: details, among them how long each source took to read (`SourceResult.Duration`, timed by `SourceLoader`), Quick access, and the whole refresh.
 - Never logged: keystrokes in the search box, secrets.
 - Local only: 3 files x 1 MB, plus the last 1000 entries in memory for the log window.
 

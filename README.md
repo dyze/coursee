@@ -5,12 +5,13 @@ A personal Windows launcher. Press a global hotkey, type in the compact search w
 | Doc | Content |
 | --- | --- |
 | [docs/GOAL.md](docs/GOAL.md) | Goal, principles, non-goals |
-| [docs/ROADMAP.md](docs/ROADMAP.md) | Scope of each version |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Scope of each planned version |
+| [CHANGELOG.md](CHANGELOG.md) | What each version changed, most recent first ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/)) |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Projects, search ranking, adding a source, logging |
 
 ## Status
 
-Searches your own custom entries, the Desktop and your own folders (shortcuts, files and folders), the folders pinned in Explorer's Quick access, Start Menu shortcuts, Firefox bookmarks, Edge favorites, the Windows Run history and Windows settings pages and tools. Also: recents, pins, aliases, hidden entries, row actions, tray icon, settings, installer.
+Searches your own custom entries, the Desktop and your own folders (shortcuts, files and folders), the folders pinned in Explorer's Quick access, Start Menu shortcuts, packaged (Store, MSIX) apps, Steam, Epic Games and GOG games, Firefox bookmarks, Edge favorites, the Windows Run history and Windows settings pages and tools. Also: recents, pins, aliases, hidden entries, row actions, tray icon, settings, installer, portable zip.
 
 ## Install
 
@@ -18,7 +19,9 @@ Searches your own custom entries, the Desktop and your own folders (shortcuts, f
 build\installer.cmd
 ```
 
-Builds `artifacts\installer\coursee-setup-<version>.exe` (needs the .NET 10 SDK and [Inno Setup](https://jrsoftware.org/isinfo.php) 6.3+). Run it to install coursee for your user only, no administrator rights: `%LOCALAPPDATA%\Programs\coursee`, with a Start Menu shortcut and, if chosen, a desktop shortcut and auto start. The app is self-contained, so the PC needs no .NET runtime.
+Builds `artifacts\installer\coursee-setup-<version>.exe` and `coursee-portable-<version>.zip` (needs the .NET 10 SDK and [Inno Setup](https://jrsoftware.org/isinfo.php) 6.3+). Run the setup to install coursee for your user only, no administrator rights: `%LOCALAPPDATA%\Programs\coursee`, with a Start Menu shortcut and, if chosen, a desktop shortcut and auto start. Its last page offers to open the changelog. The app is self-contained, so the PC needs no .NET runtime: `coursee.exe` holds the app and the runtime, next to six native DLLs of WPF and SQLite and `CHANGELOG.md`. An upgrade removes the files an older version left.
+
+**Portable**: unzip `coursee-portable-<version>.zip` anywhere (a USB stick, say) and run `coursee\coursee.exe`. While `portable.txt` is next to it, coursee keeps its data in the `data` folder beside it instead of `%LOCALAPPDATA%\coursee`. Delete `portable.txt` to use `%LOCALAPPDATA%\coursee` again.
 
 Upgrade: run a newer setup over the old one. Uninstall: *Settings > Apps*. Your data (see below) is kept.
 
@@ -45,7 +48,7 @@ Upgrade: run a newer setup over the old one. Uninstall: *Settings > Apps*. Your 
 
 Two lines under the search box say which keys apply to the selected item: what Enter does (with Ctrl and Shift) on the first, the other keys (Ctrl+C, Ctrl+P, F2, Ctrl+H, Ctrl+N, Del) on the second. Settings > Keys lists every key. In the list, an icon on the right of each row shows the same action (click it to do it, like Enter), and an icon on the left the source the item comes from (hover them for the wording); Settings > Sources shows the same source icons.
 
-**Tray icon.** Click: show the launcher. Menu: Show, Settings, Log window, Quit.
+**Tray icon.** Click: show the launcher. Menu: Show, Settings, Log window (ticked while it is open: a click shows or closes it), Quit.
 
 **Typed text.** When nothing matches, Enter acts like Win+R: it opens a URL, folder or file, or runs the text as a command. Like Win+R, a command starts in your user folder, and its program is found there or in PATH even when its name has spaces (`kill rds.cmd`, no quotes needed). Network paths (`\\server\share`) are opened without being checked, so typing them never freezes the window. Running typed text as a command can be switched off (Settings > General): URLs, folders and files still open, and a custom entry (Ctrl+N) still runs its command. The first time the launcher shows, a safety notice explains this and offers the same switch.
 
@@ -57,11 +60,11 @@ Gear button in the launcher, or tray menu > Settings. A dialog over the launcher
 | --- | --- |
 | General | Number of recent items (default 20), launcher position, ignore accents when searching (default on), run typed text as a command (default on), start with Windows |
 | Appearance | Theme: follow Windows (default), light or dark. The tray menu follows at the next start |
-| Sources | Custom entries, Desktop, your folders, Quick access folders (grouped: one checkbox switches them all), Start Menu, Firefox bookmarks, Edge favorites, Windows Run history, Windows settings and tools (on / off). *Add folder...* adds a folder; ✕ removes one of yours (the Desktop too) |
+| Sources | Custom entries, then groups, each with a checkbox that switches all its sources: **Folders**, yours (the Desktop by default; *Add folder...*, on the group's row, adds one; ✕ removes one, the Desktop too), **Quick access** folders, **Windows** (Start Menu, packaged apps, Run history, settings and tools), **Browsers** (Firefox bookmarks, Edge favorites), **Games** (Steam, Epic Games, GOG). Each source switches on and off |
 | Entries | One list at a time, picked in a strip with counts: hidden entries (restore), custom entries (edit name and target, delete), aliases (edit, remove), pins (unpin). A filter box narrows every list (name, target, alias or source). Enter in a box saves its row |
 | Keys | Hotkey (must include Ctrl, Alt or Win), and the list of keys (read only) |
 | Logging | Detailed (debug) logging, open the log window |
-| About | Version, links to the website (GitHub) and its issues page; the update check (once a day, on by default: asks GitHub for the latest release, downloads nothing; when a newer one exists, a dot on this tab and, until you have opened About, on the Settings button; a link to it here); coursee's files (settings, entries, recents, window positions, logs, program), each with its path and *Show in folder* |
+| About | Version; buttons *Website (GitHub)*, *Report an issue* and *Show changelog* (opens it in its own window, Esc closes it); the update check (once a day, on by default: asks GitHub for the latest release, downloads nothing; when a newer one exists, a dot on this tab and, until you have opened About, on the Settings button; a link to its release page, with the setup and the portable zip; in green when you have the latest version); coursee's files (settings, entries, recents, window positions, logs, program), each with its path and *Show in folder* |
 
 **Find a setting**: type in the box at the top (Ctrl+F) to see only the matching settings, from every tab. Esc clears it.
 
@@ -93,6 +96,9 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#search).
 - **Desktop and Start Menu shortcuts** are searched by their target, but opened through the shortcut itself, so their arguments and working folder are kept. Uninstall shortcuts are skipped, and a program found in both places is listed once.
 - **Files and folders on the Desktop** (top level, not hidden or system ones) are listed too, by their name with its extension, and open as with a double click: `kill rds.cmd` runs.
 - **Folder sources** work like the Desktop: shortcuts, files and folders at the top level, no subfolders. The folder itself is listed too, so typing its name opens it; a pinned folder also goes by the name Explorer shows (`Bureau` or `Desktop` both find the Desktop). Each folder pinned in Explorer's *Quick access* is one too, and follows Explorer: unpin it there to remove it (Settings only switches it off). A folder already listed (the Desktop, one of yours) is listed once. A pinned Desktop is the usual Desktop source: removed with ✕, it stays while pinned. Network folders are never searched: an offline one could block coursee. Quick access is read on Windows 11 only.
+- **Packaged apps**: the Store and MSIX apps Windows Start lists (Windows Terminal, Calculator, Game Pass games...), opened by their app ID (`shell:AppsFolder\...`). Desktop programs are left to the Start Menu source. They cannot be shown in a folder or run as administrator.
+- **Games**: installed games only, read from the launchers' own files (Steam, Epic Games) or registry (GOG); no sign-in. Steam and Epic games start through their launcher (`steam://rungameid/...`), GOG games from their own program, with GOG's arguments. Steam's tools (redistributables, Proton) and Epic's add-ons and engines are left out. A launcher that is not installed gives no games; a file that cannot be read is logged and skipped.
+- **Listed once by name.** A packaged app or a game that an earlier source already lists under the same name (the Start Menu shortcut of a GOG game, say) is listed once, as that item.
 - **Firefox**: default profile only, bookmarks only (no folders), opened in Firefox.
 - **Edge**: last used profile only, favorites only (no folders), opened in Edge.
 - **Windows settings**: a fixed list of settings pages (Installed apps, Network, Display, Windows Update...), consoles (Services, Device Manager, Event Viewer...) and Control Panel items, opened directly. coursee never changes a setting. Names say what they are for, so "uninstall" finds *Installed apps*.
@@ -101,7 +107,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#search).
 
 ## Data and logs
 
-Everything stays on your computer, in `%LOCALAPPDATA%\coursee`:
+Everything stays on your computer, in `%LOCALAPPDATA%\coursee` (a portable copy: its `data` folder):
 
 | File | Content |
 | --- | --- |
@@ -114,7 +120,7 @@ Everything stays on your computer, in `%LOCALAPPDATA%\coursee`:
 
 coursee logs start/stop, items added / removed in each source, every action you trigger (opened resource, typed command, settings change) and errors. What you type in the search box is not logged.
 
-**Log window**: tray menu > *Log window*, or Settings > Logging (Settings and the launcher stay open, the log window opens in front; it stays open after Settings is closed). Live view of the last 1000 entries, level and text filters, Copy, Clear (window only), Open log folder.
+**Log window**: tray menu > *Log window*, or Settings > Logging (Settings and the launcher stay open, the log window opens in front; it stays open after Settings is closed). Live view of the last 1000 entries, one compact line each, level and text filters, Copy, Clear (window only), Open log folder. With detailed (Debug) logging on, each refresh also logs how long every source took to read, and the whole refresh.
 
 ## Build
 
@@ -136,7 +142,7 @@ The build fails if `Core` line coverage is below **95 %**. `build.cmd` also writ
 | `src/` | `coursee.App` (WPF) and `coursee.Core` |
 | `tests/` | Unit tests for `Core` |
 | `docs/` | Documentation |
-| `build/` | Installer script (`installer.cmd`, `installer/coursee.iss`), icon generator (`make_icon.py`) |
+| `build/` | Installer and portable zip script (`installer.cmd`, `installer/coursee.iss`), icon generator (`make_icon.py`) |
 | `lib/` | Third-party binaries, if any |
 | `packages/` | Local NuGet packages, if any |
 | `samples/` | Samples |
