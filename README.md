@@ -148,3 +148,7 @@ The build fails if `Core` line coverage is below **95 %**. `build.cmd` also writ
 | `samples/` | Samples |
 | `artifacts/` | Build output (git-ignored) |
 | `.config/` | Local dotnet tools (ReportGenerator) |
+
+## License
+
+[MIT](LICENSE)
