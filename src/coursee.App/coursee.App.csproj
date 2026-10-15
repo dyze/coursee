@@ -11,6 +11,14 @@
     <AssemblyName>coursee</AssemblyName>
   </PropertyGroup>
 
+  <!-- Publishing (build\installer.cmd, self-contained): the runtime and every managed DLL packed
+       into coursee.exe; WPF's native DLLs and SQLite's stay next to it, so nothing is unpacked at
+       start. English only: no folders of translated framework messages. -->
+  <PropertyGroup>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
   <!-- The WPF SDK leaves System.IO out of the implicit usings (System.Windows.Shapes.Path would clash); this project needs it. -->
   <ItemGroup>
     <Using Include="System.IO" />
