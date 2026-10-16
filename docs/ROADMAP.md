@@ -1,6 +1,6 @@
 # coursee: roadmap
 
-Scope of each planned version. Implemented features move to [CHANGELOG.md](../CHANGELOG.md). The goal, principles and non-goals are in [GOAL.md](GOAL.md).
+Scope of each planned version. Implemented features move to [CHANGELOG.md](../CHANGELOG.md). The goal, principles and non-goals are in [GOAL.md](GOAL.md). The features are sorted by priority.
 
 | Version | Status | Theme                                                                                |
 | ------- | ------ | ------------------------------------------------------------------------------------ |
@@ -15,11 +15,13 @@ Scope of each planned version. Implemented features move to [CHANGELOG.md](../CH
 
 ## 0.9 (to define)
 1. **Switch MIT license.**
-2. **Donate.** Add a link to donate to the developer.
-3. **Sign installer.** To make it more secure, use a certificate to sign all installers coming from the developer.
-4. **End user manual.** A html manual is shipped with installer and available thru a "?" icon from App.
-5. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
-6. **Outlook contacts source.** User can summon the display of email composing window with selected contact fed as recipient.
-7. **Entry icons.** Rows show the entry's own icon (a game's or a file's exe icon) when it can be found, else the source icon.
-8. **Beautify changelog.** Today hard to identify the interesting info reading the md file as is.
-9. **New icons.** Create new icons for UI.
+2. **Beautify changelog.** Today hard to identify the interesting info reading the md file as is.
+3. **Outlook contacts source.** User can summon the display of email composing window with selected contact fed as recipient.
+4. **Entry icons.** Rows show the entry's own icon (a game's or a file's exe icon) when it can be found, else the source icon.
+5. **Condensate result.** Reduce line height to show more matches at once.
+6. **New icons.** Create new icons for UI.
+7. **Donate.** Add a link to donate to the developer.
+8. **Sign installer.** To make it more secure, use a certificate to sign all installers coming from the developer.
+9. **End user manual.** A html manual is shipped with installer and available thru a "?" icon from App.
+10. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
+
