@@ -28,7 +28,7 @@ Enter ─► open resource    Esc ─► hide
 - **Fast and out of the way.** Appears instantly on hotkey (sources are reloaded in the background, never while the window waits), hides on Esc or after opening.
 
 ## Versioning
-- Format `MAJOR.MINOR`, starting at **0.1**, then 0.2, and so on. No `v` prefix, and no 1.0 until I decide.
+- Format `MAJOR.MINOR`, starting at **0.1**, then 0.2, and so on. A release with fixes only adds a patch number: `MAJOR.MINOR.PATCH` (0.8.1). No `v` prefix, and no 1.0 until I decide.
 - Defined once, in `Directory.Build.props`, stamped into every produced assembly, and shown at the bottom right of the launcher window.
 
 What each version contains: [ROADMAP.md](ROADMAP.md).

@@ -29,7 +29,7 @@ public sealed record Release(string Version, string Page)
 
     /// <summary>
     /// True when <paramref name="candidate"/> is a later version than <paramref name="current"/>
-    /// (both <c>MAJOR.MINOR</c>, a leading <c>v</c> allowed). False when either cannot be read.
+    /// (<c>MAJOR.MINOR</c> or <c>MAJOR.MINOR.PATCH</c>, a leading <c>v</c> allowed). False when either cannot be read.
     /// </summary>
     public static bool IsNewer(string candidate, string current) =>
         TryParse(candidate, out var later) && TryParse(current, out var now) && later > now;
