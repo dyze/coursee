@@ -128,16 +128,7 @@ public sealed class ShortcutsSource : IResourceSource
                     continue;
                 }
 
-                ResourceKind kind;
-                if (Directory.Exists(target))
-                {
-                    kind = ResourceKind.Folder;
-                }
-                else if (File.Exists(target))
-                {
-                    kind = ResourceKind.File;
-                }
-                else
+                if (KindOf(shortcut, target) is not { } kind)
                 {
                     continue;
                 }
@@ -210,6 +201,25 @@ public sealed class ShortcutsSource : IResourceSource
             _log.Warn(Name, $"Cannot list {folder}: {ex.GetType().Name}: {ex.Message}");
             return [];
         }
+    }
+
+    /// <summary>
+    /// Folder or file; null when the target is gone. A target on the network is not checked (an
+    /// offline share can block for many seconds): its kind comes from the shortcut, and it is kept.
+    /// </summary>
+    private static ResourceKind? KindOf(string shortcut, string target)
+    {
+        if (FolderSources.IsNetwork(target))
+        {
+            return ShellLinkHeader.TargetIsFolder(shortcut) == true ? ResourceKind.Folder : ResourceKind.File;
+        }
+
+        if (Directory.Exists(target))
+        {
+            return ResourceKind.Folder;
+        }
+
+        return File.Exists(target) ? ResourceKind.File : null;
     }
 
     private string? Resolve(string shortcut)

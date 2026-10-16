@@ -50,6 +50,29 @@ public sealed class ShortcutsSourceTests : IDisposable
     }
 
     [Fact]
+    public void NetworkTargets_AreNotChecked_TheirKindComesFromTheShortcut()
+    {
+        const string share = @"\\coursee-test-nowhere\share";
+        var team = Shortcut("Team");
+        File.WriteAllBytes(team, ShellLinkHeaderTests.Header(0x10));
+        var report = Shortcut("Report");
+        File.WriteAllBytes(report, ShellLinkHeaderTests.Header(0x20));
+        var unreadable = Shortcut("Unreadable");
+        var map = new Dictionary<string, string>
+        {
+            [team] = share + @"\team",
+            [report] = share + @"\report.docx",
+            [unreadable] = share + @"\other",
+        };
+
+        var result = ShortcutsSource.Desktop([_desktop], new FakeResolver(map)).GetResources().ToDictionary(r => r.Name, r => r.Kind);
+
+        Assert.Equal(ResourceKind.Folder, result["Team"]);
+        Assert.Equal(ResourceKind.File, result["Report"]);
+        Assert.Equal(ResourceKind.File, result["Unreadable"]);
+    }
+
+    [Fact]
     public void Shortcuts_AreOpenedThroughTheLnkFile_ToKeepTheirArguments()
     {
         var file = Path.Combine(_root, "app.exe");
