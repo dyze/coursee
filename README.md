@@ -120,7 +120,7 @@ Everything stays on your computer, in `%LOCALAPPDATA%\coursee` (a portable copy:
 
 coursee logs start/stop, items added / removed in each source, every action you trigger (opened resource, typed command, settings change), errors, and a warning when its window stops answering for 2 s or more. What you type in the search box is not logged.
 
-**Log window**: tray menu > *Log window*, or Settings > Logging (Settings and the launcher stay open, the log window opens in front; it stays open after Settings is closed). While Settings is open, the launcher is not kept on top, so other windows can go over it, Settings and the log window. Live view of the last 1000 entries, one compact line each, level and text filters, Copy, Clear (window only), Open log folder. With detailed (Debug) logging on, each refresh also logs how long every source took to read, and the whole refresh.
+**Log window**: tray menu > *Log window*, or Settings > Logging (Settings and the launcher stay open, the log window opens in front; it stays open after Settings is closed). While Settings is open, the launcher is not kept on top, so other windows can go over it, Settings and the log window. Live view of the last 1000 entries, one compact line each, level and text filters, Copy, Clear (window only), Open log folder. With detailed (Debug) logging on, each refresh also logs when it starts, how long every source took to read, and the whole refresh.
 
 ## Build
 

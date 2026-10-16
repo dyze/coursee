@@ -217,6 +217,7 @@ public partial class MainWindow : Window
             do
             {
                 _refreshAgain = false;
+                _log.Debug("App", "Refreshing the sources");
                 var watch = System.Diagnostics.Stopwatch.StartNew();
                 await Task.Run(() => _sources.SyncQuickAccess());
                 _log.Debug(SourceCatalog.QuickAccessCategory, $"Read in {watch.ElapsedMilliseconds} ms");
