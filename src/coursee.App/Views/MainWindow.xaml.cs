@@ -761,12 +761,16 @@ public partial class MainWindow : Window
         // The launcher hides when it loses the focus; not while its dialog is open.
         _settingsDialog = dialog;
         _showingDialog = true;
+
+        // Settings and the log window are normal windows: others can go over them.
+        Topmost = false;
         try
         {
             dialog.ShowDialog();
         }
         finally
         {
+            Topmost = true;
             _showingDialog = false;
             _settingsDialog = null;
         }

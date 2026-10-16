@@ -258,8 +258,8 @@ public partial class App : Application
 
     /// <summary>Opens the log window, or brings it to the front when it is already open.</summary>
     /// <param name="over">
-    /// A window that stays open, on top, and modal (Settings over the launcher): the log window is
-    /// shown in front of it and usable until it closes, then it stays open on its own.
+    /// A modal window that stays open (Settings over the launcher): the log window is shown in
+    /// front of it and usable while it is open, then it stays open on its own.
     /// </param>
     private void OpenLogWindow(Window? over = null)
     {
@@ -272,13 +272,6 @@ public partial class App : Application
         if (_logWindow is not { } logWindow)
         {
             return;
-        }
-
-        if (over is not null)
-        {
-            // Settings is on top (its owner, the launcher, is), so the log window must be too while it is open.
-            logWindow.Topmost = true;
-            over.Closed += (_, _) => logWindow.Topmost = false;
         }
 
         BringToFront(logWindow);
