@@ -220,6 +220,7 @@ Enter on a game: `ResourceActions.GameStart` splits the target (`CommandLine`); 
 - `Core` writes through `ILog` (`log.Info(category, message)`); only `App` knows Serilog.
 - Category: the area (`App`, `Action`, `Hotkey`, a source name, ...).
 - **Info**: every action the user triggers, start/stop, source changes (via `SourceMonitor`). **Warning/Error**: failures. **Debug**: details, among them how long each source took to read (`SourceResult.Duration`, timed by `SourceLoader`), Quick access, and the whole refresh.
+- **Freezes**: `UiWatchdog` (App) asks the UI thread to answer every 0.5 s; `FreezeWatch` (Core, tested) logs a Warning once it has not answered for 2 s, and again when it answers, with how long. The first line is written while frozen, so a freeze leaves a trace even if coursee is then ended by force.
 - Never logged: keystrokes in the search box, secrets.
 - Local only: 3 files x 1 MB, plus the last 1000 entries in memory for the log window.
 

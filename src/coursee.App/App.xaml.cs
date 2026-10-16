@@ -25,6 +25,7 @@ public partial class App : Application
     private MainWindow? _window;
     private LogWindow? _logWindow;
     private TrayIcon? _tray;
+    private UiWatchdog? _watchdog;
 
     // Set at startup; a closed window cannot be shown again, so each opening creates a new one.
     private Func<LogWindow>? _createLogWindow;
@@ -60,6 +61,7 @@ public partial class App : Application
             log.Error("App", "Unhandled error", args.Exception);
         AppDomain.CurrentDomain.UnhandledException += (_, args) =>
             log.Error("App", "Fatal error: " + args.ExceptionObject);
+        _watchdog = new UiWatchdog(Dispatcher, log);
 
         var desktops = new[]
         {
@@ -300,6 +302,7 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        _watchdog?.Dispose();
         _tray?.Dispose();
         _hotkey?.Dispose();
         _logHub?.Filter.Info("App", "coursee stopped");
