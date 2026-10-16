@@ -45,7 +45,33 @@ public class SourceLoaderTests
         }
     }
 
+    /// <summary>Waits for the other sources sharing <paramref name="meeting"/>: only met when they are read at the same time.</summary>
+    private sealed class MeetingSource(string name, Barrier meeting) : IResourceSource
+    {
+        public string Name => name;
+
+        public string DisplayName => name;
+
+        public bool CanBeDisabled => true;
+
+        public string Icon => string.Empty;
+
+        public IReadOnlyList<Resource> GetResources() =>
+            meeting.SignalAndWait(TimeSpan.FromSeconds(10)) ? [R("met", name)] : throw new TimeoutException("read alone");
+    }
+
     private static Resource R(string name, string source) => new(name, @"C:\" + name, ResourceKind.Folder, source);
+
+    [Fact]
+    public void Load_ReadsTheSourcesInParallel()
+    {
+        using var meeting = new Barrier(2);
+
+        var results = SourceLoader.Load([new MeetingSource("A", meeting), new MeetingSource("B", meeting)]);
+
+        Assert.Equal(new[] { "A", "B" }, results.Select(r => r.SourceName));
+        Assert.All(results, r => Assert.Null(r.Error));
+    }
 
     [Fact]
     public void Load_ReturnsEachSourceInOrder()

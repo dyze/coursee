@@ -83,7 +83,7 @@ On an upgrade, `[InstallDelete]` in `coursee.iss` first removes what older versi
 hotkey ─► window shows the cached list at once
              │
              └─► background: SourceCatalog.SyncQuickAccess (pinned folders may have changed)
-                 then SourceLoader.Load(enabled sources)
+                 then SourceLoader.Load(enabled sources, read in parallel)
                    ├─ a failing source is logged and skipped, the others still load
                    ├─ SourceMonitor logs items added / removed per source
                    └─ SourceLoader.Merge: same name + target listed once (first source wins)
@@ -203,7 +203,7 @@ Enter on a game: `ResourceActions.GameStart` splits the target (`CommandLine`); 
 4. Add xUnit tests in `tests/coursee.Core.Tests`, with a fake for any interface from step 2.
 5. Update `README.md` and [ROADMAP.md](ROADMAP.md).
 
-`GetResources()` runs on a background thread, at each launcher opening. It must not block for long, and may throw: `SourceLoader` catches the error, the window logs it and keeps the other sources.
+`GetResources()` runs on a background thread, at each launcher opening, at the same time as the other sources (`SourceLoader.Load` uses `Parallel.For`; results keep the source order, which `Merge` relies on). It must not block for long, and may throw: `SourceLoader` catches the error, the window logs it and keeps the other sources.
 
 ## Window positions
 - Saved in `windows.json` by window name (`Launcher`, `Settings`, `Log`) when a window is hidden or closed, restored when it is first shown. Kept out of `settings.json`: it is state, not a setting.

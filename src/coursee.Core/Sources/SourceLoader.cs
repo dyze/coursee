@@ -9,29 +9,32 @@ public sealed record SourceResult(string SourceName, IReadOnlyList<Resource> Res
 /// <summary>
 /// Reads every source once. Meant to run on a background thread, so the launcher window
 /// opens instantly while slow sources (network shortcuts, a large Firefox database) load.
+/// The sources are read in parallel, so a refresh takes as long as the slowest one, not their sum.
 /// A failing source never affects the others. Logging and change tracking are left to the
 /// caller, which does them on the UI thread.
 /// </summary>
 public static class SourceLoader
 {
+    /// <summary>The results, in the order of <paramref name="sources"/>.</summary>
     public static IReadOnlyList<SourceResult> Load(IEnumerable<IResourceSource> sources)
     {
-        var results = new List<SourceResult>();
-        foreach (var source in sources)
-        {
-            var watch = Stopwatch.StartNew();
-            try
-            {
-                var resources = source.GetResources();
-                results.Add(new SourceResult(source.Name, resources, Duration: watch.Elapsed));
-            }
-            catch (Exception ex)
-            {
-                results.Add(new SourceResult(source.Name, [], ex, watch.Elapsed));
-            }
-        }
-
+        var list = sources.ToList();
+        var results = new SourceResult[list.Count];
+        Parallel.For(0, list.Count, index => results[index] = LoadOne(list[index]));
         return results;
+    }
+
+    private static SourceResult LoadOne(IResourceSource source)
+    {
+        var watch = Stopwatch.StartNew();
+        try
+        {
+            return new SourceResult(source.Name, source.GetResources(), Duration: watch.Elapsed);
+        }
+        catch (Exception ex)
+        {
+            return new SourceResult(source.Name, [], ex, watch.Elapsed);
+        }
     }
 
     /// <summary>
