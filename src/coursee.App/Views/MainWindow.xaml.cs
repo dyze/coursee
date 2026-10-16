@@ -264,8 +264,9 @@ public partial class MainWindow : Window
         _monitor.Keep(results.Select(result => result.SourceName));
         _all = SourceLoader.Merge(lists);
 
+        // Also the recent list: it leaves out sources switched off.
         // Not under an open row box: the list is rebuilt when it closes.
-        if (IsVisible && !string.IsNullOrWhiteSpace(SearchBox.Text) && _editingRow is null)
+        if (IsVisible && _editingRow is null)
         {
             Refresh(keepSelection: true);
         }
@@ -284,7 +285,7 @@ public partial class MainWindow : Window
 
         if (string.IsNullOrWhiteSpace(query))
         {
-            items = _entries.Visible(_recents.Items);
+            items = _entries.Visible(_settings.FromEnabledSources(_recents.Items));
         }
         else
         {

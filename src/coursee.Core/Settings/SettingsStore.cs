@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Coursee.Core.Platform;
+using Coursee.Core.Resources;
 
 namespace Coursee.Core.Settings;
 
@@ -132,6 +133,13 @@ public sealed class SettingsStore
     }
 
     public bool IsSourceEnabled(string sourceName) => !_disabledSources.Contains(sourceName);
+
+    /// <summary>
+    /// The resources whose source is on, in the same order. What was typed has no source to switch,
+    /// so it stays. Used for the recent list, whose history is kept for when the source comes back.
+    /// </summary>
+    public IReadOnlyList<Resource> FromEnabledSources(IEnumerable<Resource> resources) =>
+        resources.Where(resource => IsSourceEnabled(resource.Source)).ToList();
 
     /// <summary>The state of a group of sources: true when all are on, false when none is, null when some are.</summary>
     public bool? AreSourcesEnabled(IEnumerable<string> sourceNames)

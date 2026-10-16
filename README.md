@@ -78,7 +78,7 @@ Gear button in the launcher, or tray menu > Settings. A dialog over the launcher
 - Typing an item's alias exactly (the whole search, ignoring case and accents) lists that item first, even if its name does not match. An alias belongs to one item: giving it to another one moves it.
 - Pinned items that match come next.
 - Items you open often, and lately, move up. The boost is limited, so a much better name match still comes first.
-- Empty search box: the recent list, items opened through coursee, the most used first (recent opens count more). Pinned items are not added to it.
+- Empty search box: the recent list, items opened through coursee, the most used first (recent opens count more). Pinned items are not added to it, nor items of a source switched off (they come back when it is switched on).
 
 Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#search).
 

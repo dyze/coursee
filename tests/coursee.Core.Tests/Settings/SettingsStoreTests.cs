@@ -59,6 +59,21 @@ public sealed class SettingsStoreTests : IDisposable
     }
 
     [Fact]
+    public void FromEnabledSources_LeavesOutResourcesOfSourcesSwitchedOff_InOrder()
+    {
+        var store = new SettingsStore(FilePath);
+        store.SetSourceEnabled("custom", false);
+        Resource[] resources =
+        [
+            new("a", @"C:", ResourceKind.File, "Desktop"),
+            new("tc", "http://tc", ResourceKind.Url, "Custom"),
+            new("b", "https://b", ResourceKind.Url, FallbackClassifier.SourceName),
+        ];
+
+        Assert.Equal(new[] { "a", "b" }, store.FromEnabledSources(resources).Select(r => r.Name));
+    }
+
+    [Fact]
     public void SourceNamesAreCaseInsensitive()
     {
         var store = new SettingsStore(FilePath);
