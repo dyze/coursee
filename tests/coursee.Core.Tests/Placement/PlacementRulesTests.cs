@@ -216,4 +216,28 @@ public class PlacementRulesTests
     [Fact]
     public void CenterOnPoint_NoMonitor_IsNull() =>
         Assert.Null(PlacementRules.CenterOnPoint(new ScreenPoint(0, 0), 640, 520, []));
+
+    private static WindowPlacement WithColumns(params double[] widths) =>
+        new(@"\\.\DISPLAY1", new ScreenRect(0, 0, 900, 500), ColumnWidths: widths);
+
+    [Fact]
+    public void ColumnWidths_AreGivenBack_AtLeastTheMinimum() =>
+        Assert.Equal(new[] { 100, PlacementRules.MinColumnWidth, 600 }, PlacementRules.ColumnWidths(WithColumns(100, 5, 600), 3));
+
+    [Fact]
+    public void ColumnWidths_NothingSaved_IsNull()
+    {
+        Assert.Null(PlacementRules.ColumnWidths(null, 3));
+        Assert.Null(PlacementRules.ColumnWidths(new WindowPlacement("x", new ScreenRect(0, 0, 1, 1)), 3));
+    }
+
+    [Fact]
+    public void ColumnWidths_ForAnotherNumberOfColumns_IsNull() =>
+        Assert.Null(PlacementRules.ColumnWidths(WithColumns(100, 64), 3));
+
+    [Theory]
+    [InlineData(double.NaN)]
+    [InlineData(double.PositiveInfinity)]
+    public void ColumnWidths_NotANumber_IsNull(double width) =>
+        Assert.Null(PlacementRules.ColumnWidths(WithColumns(100, width), 2));
 }

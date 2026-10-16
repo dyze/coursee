@@ -48,6 +48,35 @@ public sealed class PlacementStoreTests : IDisposable
         Assert.False(File.Exists(FilePath));
     }
 
+    [Fact]
+    public void ColumnWidths_ArePersisted()
+    {
+        new PlacementStore(FilePath).Set("Log", Sample() with { ColumnWidths = [100, 64, 220, 600] });
+
+        Assert.Equal(new[] { 100.0, 64, 220, 600 }, new PlacementStore(FilePath).Get("Log")?.ColumnWidths);
+    }
+
+    [Fact]
+    public void SettingTheSameColumnWidths_DoesNotWriteTheFile()
+    {
+        var store = new PlacementStore(FilePath);
+        store.Set("Log", Sample() with { ColumnWidths = [100, 64] });
+        File.Delete(FilePath);
+
+        store.Set("Log", Sample() with { ColumnWidths = [100, 64] });
+
+        Assert.False(File.Exists(FilePath));
+    }
+
+    [Fact]
+    public void PlacementsDiffer_ByTheirColumnWidths()
+    {
+        Assert.NotEqual(Sample() with { ColumnWidths = [100, 64] }, Sample() with { ColumnWidths = [100, 70] });
+        Assert.NotEqual(Sample(10), Sample(30));
+        Assert.False(Sample().Equals(null));
+        Assert.Equal(Sample().GetHashCode(), (Sample() with { ColumnWidths = [] }).GetHashCode());
+    }
+
     [Theory]
     [InlineData("{ not json")]
     [InlineData("[1, 2]")]

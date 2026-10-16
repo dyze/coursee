@@ -36,4 +36,16 @@ public sealed record MonitorInfo(string DeviceName, ScreenRect WorkArea, bool Is
 /// <param name="Bounds">Position and size, relative to the top-left corner of that monitor's work area,
 /// so that the window keeps its place on the monitor even if the monitors are rearranged.</param>
 /// <param name="Maximized">True when the window was maximized; <paramref name="Bounds"/> is then its normal size.</param>
-public sealed record WindowPlacement(string Monitor, ScreenRect Bounds, bool Maximized = false);
+/// <param name="ColumnWidths">The widths of its list columns, left to right, in WPF units (the log window); null for a window without columns.</param>
+public sealed record WindowPlacement(string Monitor, ScreenRect Bounds, bool Maximized = false, IReadOnlyList<double>? ColumnWidths = null)
+{
+    /// <summary>Compares the column widths by value, so an unchanged placement is not saved again.</summary>
+    public bool Equals(WindowPlacement? other) =>
+        other is not null
+        && string.Equals(Monitor, other.Monitor, StringComparison.Ordinal)
+        && Bounds == other.Bounds
+        && Maximized == other.Maximized
+        && (ColumnWidths ?? []).SequenceEqual(other.ColumnWidths ?? []);
+
+    public override int GetHashCode() => HashCode.Combine(Monitor, Bounds, Maximized);
+}

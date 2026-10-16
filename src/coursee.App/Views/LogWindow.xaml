@@ -48,7 +48,7 @@
         </Style>
       </ListView.ItemContainerStyle>
       <ListView.View>
-        <GridView>
+        <GridView x:Name="LogColumns">
           <GridViewColumn Header="Time" Width="100" DisplayMemberBinding="{Binding TimeText}" />
           <GridViewColumn Header="Level" Width="64" DisplayMemberBinding="{Binding LevelText}" />
           <GridViewColumn Header="Category" Width="220" DisplayMemberBinding="{Binding Category}" />

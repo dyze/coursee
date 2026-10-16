@@ -43,6 +43,24 @@ public static class PlacementRules
         return Inside(work, saved with { Left = work.Left + saved.Left, Top = work.Top + saved.Top });
     }
 
+    /// <summary>A column dragged narrower than this would be hard to find and widen again.</summary>
+    public const double MinColumnWidth = 20;
+
+    /// <summary>
+    /// The saved column widths to give back to a window with <paramref name="columnCount"/> columns,
+    /// each at least <see cref="MinColumnWidth"/>. Null when nothing was saved, or for another number
+    /// of columns (a version with other columns), or when a width is not a number.
+    /// </summary>
+    public static IReadOnlyList<double>? ColumnWidths(WindowPlacement? saved, int columnCount)
+    {
+        if (saved?.ColumnWidths is not { } widths || widths.Count != columnCount || widths.Any(width => !double.IsFinite(width)))
+        {
+            return null;
+        }
+
+        return widths.Select(width => Math.Max(width, MinColumnWidth)).ToList();
+    }
+
     /// <summary>
     /// Where to move a window at <paramref name="bounds"/> so that it is fully visible: inside the
     /// work area of the monitor showing most of it, shrunk if larger. Equal to

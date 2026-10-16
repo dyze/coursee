@@ -176,7 +176,7 @@ public partial class App : Application
         _createLogWindow = () =>
         {
             var created = new LogWindow(logHub.Ring, logHub.Directory);
-            placer.Attach(created, "Log", RestoreMode.PositionAndSize);
+            placer.Attach(created, "Log", RestoreMode.PositionAndSize, created.LogColumns);
             return created;
         };
 

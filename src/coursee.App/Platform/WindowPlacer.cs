@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Threading;
 using Coursee.Core.Logging;
@@ -39,12 +40,21 @@ public sealed class WindowPlacer
 
     /// <summary>
     /// Call before the window is first shown. <paramref name="name"/> is its key in windows.json.
+    /// The widths of <paramref name="columns"/>, if given, are saved and restored too.
     /// </summary>
-    public void Attach(Window window, string name, RestoreMode mode)
+    public void Attach(Window window, string name, RestoreMode mode, GridView? columns = null)
     {
         ScreenRect? lastNormal = null;
 
         var saved = _store.Get(name);
+        if (columns is not null && PlacementRules.ColumnWidths(saved, columns.Columns.Count) is { } widths)
+        {
+            for (var i = 0; i < widths.Count; i++)
+            {
+                columns.Columns[i].Width = widths[i];
+            }
+        }
+
         if (mode == RestoreMode.SizeOverOwner)
         {
             window.WindowStartupLocation = WindowStartupLocation.Manual;
@@ -72,7 +82,7 @@ public sealed class WindowPlacer
         {
             if (e.NewValue is false)
             {
-                Save(window, name, lastNormal);
+                Save(window, name, lastNormal, columns);
             }
             else
             {
@@ -81,7 +91,7 @@ public sealed class WindowPlacer
             }
         };
         window.DpiChanged += (_, _) => window.Dispatcher.BeginInvoke(() => KeepOnScreen(window), DispatcherPriority.Loaded);
-        window.Closing += (_, _) => Save(window, name, lastNormal);
+        window.Closing += (_, _) => Save(window, name, lastNormal, columns);
     }
 
     /// <summary>
@@ -212,7 +222,7 @@ public sealed class WindowPlacer
         _log.Debug("Window", $"{name} restored on {saved.Monitor} at {bounds.Left},{bounds.Top} ({bounds.Width}x{bounds.Height})");
     }
 
-    private void Save(Window window, string name, ScreenRect? lastNormal)
+    private void Save(Window window, string name, ScreenRect? lastNormal, GridView? columns)
     {
         var maximized = window.WindowState == WindowState.Maximized;
         var bounds = maximized ? lastNormal : NativeWindows.WindowBounds(Handle(window)) ?? lastNormal;
@@ -226,6 +236,11 @@ public sealed class WindowPlacer
         if (PlacementRules.Capture(bounds, NativeWindows.Monitors(), maximized) is not { } placement)
         {
             return;
+        }
+
+        if (columns is not null)
+        {
+            placement = placement with { ColumnWidths = columns.Columns.Select(column => column.ActualWidth).ToList() };
         }
 
         try

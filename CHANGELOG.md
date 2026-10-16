@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 - **Recents follow the sources.** The recent list leaves out the items of a source switched off in Settings > Sources (until now, they were still listed). Their history is kept: they come back when the source is switched on. The recent list is updated as soon as a source is switched, like search results.
 - **Log window no longer stays on top.** Opened from Settings, it stayed above every other window while Settings was open. Now, while Settings is open, the launcher, Settings and the log window are normal windows that others can go over.
+- **Log window keeps its column widths.** Like its position and size, the widths of its columns are saved and restored (until now, they went back to the defaults).
 
 ## [0.8] - 2026-10-15
 
