@@ -161,11 +161,18 @@
              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
              MouseDoubleClick="ResultsList_MouseDoubleClick"
              SelectionChanged="ResultsList_SelectionChanged">
+      <!-- Compact rows: the theme's are sized for touch. -->
+      <ListBox.ItemContainerStyle>
+        <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+          <Setter Property="MinHeight" Value="0" />
+          <Setter Property="Padding" Value="8,2" />
+        </Style>
+      </ListBox.ItemContainerStyle>
       <!-- Rows are as wide as the list (no horizontal scroll): a long name or target is cut with "…",
            so the action column on the right always shows. -->
       <ListBox.ItemTemplate>
         <DataTemplate>
-          <Grid Margin="4">
+          <Grid Margin="4,2">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="Auto" />
               <ColumnDefinition Width="*" />

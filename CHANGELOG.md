@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Faster refresh.** The sources are read in parallel: a refresh now takes as long as the slowest source, not the sum of all of them.
 
 ### Fixed
+- **Compact result rows.** The rows of the result list are less tall (the theme's rows are sized for touch), so more results show at once.
 - **No wait on network shortcuts.** A Desktop, Start Menu or folder shortcut to a network share no longer checks that its target exists: an offline share made the refresh wait (31 s seen for the Desktop). Folder or file is read from the shortcut itself.
 - **Recents follow the sources.** The recent list leaves out the items of a source switched off in Settings > Sources (until now, they were still listed). Their history is kept: they come back when the source is switched on. The recent list is updated as soon as a source is switched, like search results.
 - **Log window no longer stays on top.** Opened from Settings, it stayed above every other window while Settings was open. Now, while Settings is open, the launcher, Settings and the log window are normal windows that others can go over.
