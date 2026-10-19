@@ -3,6 +3,9 @@ setlocal
 cd /d "%~dp0"
 set COVERAGE_DIR=artifacts\coverage
 
+rem A running coursee locks its files in artifacts\ and makes the build fail. Quiet when none runs.
+taskkill /im coursee.exe /f >nul 2>&1
+
 if exist "%COVERAGE_DIR%" rmdir /s /q "%COVERAGE_DIR%"
 dotnet restore || exit /b 1
 dotnet tool restore || exit /b 1
