@@ -226,3 +226,5 @@ Enter on a game: `ResourceActions.GameStart` splits the target (`CommandLine`); 
 
 ## Versioning
 `<Version>` in `Directory.Build.props` is the only place the version is written. It is stamped into every assembly (AssemblyVersion, FileVersion, InformationalVersion), read back through `AppVersion` in `Core`, and passed to the installer by `build/installer.cmd`. Rules: [GOAL.md](GOAL.md#versioning).
+
+The build identity is the git commit, not a build number. The SDK appends it to InformationalVersion (`0.8.1+<commit>`, also the exe's *Product version*), and `Directory.Build.targets` adds `.dirty` when the working tree has uncommitted changes. `AppVersion.Of` drops it (window corner, update check, tray); `AppVersion.WithCommitOf` shows the short commit (`0.8.1 (97bddb2)`, `0.8.1 (97bddb2-dirty)`) in Settings > About and the startup log line. Built outside git, there is no commit and only the version shows.

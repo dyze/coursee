@@ -132,7 +132,7 @@ public partial class SettingsWindow : Window
     /// <summary>The About tab: version, links, changelog, and a row per file with its path and a Show in folder button.</summary>
     private void ShowAbout(AppFiles files)
     {
-        AboutVersionText.Text = $"coursee {AppVersion.Of(typeof(SettingsWindow).Assembly)}";
+        AboutVersionText.Text = $"coursee {AppVersion.WithCommitOf(typeof(SettingsWindow).Assembly)}";
         ShowUpdateStatus();
         _changelogPath = files.Changelog;
 

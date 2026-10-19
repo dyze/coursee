@@ -30,6 +30,7 @@ Enter ─► open resource    Esc ─► hide
 ## Versioning
 - Format `MAJOR.MINOR`, starting at **0.1**, then 0.2, and so on. A release with fixes only adds a patch number: `MAJOR.MINOR.PATCH` (0.8.1). No `v` prefix, and no 1.0 until I decide.
 - Defined once, in `Directory.Build.props`, stamped into every produced assembly, and shown at the bottom right of the launcher window.
+- Each build is identified by its git commit (no build number), shown in Settings > About and the log: `0.8.1 (97bddb2)`, `-dirty` for a build with uncommitted changes.
 
 What each version contains: [ROADMAP.md](ROADMAP.md).
 

@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 - **Freezes are logged.** When the window stops answering for 2 s or more, a warning is logged, and another one when it answers again, with how long it was frozen.
+- **Build commit shown.** Settings > About and the startup log line show the git commit the build comes from, as in `0.8.1 (97bddb2)`, with `-dirty` when it was built with uncommitted changes. The window corner still shows the version alone.
 - **Refresh start is logged.** With detailed (Debug) logging, each refresh logs "Refreshing the sources" when it starts, before its timings.
 
 ### Changed

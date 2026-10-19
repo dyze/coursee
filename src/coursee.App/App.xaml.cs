@@ -52,7 +52,7 @@ public partial class App : Application
         AppTheme.Apply(settings.Theme);
         _logHub = new LogHub(files.Logs, settings.DebugLogging);
         var log = _logHub.Filter;
-        log.Info("App", $"coursee {AppVersion.Of(typeof(App).Assembly)} started"
+        log.Info("App", $"coursee {AppVersion.WithCommitOf(typeof(App).Assembly)} started"
             + (files.IsPortable ? " (portable)" : string.Empty)
             + (settings.DebugLogging ? " (debug logging on)" : string.Empty));
         log.Debug("App", $"Theme: {settings.Theme}");

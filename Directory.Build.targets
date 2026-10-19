@@ -1,0 +1,23 @@
+<Project>
+  <!-- The SDK has added "+<commit>" to InformationalVersion (from git, through Source Link).
+       A build from a working tree with uncommitted changes gets ".dirty" after it, so it is not
+       taken for the commit's own build. Skipped outside git, where there is no commit. -->
+  <Target Name="MarkDirtyBuild"
+          BeforeTargets="GetAssemblyAttributes"
+          DependsOnTargets="AddSourceRevisionToInformationalVersion"
+          Condition="'$(SourceRevisionId)' != ''">
+    <!-- Without git on the PATH, the exit code is not 0 and the build is not marked. -->
+    <Exec Command="git status --porcelain"
+          WorkingDirectory="$(MSBuildThisFileDirectory)"
+          ConsoleToMSBuild="true"
+          StandardOutputImportance="low"
+          StandardErrorImportance="low"
+          IgnoreExitCode="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_GitChanges" />
+      <Output TaskParameter="ExitCode" PropertyName="_GitExitCode" />
+    </Exec>
+    <PropertyGroup Condition="'$(_GitExitCode)' == '0' and '$(_GitChanges)' != ''">
+      <InformationalVersion>$(InformationalVersion).dirty</InformationalVersion>
+    </PropertyGroup>
+  </Target>
+</Project>
