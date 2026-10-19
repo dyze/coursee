@@ -66,6 +66,14 @@ public class AppVersionTests
     }
 
     [Fact]
+    public void BuildOf_BuiltAssembly_StartsWithItsVersion()
+    {
+        var assembly = typeof(AppVersion).Assembly;
+
+        Assert.StartsWith(AppVersion.Of(assembly), AppVersion.BuildOf(assembly));
+    }
+
+    [Fact]
     public void WithCommitOf_BuiltAssembly_StartsWithItsVersion()
     {
         var assembly = typeof(AppVersion).Assembly;

@@ -4,13 +4,26 @@ using Coursee.UI.Platform;
 
 namespace Coursee.UI.Views;
 
-/// <summary>A message (with an option, for a notice) or a yes / no question, in the app's theme, centered on its owner.</summary>
+/// <summary>
+/// A message (with an option, for a notice) or a yes / no question, in the app's theme, centered on its owner.
+/// Without an owner (at startup, before any window), it is centered on the screen, on top, with a taskbar button.
+/// </summary>
 public partial class MessageDialog : Window
 {
-    private MessageDialog(Window owner, string message, bool question)
+    private MessageDialog(Window? owner, string message, bool question)
     {
         InitializeComponent();
-        Owner = owner;
+        if (owner is null)
+        {
+            WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            ShowInTaskbar = true;
+            Topmost = true;
+        }
+        else
+        {
+            Owner = owner;
+        }
+
         MessageText.Text = message;
         YesButton.Content = question ? "Yes" : "OK";
 
@@ -24,7 +37,7 @@ public partial class MessageDialog : Window
         Loaded += (_, _) => YesButton.Focus();
     }
 
-    public static void Inform(Window owner, string message) =>
+    public static void Inform(Window? owner, string message) =>
         new MessageDialog(owner, message, question: false).ShowDialog();
 
     /// <summary>
@@ -43,7 +56,7 @@ public partial class MessageDialog : Window
     }
 
     /// <summary>True when the user answered Yes.</summary>
-    public static bool Confirm(Window owner, string question) =>
+    public static bool Confirm(Window? owner, string question) =>
         new MessageDialog(owner, question, question: true).ShowDialog() == true;
 
     private void YesButton_Click(object sender, RoutedEventArgs e) => DialogResult = true;

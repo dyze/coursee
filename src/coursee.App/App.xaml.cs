@@ -22,6 +22,9 @@ public partial class App : Application
     private HotkeyService? _hotkey;
     private LogHub? _logHub;
     private SingleInstance? _singleInstance;
+
+    // How long a copy of another build may take to quit when this one replaces it.
+    private static readonly TimeSpan ReplaceTimeout = TimeSpan.FromSeconds(10);
     private MainWindow? _window;
     private LogWindow? _logWindow;
     private TrayIcon? _tray;
@@ -34,27 +37,33 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
-        // Another copy is running: it has been asked to show its launcher, so this one leaves.
-        _singleInstance = SingleInstance.TryClaim(() => Dispatcher.BeginInvoke(() => _window?.ShowFromOutside()));
+        var files = AppFiles.For(
+            AppContext.BaseDirectory,
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+        var settings = new SettingsStore(files.Settings);
+
+        // Before any window (the single-instance dialogs too) or the tray menu is created.
+        AppTheme.ApplyToTrayMenu(settings.Theme);
+        AppTheme.Apply(settings.Theme);
+
+        var executablePath = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "coursee.exe");
+        var self = new InstanceIdentity(AppVersion.BuildOf(typeof(App).Assembly), executablePath);
+        _singleInstance = ClaimSingleInstance(self, out var replaced);
         if (_singleInstance is null)
         {
             Shutdown(0);
             return;
         }
 
-        var files = AppFiles.For(
-            AppContext.BaseDirectory,
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
-        var settings = new SettingsStore(files.Settings);
-
-        // Before any window or the tray menu is created.
-        AppTheme.ApplyToTrayMenu(settings.Theme);
-        AppTheme.Apply(settings.Theme);
         _logHub = new LogHub(files.Logs, settings.DebugLogging);
         var log = _logHub.Filter;
         log.Info("App", $"coursee {AppVersion.WithCommitOf(typeof(App).Assembly)} started"
             + (files.IsPortable ? " (portable)" : string.Empty)
             + (settings.DebugLogging ? " (debug logging on)" : string.Empty));
+        if (replaced is not null)
+        {
+            log.Info("App", $"Replaced {replaced.Describe()}");
+        }
         log.Debug("App", $"Theme: {settings.Theme}");
 
         DispatcherUnhandledException += (_, args) =>
@@ -133,8 +142,6 @@ public partial class App : Application
 
         var entries = new EntryStore(files.Entries);
         var customEntryEditor = new CustomEntryEditor(customEntries, entries, recents);
-
-        var executablePath = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "coursee.exe");
 
         var autoStart = new RegistryAutoStart(executablePath);
         UpgradeAutoStart(autoStart, log);
@@ -299,6 +306,59 @@ public partial class App : Application
 
         window.Activate();
     }
+
+    /// <summary>
+    /// The instance guard, when this copy runs; null when it must leave. When another copy runs:
+    /// the same build is shown (as if the hotkey was pressed); another build can be replaced, after
+    /// asking (<paramref name="replaced"/> is then that build).
+    /// </summary>
+    private SingleInstance? ClaimSingleInstance(InstanceIdentity self, out InstanceIdentity? replaced)
+    {
+        replaced = null;
+        var claimed = SingleInstance.TryClaim(self, OnShowRequested, OnQuitRequested);
+        if (claimed is not null)
+        {
+            return claimed;
+        }
+
+        var running = SingleInstance.ReadRunning();
+        switch (InstanceConflict.Compare(running, self))
+        {
+            case InstanceConflictKind.SameBuild:
+                SingleInstance.RequestShow();
+                return null;
+
+            case InstanceConflictKind.Unknown:
+                MessageDialog.Inform(null, InstanceConflict.UnknownMessage);
+                SingleInstance.RequestShow();
+                return null;
+        }
+
+        if (!MessageDialog.Confirm(null, InstanceConflict.ReplaceQuestion(running!, self)))
+        {
+            SingleInstance.RequestShow();
+            return null;
+        }
+
+        claimed = SingleInstance.TryReplace(self, OnShowRequested, OnQuitRequested, ReplaceTimeout);
+        if (claimed is null)
+        {
+            MessageDialog.Inform(null, InstanceConflict.NotClosedMessage);
+            return null;
+        }
+
+        replaced = running;
+        return claimed;
+    }
+
+    // Called on a background thread by SingleInstance.
+    private void OnShowRequested() => Dispatcher.BeginInvoke(() => _window?.ShowFromOutside());
+
+    private void OnQuitRequested() => Dispatcher.BeginInvoke(() =>
+    {
+        _logHub?.Filter.Info("App", "Quit: replaced by another build");
+        Shutdown();
+    });
 
     protected override void OnExit(ExitEventArgs e)
     {

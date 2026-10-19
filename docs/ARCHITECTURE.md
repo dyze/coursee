@@ -38,7 +38,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `Settings/` | `SettingsStore`, `SettingsCatalog` (the entries of the Settings window, their tabs, and the search that finds them), `KeyBindings` (the keys listed in Settings > Keys) |
 | `Sources/` | `IResourceSource`, `SourceCatalog` (the current list of sources, see [Folder sources](#folder-sources)), `FolderSources` (their naming rules), `IQuickAccessReader`, `SourceLoader`, `SourceMonitor`, `SourceIcons` (the icon of each source, found by name for a row), and each source with the interface it needs from `App` (`CustomSource` reads `CustomEntryStore`); `BookmarkUrls` and `ChromiumBookmarks` (Edge's file format, shared by Chrome) for the browser sources |
 | `Games/` | The game launcher sources, see [Games](#games): `SteamSource` and `VdfNode` (Valve's text format), `EpicSource`, `GogSource` and `IGogGamesReader` |
-| `Platform/` | The other interfaces `App` implements (`IAutoStart`, `IHotkeyRegistrar`, `IBrowserLocator`) and their rules (`AutoStartCommand`, `HotkeyGesture`) |
+| `Platform/` | The other interfaces `App` implements (`IAutoStart`, `IHotkeyRegistrar`, `IBrowserLocator`) and their rules (`AutoStartCommand`, `HotkeyGesture`); `InstanceIdentity` and `InstanceConflict` (see [Single instance](#single-instance)) |
 | `Logging/` | `ILog`, `LogEntry`, `RingLog`, `CompositeLog`, `FilteredLog` |
 | `Placement/` | Window positions: `WindowPlacement`, `PlacementRules`, `PlacementStore` (see [Window positions](#window-positions)) |
 | `Updates/` | The daily update check: `UpdateChecker` (once a day, newer or not), the Settings button is marked until the release is seen: opening Settings > About acknowledges it (`ShouldNotify`, `Acknowledge`), and a later release or another installed version marks it again; the About tab is marked while a newer release exists; `Release` (GitHub's answer, version comparison), `IReleaseFeed`, `UpdateStore` (`updates.json`: state, not a setting) |
@@ -223,6 +223,25 @@ Enter on a game: `ResourceActions.GameStart` splits the target (`CommandLine`); 
 - **Freezes**: `UiWatchdog` (App) asks the UI thread to answer every 0.5 s; `FreezeWatch` (Core, tested) logs a Warning once it has not answered for 2 s, and again when it answers, with how long. The first line is written while frozen, so a freeze leaves a trace even if coursee is then ended by force.
 - Never logged: keystrokes in the search box, secrets.
 - Local only: 3 files x 1 MB, plus the last 1000 entries in memory for the log window.
+
+## Single instance
+One coursee per Windows session (`SingleInstance`, in `App`). The first copy owns the mutex `Local\coursee-single-instance`, publishes its `InstanceIdentity` (full build `0.8.1+<commit>[.dirty]` and exe path) in the shared memory `Local\coursee-identity`, and waits on the events `Local\coursee-show-launcher` and `Local\coursee-quit`. A later copy decides with `InstanceConflict` (`Core`):
+
+```
+second copy starts ─ mutex taken? ─ no ──► runs
+                          │ yes
+                  read identity (shared memory)
+        ┌─────────────────┼─────────────────────┐
+     same build       other build         none (≤ 0.8.1)
+        │                 │                     │
+  set show event    ask "Close the running    message: quit it
+     and exit       one and start this one?"  from the tray;
+                     │ yes            │ no     show it, exit
+             set quit event,    show it, exit
+             wait for the mutex (10 s), run
+```
+
+The build is compared, not the path: a portable and an installed copy of the same build are the same; a rebuild at the same path is not. A copy run as administrator cannot be read by a normal one, so it counts as "none".
 
 ## Versioning
 `<Version>` in `Directory.Build.props` is the only place the version is written. It is stamped into every assembly (AssemblyVersion, FileVersion, InformationalVersion), read back through `AppVersion` in `Core`, and passed to the installer by `build/installer.cmd`. Rules: [GOAL.md](GOAL.md#versioning).

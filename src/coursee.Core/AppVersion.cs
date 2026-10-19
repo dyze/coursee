@@ -19,6 +19,9 @@ public static class AppVersion
     /// <summary>Version of the given assembly with the commit it was built from (for example "0.8.1 (97bddb2)").</summary>
     public static string WithCommitOf(Assembly assembly) => FormatWithCommit(Informational(assembly));
 
+    /// <summary>The full build identity of the given assembly, to compare builds: "0.8.1+&lt;commit&gt;[.dirty]".</summary>
+    public static string BuildOf(Assembly assembly) => Informational(assembly) ?? "unknown";
+
     /// <summary>Drops the build metadata the SDK appends after '+' (the source revision).</summary>
     public static string Format(string? raw)
     {
