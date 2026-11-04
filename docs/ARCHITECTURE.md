@@ -5,7 +5,7 @@
 ```
 coursee.App   (WPF, Windows only)
 │  launcher, settings window, log window, tray icon
-│  adapters: WshShortcutResolver, RegistryRunHistoryReader, RegistryAutoStart,
+│  adapters: ShellLinkResolver, RegistryRunHistoryReader, RegistryAutoStart,
 │            RegistryBrowserLocator, HotkeyService, SerilogFileLog, SingleInstance,
 │            NativeWindows + WindowPlacer (window positions), ShellFolder: ShellQuickAccessReader + ShellAppsFolderReader,
 │            RegistryGameLaunchers, GitHubReleaseFeed

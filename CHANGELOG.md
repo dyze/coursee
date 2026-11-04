@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Faster refresh.** The sources are read in parallel: a refresh now takes as long as the slowest source, not the sum of all of them.
 
 ### Fixed
+- **Faster first refresh.** Shortcuts are resolved through the Windows shell's ShellLink object instead of Windows Script Host. The first refresh after start resolved every Start Menu and Desktop shortcut the slow way (4.1 s seen for the Start Menu); later refreshes were already fast, as resolved shortcuts are kept.
 - **Compact result rows.** The rows of the result list are less tall (the theme's rows are sized for touch), so more results show at once.
 - **No wait on network shortcuts.** A Desktop, Start Menu or folder shortcut to a network share no longer checks that its target exists: an offline share made the refresh wait (31 s seen for the Desktop). Folder or file is read from the shortcut itself.
 - **Recents follow the sources.** The recent list leaves out the items of a source switched off in Settings > Sources (until now, they were still listed). Their history is kept: they come back when the source is switched on. The recent list is updated as soon as a source is switched, like search results.

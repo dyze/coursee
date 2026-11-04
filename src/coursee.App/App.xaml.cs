@@ -82,7 +82,7 @@ public partial class App : Application
             Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),
             Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu),
         };
-        var shortcutResolver = new WshShortcutResolver();
+        var shortcutResolver = new ShellLinkResolver();
         var customEntries = new CustomEntryStore(files.CustomEntries);
 
         var firefoxRoot = Path.Combine(
