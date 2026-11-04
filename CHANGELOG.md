@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-11-04
+
+Faster refresh, build identity, another build detected, freeze and timing logs.
+
 ### Added
 - **Freezes are logged.** When the window stops answering for 2 s or more, a warning is logged, and another one when it answers again, with how long it was frozen.
 - **Another build running is detected.** Starting coursee while another build of it runs (another version, commit or uncommitted changes, from any folder) no longer just shows the old one: coursee names both builds and their paths, and offers to close the running one and start this one. The same build is still just shown. A copy of 0.8.1 or older cannot be asked to close: the message says to quit it from the notification area.
@@ -175,7 +179,8 @@ Hotkey, search, recents, Desktop, Firefox and Run history sources, settings, log
 - **Source: Windows Run history.** The commands previously typed in Win+R, most recent first, are searchable, to ease the move away from Win+R. Switchable in **Sources**.
 - **Logging**, for debugging and feedback: start/stop, changes in each source (items added / removed at each refresh), every action the user triggers, and errors. Written to a size-limited local file and shown live in a **log window** (Settings, section **Logging**) with level and text filters, copy and clear. Info by default; a setting turns on detailed (Debug) logging. Never logged: keystrokes while searching, secrets.
 
-[Unreleased]: https://github.com/dyze/coursee/compare/0.8...HEAD
+[Unreleased]: https://github.com/dyze/coursee/compare/0.8.1...HEAD
+[0.8.1]: https://github.com/dyze/coursee/compare/0.8...0.8.1
 [0.8]: https://github.com/dyze/coursee/compare/0.7...0.8
 [0.7]: https://github.com/dyze/coursee/compare/0.6...0.7
 [0.6]: https://github.com/dyze/coursee/compare/0.5...0.6
