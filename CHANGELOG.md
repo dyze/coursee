@@ -27,6 +27,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [0.8] - 2026-10-15
 
+Portable zip, changelog, packaged apps, Steam, Epic Games and GOG sources.
+
 ### Added
 - **Portable zip.** Each release also has `coursee-portable-<version>.zip`: the self-contained coursee.exe and a `portable.txt` marker. While the marker is next to the exe, coursee keeps its data (settings, entries, logs) in a `data` folder beside it instead of `%LOCALAPPDATA%\coursee`, so it runs from a USB stick. The update check links to the release page, which has both the installer and the zip.
 - **Changelog.** This file replaces the released versions' sections of the roadmap. The installer and the zip include it; the last page of setup offers to open it, and *Show changelog* in Settings > About opens it in a window of its own.
@@ -53,7 +55,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [0.7] - 2026-10-14
 
-Getting ready for other users.
+Getting ready for other users: folder sources, Quick access, safety notice, typed commands switch, About, updates.
 
 ### Added
 - **About tab.** A new Settings tab: version, links to the GitHub repository and its issues page.
@@ -65,6 +67,8 @@ Getting ready for other users.
   - **Quick access.** Each folder pinned in Explorer's *Quick access* (the standard ones and the user's own pins) is a folder source too, kept in sync with Explorer: pinning `D:\code` there makes its files searchable. These have a checkbox only (no ✕); they are removed by unpinning them in Explorer. An entry found in two folder sources (Desktop added and pinned) is listed once.
 
 ## [0.6] - 2026-10-14
+
+Coverage, hide entries, custom entries, Entries and Keys tabs, Desktop files.
 
 ### Added
 - **Hide an entry.** Ctrl+H, or the hide icon on the row, hides the selected entry from results and recents, to remove noise such as duplicate shortcuts or old bookmarks. A hidden entry is that exact row: its source, name and target, so one of two shortcuts to the same program can be hidden. An alias of a hidden entry finds nothing. Typed text cannot be hidden. Hidden entries are restored in the **Entries** tab.
@@ -83,6 +87,8 @@ Getting ready for other users.
 
 ## [0.5] - 2026-10-13
 
+Accents ignored, copy, most used first, pins, aliases.
+
 ### Added
 - **Ignore accents.** Matching ignores accents: `evene` finds *Événements*, `parametres` finds *Paramètres*. A setting in Settings > General, on by default, switches it off. Aliases always ignore accents.
 - **Copy the target.** Ctrl+C copies the selected entry's path, URL or command, and the launcher stays open (the second line under the search box says it was copied). If text is selected in the search box, Ctrl+C copies that text instead.
@@ -96,6 +102,8 @@ Getting ready for other users.
 - **Log window from Settings.** Settings > Logging > *Open log window* opens the log window in front, and Settings and the launcher stay open (until 0.4 both closed). The log window stays open after Settings is closed.
 
 ## 0.4 - 2026-10-13
+
+Launcher position, list keys, Windows settings source, icons, keyboard-only Settings.
 
 ### Added
 - **Launcher position.** Settings > General chooses where the launcher appears each time it is shown:
@@ -116,6 +124,8 @@ Getting ready for other users.
 
 ## 0.3 - 2026-10-12
 
+Code layout, Edge source, right browser, window positions, theme, settings window.
+
 ### Added
 - **Source: Edge favorites.** Bookmarks of the last used Edge profile, real links only (no folders). Switchable in **Sources**.
 - **Open in the right browser.** A Firefox bookmark opens in Firefox, an Edge favorite in Edge, also from recents. If that browser is not found, the default browser is used. The row label says which one ("Open in Firefox").
@@ -130,6 +140,8 @@ Getting ready for other users.
 - **Settings window.** Settings is its own window instead of a panel of the launcher: a dialog over the launcher (closing it goes back to the launcher), which can be moved and resized. Settings are grouped in tabs: General, Appearance, Sources, Logging. The source checkboxes are built from the list of sources.
 
 ## 0.2 - 2026-10-12
+
+Tray icon, Start Menu source, row actions, installer.
 
 ### Added
 - **Tray icon.** Click: show the launcher. Menu: *Show coursee* (with the current hotkey), *Settings*, *Log window*, *Quit*. If no hotkey can be registered, coursee keeps running and is reached from the tray. coursee.exe and the tray use the same icon.
@@ -146,6 +158,8 @@ Getting ready for other users.
 - The temporary Ctrl+Q shortcut (Quit is in the tray menu).
 
 ## 0.1 - 2026-10-11
+
+Hotkey, search, recents, Desktop, Firefox and Run history sources, settings, logging.
 
 ### Added
 - **Hotkey and window.** A global hotkey toggles the compact window. Only one copy of coursee runs: starting it again shows the launcher of the running copy.
