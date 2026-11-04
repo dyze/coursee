@@ -60,7 +60,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `Microsoft.Data.Sqlite` | Core | Read Firefox bookmarks (`places.sqlite`) |
 | `Serilog`, `Serilog.Sinks.File` | App | Log file |
 | `coverlet.msbuild` | Tests | Coverage of `Core`, build fails below 95 % lines |
-| `dotnet-reportgenerator-globaltool` | Local tool (`.config/dotnet-tools.json`) | HTML coverage report (`build.cmd`) |
+| `dotnet-reportgenerator-globaltool` | Local tool (`.config/dotnet-tools.json`) | HTML coverage report (`build/build.cmd`) |
 
 The update check uses .NET's own `HttpClient` (`GitHubReleaseFeed` in App): coursee's only network access, see [GOAL.md](GOAL.md#principles).
 

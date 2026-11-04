@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Summon timing is logged.** With detailed (Debug) logging, showing the launcher logs how long the hotkey press waited before coursee handled it, and how long the first frame took after that.
 
 ### Changed
+- **Build scripts moved.** `build.cmd` and `build.sh` are now in `build/`, next to `installer.cmd`: run `build\build.cmd` (or `./build/build.sh`).
 - **Faster refresh.** The sources are read in parallel: a refresh now takes as long as the slowest source, not the sum of all of them.
 
 ### Fixed

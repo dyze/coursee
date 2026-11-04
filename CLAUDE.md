@@ -38,7 +38,7 @@ Only those listed in `docs/ARCHITECTURE.md#stack`. Ask before adding one.
 - **Do it well.** Prefer the clean, simple solution over the quick hack.
 - **Ask before** adding a dependency, changing the architecture, doing a large refactor, or touching anything listed as a non-goal.
 - **Tests.** Every change in `Core` comes with xUnit tests.
-- **Build honesty.** Claude's workspace has no .NET SDK, so it cannot build or run tests. Never claim the code builds; ask the owner to run `build.cmd` and report errors.
+- **Build honesty.** Claude's workspace has no .NET SDK, so it cannot build or run tests. Never claim the code builds; ask the owner to run `build\build.cmd` and report errors.
 - **Docs.** One home per fact:
   - user-facing behavior → `README.md`
   - version scope → `docs/ROADMAP.md` (planned features)
@@ -64,8 +64,8 @@ Only those listed in `docs/ARCHITECTURE.md#stack`. Ask before adding one.
 * Remove dead code.
 * Avoid long modules. Move large, monolithic classes or methods into separate `.cs` files or helper classes to keep individual files concise and maintainable.
 * Avoid redundant code.
-* Validate with the owner's `build.cmd` run (see Build honesty).
-* Maintain Core library sub-systems code coverage target of **>=95%** (line coverage, enforced by `build.cmd`).
+* Validate with the owner's `build\build.cmd` run (see Build honesty).
+* Maintain Core library sub-systems code coverage target of **>=95%** (line coverage, enforced by `build\build.cmd`).
 * Reduce build warnings.
 
 ## Git
@@ -75,4 +75,4 @@ Only those listed in `docs/ARCHITECTURE.md#stack`. Ask before adding one.
 - No AI attribution in commit messages or PR descriptions (no `Co-Authored-By: Claude …`, no "Generated with Claude Code").
 
 ## Definition of done
-Code is written, tests cover the new `Core` behavior, docs are updated, and the owner has run `build.cmd` successfully.
+Code is written, tests cover the new `Core` behavior, docs are updated, and the owner has run `build\build.cmd` successfully.

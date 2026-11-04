@@ -10,8 +10,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "coursee.Core.Tests", "tests
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{D48AA18F-D564-42B4-8345-CB9A2DC7889F}"
 	ProjectSection(SolutionItems) = preProject
-		build.cmd = build.cmd
-		build.sh = build.sh
+		build\build.cmd = build\build.cmd
+		build\build.sh = build\build.sh
 		CLAUDE.md = CLAUDE.md
 		LICENSE = LICENSE
 		README.md = README.md

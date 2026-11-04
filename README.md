@@ -127,13 +127,13 @@ coursee logs start/stop, items added / removed in each source, every action you 
 Requires the .NET 10 SDK.
 
 ```
-build.cmd     # Windows
-./build.sh    # Linux / macOS (builds and tests; the app itself only runs on Windows)
+build\build.cmd     # Windows
+./build/build.sh    # Linux / macOS (builds and tests; the app itself only runs on Windows)
 ```
 
 Both restore, build in Release and run the tests. Output goes to `artifacts/`. The version is set in `Directory.Build.props` only.
 
-The build fails if `Core` line coverage is below **95 %**. `build.cmd` first closes any running coursee (it would lock its files in `artifacts/`), and also writes an HTML coverage report to `artifacts/coverage/report/`; `build.cmd open` opens it in the browser.
+The build fails if `Core` line coverage is below **95 %**. `build\build.cmd` first closes any running coursee (it would lock its files in `artifacts/`), and also writes an HTML coverage report to `artifacts/coverage/report/`; `build\build.cmd open` opens it in the browser.
 
 ## Layout
 
@@ -142,7 +142,7 @@ The build fails if `Core` line coverage is below **95 %**. `build.cmd` first clo
 | `src/` | `coursee.App` (WPF) and `coursee.Core` |
 | `tests/` | Unit tests for `Core` |
 | `docs/` | Documentation |
-| `build/` | Installer and portable zip script (`installer.cmd`, `installer/coursee.iss`), icon generator (`make_icon.py`) |
+| `build/` | Build and test scripts (`build.cmd`, `build.sh`), installer and portable zip script (`installer.cmd`, `installer/coursee.iss`), icon generator (`make_icon.py`) |
 | `lib/` | Third-party binaries, if any |
 | `packages/` | Local NuGet packages, if any |
 | `samples/` | Samples |

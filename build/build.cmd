@@ -1,6 +1,6 @@
 @echo off
 setlocal
-cd /d "%~dp0"
+cd /d "%~dp0.."
 set COVERAGE_DIR=artifacts\coverage
 
 rem A running coursee locks its files in artifacts\ and makes the build fail. Quiet when none runs.
