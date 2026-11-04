@@ -101,7 +101,8 @@ public partial class MainWindow : Window
             : $"Settings (Tab, then Enter). coursee {available.Version} is available: see About";
     }
 
-    public void Toggle()
+    /// <param name="hotkeyWait">How long the hotkey press waited before coursee handled it.</param>
+    public void Toggle(TimeSpan hotkeyWait)
     {
         if (_settingsDialog is not null)
         {
@@ -114,6 +115,7 @@ public partial class MainWindow : Window
         }
         else
         {
+            _log.Debug("Window", $"Hotkey handled {hotkeyWait.TotalMilliseconds:0} ms after the press");
             ShowLauncher();
         }
     }
@@ -139,6 +141,7 @@ public partial class MainWindow : Window
     private void ShowLauncher()
     {
         _log.Debug("Window", "Shown");
+        var watch = Stopwatch.StartNew();
 
         // Show the list from the last refresh at once; the fresh one replaces it when ready.
         SearchBox.Text = string.Empty;
@@ -147,6 +150,11 @@ public partial class MainWindow : Window
         Show();
         Activate();
         SearchBox.Focus();
+
+        // ContextIdle comes after the layout and render passes: the first frame is handed to the render thread.
+        Dispatcher.BeginInvoke(
+            () => _log.Debug("Window", $"First frame ready in {watch.ElapsedMilliseconds} ms"),
+            System.Windows.Threading.DispatcherPriority.ContextIdle);
         RefreshResources();
         CheckForUpdates();
 

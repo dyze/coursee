@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Another build running is detected.** Starting coursee while another build of it runs (another version, commit or uncommitted changes, from any folder) no longer just shows the old one: coursee names both builds and their paths, and offers to close the running one and start this one. The same build is still just shown. A copy of 0.8.1 or older cannot be asked to close: the message says to quit it from the notification area.
 - **Build commit shown.** Settings > About and the startup log line show the git commit the build comes from, as in `0.8.1 (97bddb2)`, with `-dirty` when it was built with uncommitted changes. The window corner still shows the version alone.
 - **Refresh start is logged.** With detailed (Debug) logging, each refresh logs "Refreshing the sources" when it starts, before its timings.
+- **Summon timing is logged.** With detailed (Debug) logging, showing the launcher logs how long the hotkey press waited before coursee handled it, and how long the first frame took after that.
 
 ### Changed
 - **Faster refresh.** The sources are read in parallel: a refresh now takes as long as the slowest source, not the sum of all of them.

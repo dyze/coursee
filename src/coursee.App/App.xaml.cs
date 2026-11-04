@@ -149,7 +149,7 @@ public partial class App : Application
         var version = AppVersion.Of(typeof(App).Assembly);
         var updates = new UpdateChecker(new GitHubReleaseFeed(version), new UpdateStore(files.UpdateCheck), version, log: log);
         var logHub = _logHub;
-        _hotkey = new HotkeyService(() => _window?.Toggle());
+        _hotkey = new HotkeyService(waited => _window?.Toggle(waited));
         var hotkey = _hotkey;
         _window = new MainWindow(
             sources,

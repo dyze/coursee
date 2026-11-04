@@ -18,10 +18,11 @@ public sealed class HotkeyService : IHotkeyRegistrar, IDisposable
     private static readonly IntPtr HwndMessage = new(-3);
 
     private readonly HwndSource _source;
-    private readonly Action _onPressed;
+    private readonly Action<TimeSpan> _onPressed;
     private HotkeyGesture? _current;
 
-    public HotkeyService(Action onPressed)
+    /// <param name="onPressed">Gets how long the press waited in the message queue before coursee handled it.</param>
+    public HotkeyService(Action<TimeSpan> onPressed)
     {
         _onPressed = onPressed;
 
@@ -107,7 +108,7 @@ public sealed class HotkeyService : IHotkeyRegistrar, IDisposable
         {
             if (!Paused)
             {
-                _onPressed();
+                _onPressed(SincePosted());
             }
 
             handled = true;
@@ -115,6 +116,10 @@ public sealed class HotkeyService : IHotkeyRegistrar, IDisposable
 
         return IntPtr.Zero;
     }
+
+    /// <summary>Both clocks count milliseconds since boot and wrap together, so unchecked subtraction stays right.</summary>
+    private static TimeSpan SincePosted() =>
+        TimeSpan.FromMilliseconds(Math.Max(0, unchecked(Environment.TickCount - GetMessageTime())));
 
     public void Dispose()
     {
@@ -127,4 +132,7 @@ public sealed class HotkeyService : IHotkeyRegistrar, IDisposable
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+
+    [DllImport("user32.dll")]
+    private static extern int GetMessageTime();
 }
