@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9] - 2026-11-09
+
+Add from Explorer, entry and web site icons, new app icon, one set of SVG icons.
+
 ### Added
 - **Entry icons.** Rows show their entry's own icon (a file's, a program's, a folder's, an app's, a game's, a web site's) instead of their source's, when there is one. Site icons come from what Firefox and Edge already keep on the PC: nothing is downloaded. **Ctrl+I** chooses another: one of the 119 icons that come with coursee, or a file of yours (an image, a program's icon, or a simple SVG), copied into coursee's data. Settings > Entries lists the chosen icons ([Entry icons](README.md#behavior-notes)).
 - **Add from Explorer.** *Add to coursee*, in Explorer's right-click menu on any file or folder, makes it a custom entry: the launcher opens with its path typed and the name box open, filled with its name. On Windows 11 it is under *Show more options*. The setup adds it (a task), and Settings > General switches it on and off, in the portable copy too ([Add from Explorer](README.md#behavior-notes)).
@@ -190,7 +194,8 @@ Hotkey, search, recents, Desktop, Firefox and Run history sources, settings, log
 - **Source: Windows Run history.** The commands previously typed in Win+R, most recent first, are searchable, to ease the move away from Win+R. Switchable in **Sources**.
 - **Logging**, for debugging and feedback: start/stop, changes in each source (items added / removed at each refresh), every action the user triggers, and errors. Written to a size-limited local file and shown live in a **log window** (Settings, section **Logging**) with level and text filters, copy and clear. Info by default; a setting turns on detailed (Debug) logging. Never logged: keystrokes while searching, secrets.
 
-[Unreleased]: https://github.com/dyze/coursee/compare/0.8.1...HEAD
+[Unreleased]: https://github.com/dyze/coursee/compare/0.9...HEAD
+[0.9]: https://github.com/dyze/coursee/compare/0.8.1...0.9
 [0.8.1]: https://github.com/dyze/coursee/compare/0.8...0.8.1
 [0.8]: https://github.com/dyze/coursee/compare/0.7...0.8
 [0.7]: https://github.com/dyze/coursee/compare/0.6...0.7

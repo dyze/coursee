@@ -4,10 +4,10 @@ Scope of each planned version. Implemented features move to [CHANGELOG.md](../CH
 
 | Version | Status  | Theme                          |
 | ------- | ------- | ------------------------------ |
-| 0.9     | Planned | Explorer integration and icons |
+| 0.9     | Released | Explorer integration and icons |
 
 ## 0.9
-Every planned feature is implemented: see `[Unreleased]` in the changelog.
+Released: see `[0.9]` in the changelog.
 
 ## Later
 1. **Beautify changelog.** Today hard to identify the interesting info reading the md file as is.
