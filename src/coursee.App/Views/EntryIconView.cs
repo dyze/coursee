@@ -52,18 +52,21 @@ public sealed class EntryIconView : FrameworkElement
 
     protected override Size MeasureOverride(Size availableSize) => new(Size, Size);
 
+    /// <summary>The icon's square, centred in the room the view was given (stretched in a row taller than the icon, say).</summary>
+    private Point Square => new(Math.Max(0, (ActualWidth - Size) / 2), Math.Max(0, (ActualHeight - Size) / 2));
+
     protected override void OnRender(DrawingContext drawingContext)
     {
         if (Visual?.Image is { } image)
         {
-            drawingContext.DrawImage(image, new Rect(0, 0, Size, Size));
+            drawingContext.DrawImage(image, new Rect(Square.X, Square.Y, Size, Size));
         }
         else if (Visual is { Geometry: { } geometry, ViewBox: var box })
         {
             // The view box fills the square, centred, its proportions kept.
             var scale = Size / Math.Max(box.Width, box.Height);
-            var left = (Size - box.Width * scale) / 2 - box.X * scale;
-            var top = (Size - box.Height * scale) / 2 - box.Y * scale;
+            var left = Square.X + (Size - box.Width * scale) / 2 - box.X * scale;
+            var top = Square.Y + (Size - box.Height * scale) / 2 - box.Y * scale;
             drawingContext.PushTransform(new MatrixTransform(scale, 0, 0, scale, left, top));
             drawingContext.DrawGeometry(Foreground, null, geometry);
             drawingContext.Pop();

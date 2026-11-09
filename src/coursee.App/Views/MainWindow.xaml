@@ -184,7 +184,7 @@
                   VerticalAlignment="Center"
                   Background="Transparent"
                   ToolTip="{Binding Resource.Source, Converter={StaticResource SourceIcon}, ConverterParameter=Label}">
-              <views:EntryIconView Size="20"
+              <views:EntryIconView Size="24"
                                    HorizontalAlignment="Center"
                                    Opacity="0.6"
                                    IconName="{Binding Resource.Source, Converter={StaticResource SourceIcon}}"
