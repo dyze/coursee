@@ -15,4 +15,5 @@ Scope of each planned version. Implemented features move to [CHANGELOG.md](../CH
 6. **Sign installer.** To make it more secure, use a certificate to sign all installers coming from the developer.
 7. **End user manual.** A html manual is shipped with installer and available thru a "?" icon from App.
 8. **Display scoring.** For helping debugging, the scoring of found entries is shown in the list.
+9. Be able to tag an executable file (cmd, exe...) or a directory by right clicking on it in windows explorer. 
 
