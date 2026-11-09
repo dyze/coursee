@@ -36,7 +36,7 @@ public class SettingsCatalogTests
     {
         var catalog = Catalog();
 
-        Assert.All(catalog.All, entry => Assert.Contains(entry.Tab, catalog.Tabs));
+        Assert.All(catalog.All, entry => Assert.Contains(entry.Tab, SettingsCatalog.Tabs));
     }
 
     [Fact]
@@ -137,7 +137,7 @@ public class SettingsCatalogTests
                 SettingsCatalog.LoggingTab,
                 SettingsCatalog.AboutTab,
             },
-            Catalog().Tabs);
+            SettingsCatalog.Tabs);
     }
 
     [Fact]

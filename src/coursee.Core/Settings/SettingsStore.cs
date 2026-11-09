@@ -70,6 +70,7 @@ public sealed class SettingsStore
         AllowTypedCommands = data?.AllowTypedCommands ?? true;
         SafetyNoticeSeen = data?.SafetyNoticeSeen ?? false;
         CheckForUpdates = data?.CheckForUpdates ?? true;
+        SettingsTab = data?.SettingsTab is { } tab && SettingsCatalog.Tabs.Contains(tab) ? tab : SettingsCatalog.GeneralTab;
     }
 
     /// <summary>The values offered in Settings for the number of recent items to keep.</summary>
@@ -100,6 +101,9 @@ public sealed class SettingsStore
 
     /// <summary>When on, coursee asks GitHub once a day for a newer release (its only network access). On by default.</summary>
     public bool CheckForUpdates { get; private set; }
+
+    /// <summary>The Settings tab shown last, shown again when Settings opens. General by default.</summary>
+    public string SettingsTab { get; private set; }
 
     /// <summary>
     /// The folders the user added as sources, in the order added: <see cref="DesktopFolder"/> or a
@@ -229,6 +233,22 @@ public sealed class SettingsStore
         Save();
     }
 
+    /// <summary>Remembers the tab shown; saved only when it changes.</summary>
+    /// <exception cref="ArgumentException"><paramref name="tab"/> is not one of <see cref="SettingsCatalog.Tabs"/>.</exception>
+    public void SetSettingsTab(string tab)
+    {
+        if (!SettingsCatalog.Tabs.Contains(tab))
+        {
+            throw new ArgumentException("Not a Settings tab", nameof(tab));
+        }
+
+        if (tab != SettingsTab)
+        {
+            SettingsTab = tab;
+            Save();
+        }
+    }
+
     private void Save()
     {
         var directory = Path.GetDirectoryName(_path);
@@ -248,7 +268,8 @@ public sealed class SettingsStore
             _folders,
             AllowTypedCommands,
             SafetyNoticeSeen,
-            CheckForUpdates);
+            CheckForUpdates,
+            SettingsTab);
         File.WriteAllText(_path, JsonSerializer.Serialize(data));
     }
 
@@ -277,5 +298,6 @@ public sealed class SettingsStore
         List<string>? Folders = null,
         bool? AllowTypedCommands = null,
         bool? SafetyNoticeSeen = null,
-        bool? CheckForUpdates = null);
+        bool? CheckForUpdates = null,
+        string? SettingsTab = null);
 }

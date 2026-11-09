@@ -128,8 +128,8 @@ public partial class SettingsWindow : Window
         KeyBindingsList.ItemsSource = keyBindings;
 
         LoadValues();
-        TabList.ItemsSource = _catalog.Tabs;
-        TabList.SelectedIndex = 0;
+        TabList.ItemsSource = SettingsCatalog.Tabs;
+        TabList.SelectedItem = _settings.SettingsTab;
 
         Loaded += (_, _) => (_focusHotkey ? (UIElement)HotkeyButton : FindBox).Focus();
         Closed += (_, _) => StopCapturingHotkey();
@@ -458,9 +458,28 @@ public partial class SettingsWindow : Window
     private void TabList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         UpdateSections();
+        RememberTab();
         if (TabList.SelectedItem as string == SettingsCatalog.AboutTab)
         {
             AcknowledgeUpdate();
+        }
+    }
+
+    /// <summary>The tab shown opens again next time. Not worth a message when it cannot be saved.</summary>
+    private void RememberTab()
+    {
+        if (TabList.SelectedItem is not string tab)
+        {
+            return;
+        }
+
+        try
+        {
+            _settings.SetSettingsTab(tab);
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            _log.Warn("Settings", $"Cannot save the Settings tab: {ex.Message}");
         }
     }
 
@@ -594,7 +613,7 @@ public partial class SettingsWindow : Window
     {
         FindBox.Clear();
 
-        var count = _catalog.Tabs.Count;
+        var count = SettingsCatalog.Tabs.Count;
         var index = (Math.Max(TabList.SelectedIndex, 0) + step + count) % count;
         TabList.SelectedIndex = index;
         if (TabList.ItemContainerGenerator.ContainerFromIndex(index) is UIElement tab)

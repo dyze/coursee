@@ -86,7 +86,7 @@ public sealed class SettingsCatalog
     }
 
     /// <summary>The tabs, in the order they are shown.</summary>
-    public IReadOnlyList<string> Tabs { get; } = [GeneralTab, AppearanceTab, SourcesTab, EntriesTab, KeysTab, LoggingTab, AboutTab];
+    public static IReadOnlyList<string> Tabs { get; } = [GeneralTab, AppearanceTab, SourcesTab, EntriesTab, KeysTab, LoggingTab, AboutTab];
 
     public IReadOnlyList<SettingInfo> All { get; }
 

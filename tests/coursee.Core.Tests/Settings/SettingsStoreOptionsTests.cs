@@ -159,12 +159,34 @@ public sealed class SettingsStoreOptionsTests : IDisposable
     public void UnreadableValues_FallBackToDefaults()
     {
         Directory.CreateDirectory(_directory);
-        File.WriteAllText(FilePath, """{ "Hotkey": "nonsense", "RecentsCapacity": 0 }""");
+        File.WriteAllText(FilePath, """{ "Hotkey": "nonsense", "RecentsCapacity": 0, "SettingsTab": "Gone" }""");
 
         var store = new SettingsStore(FilePath);
 
         Assert.Equal(HotkeyGesture.Default, store.Hotkey);
         Assert.Equal(20, store.RecentsCapacity);
+        Assert.Equal(SettingsCatalog.GeneralTab, store.SettingsTab);
+    }
+
+    [Fact]
+    public void SettingsTab_IsGeneralByDefault_AndPersisted()
+    {
+        Assert.Equal(SettingsCatalog.GeneralTab, new SettingsStore(FilePath).SettingsTab);
+
+        new SettingsStore(FilePath).SetSettingsTab(SettingsCatalog.EntriesTab);
+
+        Assert.Equal(SettingsCatalog.EntriesTab, new SettingsStore(FilePath).SettingsTab);
+    }
+
+    [Fact]
+    public void SetSettingsTab_RejectsAnUnknownTab_AndDoesNotSaveTheSameOne()
+    {
+        var store = new SettingsStore(FilePath);
+
+        Assert.Throws<ArgumentException>(() => store.SetSettingsTab("Gone"));
+        store.SetSettingsTab(SettingsCatalog.GeneralTab);
+
+        Assert.False(File.Exists(FilePath));
     }
 
     [Fact]

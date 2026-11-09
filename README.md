@@ -55,7 +55,7 @@ Two lines under the search box say which keys apply to the selected item: what E
 
 ## Settings
 
-Gear button in the launcher, or tray menu > Settings. A dialog over the launcher: changes are saved at once, Esc (or closing it) goes back to the launcher. It can be moved and resized.
+Gear button in the launcher, or tray menu > Settings. A dialog over the launcher: changes are saved at once, Esc (or closing it) goes back to the launcher. It can be moved and resized, and opens on the tab shown last.
 
 | Tab | Options |
 | --- | --- |
