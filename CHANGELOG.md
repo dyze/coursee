@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **Add from Explorer.** *Add to coursee*, in Explorer's right-click menu on any file or folder, makes it a custom entry: the launcher opens with its path typed and the name box open, filled with its name. On Windows 11 it is under *Show more options*. The setup adds it (a task), and Settings > General switches it on and off, in the portable copy too ([Add from Explorer](README.md#behavior-notes)).
+
 ### Changed
 - **Versions under development end in `-dev`** (`0.9-dev`), shown so in the window, the tray and Settings > About, so a build between releases is not taken for one; the update check offers the release to it ([Versioning](docs/GOAL.md#versioning)).
 

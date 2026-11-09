@@ -171,6 +171,16 @@ public class SettingsCatalogTests
         Assert.Equal(SettingsCatalog.AboutTab, Catalog().All.Single(entry => entry.Id == id).Tab);
     }
 
+    [Theory]
+    [InlineData("right-click")]
+    [InlineData("context menu")]
+    public void Find_FindsTheExplorerMenu_InTheGeneralTab(string query)
+    {
+        Assert.Contains(Catalog().Find("explorer"), entry => entry.Id == SettingsCatalog.ExplorerMenuId);
+        Assert.Equal(SettingsCatalog.ExplorerMenuId, Assert.Single(Catalog().Find(query)).Id);
+        Assert.Equal(SettingsCatalog.GeneralTab, Catalog().All.Single(entry => entry.Id == SettingsCatalog.ExplorerMenuId).Tab);
+    }
+
     [Fact]
     public void Find_FindsAddFolder_InTheSourcesTab()
     {

@@ -48,7 +48,8 @@ public partial class App : Application
 
         var executablePath = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "coursee.exe");
         var self = new InstanceIdentity(AppVersion.BuildOf(typeof(App).Assembly), executablePath);
-        _singleInstance = ClaimSingleInstance(self, out var replaced);
+        var pathToAdd = ExplorerMenuCommand.PathToAdd(e.Args);
+        _singleInstance = ClaimSingleInstance(self, pathToAdd, out var replaced);
         if (_singleInstance is null)
         {
             Shutdown(0);
@@ -144,6 +145,7 @@ public partial class App : Application
         var customEntryEditor = new CustomEntryEditor(customEntries, entries, recents);
 
         var autoStart = new RegistryAutoStart(executablePath);
+        var explorerMenu = new RegistryExplorerMenu(executablePath);
         UpgradeAutoStart(autoStart, log);
         var placer = new WindowPlacer(new PlacementStore(files.WindowPositions), log);
         var version = AppVersion.Of(typeof(App).Assembly);
@@ -170,6 +172,7 @@ public partial class App : Application
                     customEntries,
                     customEntryEditor,
                     autoStart,
+                    explorerMenu,
                     hotkey,
                     logHub,
                     files,
@@ -220,8 +223,13 @@ public partial class App : Application
             return;
         }
 
-        // Started by the user or by the installer: show the launcher. At sign-in, stay in the tray.
-        if (AutoStartCommand.StartsHidden(e.Args))
+        // From Explorer: name the new entry. Started by the user or by the installer: show the launcher.
+        // At sign-in, stay in the tray.
+        if (pathToAdd is not null)
+        {
+            Dispatcher.BeginInvoke(() => window.AddFromExplorer(pathToAdd));
+        }
+        else if (AutoStartCommand.StartsHidden(e.Args))
         {
             log.Debug("App", "Started hidden");
         }
@@ -310,12 +318,14 @@ public partial class App : Application
     /// <summary>
     /// The instance guard, when this copy runs; null when it must leave. When another copy runs:
     /// the same build is shown (as if the hotkey was pressed); another build can be replaced, after
-    /// asking (<paramref name="replaced"/> is then that build).
+    /// asking (<paramref name="replaced"/> is then that build). A path from Explorer
+    /// (<paramref name="pathToAdd"/>) goes to the copy that keeps running.
     /// </summary>
-    private SingleInstance? ClaimSingleInstance(InstanceIdentity self, out InstanceIdentity? replaced)
+    private SingleInstance? ClaimSingleInstance(InstanceIdentity self, string? pathToAdd, out InstanceIdentity? replaced)
     {
         replaced = null;
-        var claimed = SingleInstance.TryClaim(self, OnShowRequested, OnQuitRequested);
+        var callbacks = new SingleInstance.Callbacks(OnShowRequested, OnQuitRequested, OnAddRequested);
+        var claimed = SingleInstance.TryClaim(self, callbacks);
         if (claimed is not null)
         {
             return claimed;
@@ -325,10 +335,11 @@ public partial class App : Application
         switch (InstanceConflict.Compare(running, self))
         {
             case InstanceConflictKind.SameBuild:
-                SingleInstance.RequestShow();
+                SingleInstance.RequestShow(pathToAdd);
                 return null;
 
             case InstanceConflictKind.Unknown:
+                // 0.8.1 and older cannot take a path.
                 MessageDialog.Inform(null, InstanceConflict.UnknownMessage);
                 SingleInstance.RequestShow();
                 return null;
@@ -336,11 +347,11 @@ public partial class App : Application
 
         if (!MessageDialog.Confirm(null, InstanceConflict.ReplaceQuestion(running!, self)))
         {
-            SingleInstance.RequestShow();
+            SingleInstance.RequestShow(pathToAdd);
             return null;
         }
 
-        claimed = SingleInstance.TryReplace(self, OnShowRequested, OnQuitRequested, ReplaceTimeout);
+        claimed = SingleInstance.TryReplace(self, callbacks, ReplaceTimeout);
         if (claimed is null)
         {
             MessageDialog.Inform(null, InstanceConflict.NotClosedMessage);
@@ -353,6 +364,8 @@ public partial class App : Application
 
     // Called on a background thread by SingleInstance.
     private void OnShowRequested() => Dispatcher.BeginInvoke(() => _window?.ShowFromOutside());
+
+    private void OnAddRequested(string path) => Dispatcher.BeginInvoke(() => _window?.AddFromExplorer(path));
 
     private void OnQuitRequested() => Dispatcher.BeginInvoke(() =>
     {

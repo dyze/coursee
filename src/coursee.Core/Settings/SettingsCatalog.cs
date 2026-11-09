@@ -26,6 +26,7 @@ public sealed class SettingsCatalog
     public const string HotkeyId = "Hotkey";
     public const string RecentsCapacityId = "RecentsCapacity";
     public const string AutoStartId = "AutoStart";
+    public const string ExplorerMenuId = "ExplorerMenu";
     public const string LauncherPositionId = "LauncherPosition";
     public const string IgnoreAccentsId = "IgnoreAccents";
     public const string AllowTypedCommandsId = "AllowTypedCommands";
@@ -53,6 +54,7 @@ public sealed class SettingsCatalog
         {
             new(RecentsCapacityId, GeneralTab, "Recent items to keep", ["recents", "history", "count", "number"]),
             new(AutoStartId, GeneralTab, "Start coursee when I sign in to Windows", ["auto", "startup", "boot", "login"]),
+            new(ExplorerMenuId, GeneralTab, "Show \"Add to coursee\" in Explorer's right-click menu", ["explorer", "context", "menu", "right-click", "shell", "custom"]),
             new(LauncherPositionId, GeneralTab, "Launcher position", ["place", "where", "mouse", "center", "centre", "monitor", "screen", "window"]),
             new(IgnoreAccentsId, GeneralTab, "Ignore accents when searching", ["accent", "diacritic", "search", "match", "letters"]),
             new(AllowTypedCommandsId, GeneralTab, "Run typed text as a command", ["typed", "fallback", "win+r", "safety", "harm", "dangerous"]),

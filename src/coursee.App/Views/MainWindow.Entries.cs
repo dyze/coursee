@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Coursee.Core.Entries;
 using Coursee.Core.Logging;
 using Coursee.Core.Resources;
 
@@ -88,10 +89,33 @@ public partial class MainWindow
     }
 
     /// <summary>
+    /// Explorer's <i>Add to coursee</i>: shows the launcher with the path typed, and opens the box
+    /// that names the custom entry it becomes (the file's or folder's name by default).
+    /// </summary>
+    public void AddFromExplorer(string path)
+    {
+        _log.Info("Action", $"Add from Explorer: {path}");
+        if (_settingsDialog is not null)
+        {
+            // The launcher waits under its dialog.
+            _settingsDialog.Activate();
+            MessageDialog.Inform(_settingsDialog, $"Close Settings, then add {path} again.");
+            return;
+        }
+
+        EndEdit();
+        ShowFromOutside();
+        SearchBox.Text = path;
+        SearchBox.CaretIndex = path.Length;
+        StartCustomEntry(CustomEntry.NameFor);
+    }
+
+    /// <summary>
     /// Ctrl+N or the + button: opens the box of the typed text's row, to name the custom entry it
     /// becomes (the typed text by default). When something matched, that row is added first.
     /// </summary>
-    private void StartCustomEntry()
+    /// <param name="nameFor">The name offered for the typed text's row; its own name when null.</param>
+    private void StartCustomEntry(Func<Resource, string>? nameFor = null)
     {
         if (IsShowingRecents || FallbackClassifier.Classify(SearchBox.Text) is not { } typed)
         {
@@ -108,7 +132,7 @@ public partial class MainWindow
 
         ResultsList.SelectedItem = row;
         ResultsList.ScrollIntoView(row);
-        StartEdit(row, RowEdit.CustomEntryName, row.Resource.Name);
+        StartEdit(row, RowEdit.CustomEntryName, nameFor?.Invoke(row.Resource) ?? row.Resource.Name);
     }
 
     private void StartEdit(ResultRow row, RowEdit edit, string text)

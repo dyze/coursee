@@ -5,12 +5,12 @@
 ```
 coursee.App   (WPF, Windows only)
 │  launcher, settings window, log window, tray icon
-│  adapters: ShellLinkResolver, RegistryRunHistoryReader, RegistryAutoStart,
+│  adapters: ShellLinkResolver, RegistryRunHistoryReader, RegistryAutoStart, RegistryExplorerMenu,
 │            RegistryBrowserLocator, HotkeyService, SerilogFileLog, SingleInstance,
 │            NativeWindows + WindowPlacer (window positions), ShellFolder: ShellQuickAccessReader + ShellAppsFolderReader,
 │            RegistryGameLaunchers, GitHubReleaseFeed
 │
-│  implements ▼  IShortcutResolver · IRunHistoryReader · IQuickAccessReader · IAppsFolderReader · IGogGamesReader · IReleaseFeed · IAutoStart · IHotkeyRegistrar · IBrowserLocator · ILog
+│  implements ▼  IShortcutResolver · IRunHistoryReader · IQuickAccessReader · IAppsFolderReader · IGogGamesReader · IReleaseFeed · IAutoStart · IExplorerMenu · IHotkeyRegistrar · IBrowserLocator · ILog
 │
 coursee.Core  (no Windows dependency, fully unit-tested on any OS)
    SearchEngine · RecentStore · EntryStore · CustomEntryStore · CustomEntryEditor · SettingsStore · SettingsCatalog · KeyBindings
@@ -38,7 +38,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `Settings/` | `SettingsStore`, `SettingsCatalog` (the entries of the Settings window, their tabs, and the search that finds them), `KeyBindings` (the keys listed in Settings > Keys) |
 | `Sources/` | `IResourceSource`, `SourceCatalog` (the current list of sources, see [Folder sources](#folder-sources)), `FolderSources` (their naming rules), `IQuickAccessReader`, `SourceLoader`, `SourceMonitor`, `SourceIcons` (the icon of each source, found by name for a row), and each source with the interface it needs from `App` (`CustomSource` reads `CustomEntryStore`); `BookmarkUrls` and `ChromiumBookmarks` (Edge's file format, shared by Chrome) for the browser sources |
 | `Games/` | The game launcher sources, see [Games](#games): `SteamSource` and `VdfNode` (Valve's text format), `EpicSource`, `GogSource` and `IGogGamesReader` |
-| `Platform/` | The other interfaces `App` implements (`IAutoStart`, `IHotkeyRegistrar`, `IBrowserLocator`) and their rules (`AutoStartCommand`, `HotkeyGesture`); `InstanceIdentity` and `InstanceConflict` (see [Single instance](#single-instance)) |
+| `Platform/` | The other interfaces `App` implements (`IAutoStart`, `IExplorerMenu`, `IHotkeyRegistrar`, `IBrowserLocator`) and their rules (`AutoStartCommand`, `ExplorerMenuCommand`, `HotkeyGesture`); `InstanceIdentity` and `InstanceConflict` (see [Single instance](#single-instance)) |
 | `Logging/` | `ILog`, `LogEntry`, `RingLog`, `CompositeLog`, `FilteredLog` |
 | `Placement/` | Window positions: `WindowPlacement`, `PlacementRules`, `PlacementStore` (see [Window positions](#window-positions)) |
 | `Updates/` | The daily update check: `UpdateChecker` (once a day, newer or not), the Settings button is marked until the release is seen: opening Settings > About acknowledges it (`ShouldNotify`, `Acknowledge`), and a later release or another installed version marks it again; the About tab is marked while a newer release exists; `Release` (GitHub's answer, version comparison), `IReleaseFeed`, `UpdateStore` (`updates.json`: state, not a setting) |
@@ -133,6 +133,7 @@ Results are sorted by total score, then by name, and capped at 50. Matching igno
 ### Custom entries
 - `CustomEntryStore` (`custom.json`) keeps the user's entries (name, target), in the order they were made, one per target (case-insensitive). `CustomSource`, first in the `sources` array (on a duplicate, the user's entry wins), lists them; it reads the store on the background thread, so the store locks its list.
 - What an entry is (URL, folder, file, network path, command) is not stored: `CustomEntry.ToResource` decides it at each load with `FallbackClassifier`, as for typed text. The stored target is the one that is opened (`www.x` is stored as `https://www.x`), so pins and aliases, keyed by target, match.
+- Explorer's *Add to coursee* goes through the same box: see [Add from Explorer](#add-from-explorer).
 - `CustomEntryEditor.Create` makes one from the typed text (the + button, Ctrl+N, whenever the search box has text; the launcher adds the typed text's row first when something matched). `Edit` changes name and target, and moves what was set on the entry: pin, alias and hidden state (`EntryStore.Move`), recent history (`RecentStore.Move`, merged with an item that already had the new target). Deleting an entry leaves its pin and alias, like a shortcut removed from the Desktop.
 
 ## Folder sources
@@ -243,6 +244,28 @@ second copy starts ─ mutex taken? ─ no ──► runs
 ```
 
 The build is compared, not the path: a portable and an installed copy of the same build are the same; a rebuild at the same path is not. A copy run as administrator cannot be read by a normal one, so it counts as "none".
+
+The running copy also listens on the named pipe `coursee-add-<session id>` (pipes are not per session like `Local\` objects; `CurrentUserOnly`) for a path to add, one per connection. Where the diagram sets the show event, a copy started with `--add <path>` first sends the path there (2 s to connect); a copy that does not listen (≤ 0.8.1) is shown instead. Before either, it calls `AllowSetForegroundWindow`: Windows lets only the copy the user just started take the foreground.
+
+## Add from Explorer
+
+```
+Explorer: right-click ─► Add to coursee ─► coursee.exe --add "<path>"
+                                              │ (ExplorerMenuCommand.PathToAdd)
+                     running copy? ── no ──► starts with it
+                          │ yes
+                     pipe ─► App.OnAddRequested
+                                              ▼
+           MainWindow.AddFromExplorer: launcher shown, path typed (FallbackClassifier),
+           name box of the custom entry open, filled with CustomEntry.NameFor (file name
+           without extension, folder name)
+```
+
+| Topic | Rule |
+| --- | --- |
+| Item | A classic shell verb (`RegistryExplorerMenu`, `IExplorerMenu`) under `HKCU\Software\Classes\*\shell\coursee` (files) and `Directory\shell\coursee` (folders): text, `Icon` (coursee.exe), `MultiSelectModel=Single` (one entry named at a time), `command` = `ExplorerMenuCommand.Build`. On Windows 11 it is under *Show more options*: the new menu needs a COM handler and package identity |
+| Switch | Settings > General, like auto start: ticked when the command's program is this copy (`ExplorerMenuCommand.Status`), else the other copy's path is shown. The setup writes the same keys (task `explorermenu`); uninstall removes them if they start this copy |
+| Settings open | The launcher waits under its dialog: a message asks to close Settings and add again |
 
 ## Versioning
 `<Version>` in `Directory.Build.props` is the only place the version is written. It is stamped into every assembly (AssemblyVersion, FileVersion, InformationalVersion), read back through `AppVersion` in `Core`, and passed to the installer by `build/installer.cmd`, with `VersionNumber` (the version without `-dev`) for the setup's `VersionInfoVersion`, which takes numbers only. The update check takes a release as newer when its number is higher, or equal to that of a version under development (`Release.IsNewer`: `0.9` is newer than `0.9-dev`). Rules: [GOAL.md](GOAL.md#versioning).

@@ -19,6 +19,9 @@
 #define AppExe "coursee.exe"
 ; Must match the value written by the app (RegistryAutoStart) so uninstall can remove it.
 #define RunKey "Software\Microsoft\Windows\CurrentVersion\Run"
+; Explorer's "Add to coursee" item, on every file and every folder: the keys RegistryExplorerMenu writes.
+#define FilesVerbKey "Software\Classes\*\shell\coursee"
+#define FoldersVerbKey "Software\Classes\Directory\shell\coursee"
 
 [Setup]
 ; Fixed forever: it is how Windows recognizes an upgrade of the same application.
@@ -47,6 +50,7 @@ WizardStyle=modern
 
 [Tasks]
 Name: "autostart"; Description: "Start coursee when I sign in to Windows"
+Name: "explorermenu"; Description: "Add ""Add to coursee"" to Explorer's right-click menu"
 Name: "desktopicon"; Description: "Create a desktop shortcut"; Flags: unchecked
 
 [InstallDelete]
@@ -83,6 +87,17 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopico
 ; checkbox shows it as on. --hidden: at sign-in coursee stays in the notification area.
 Root: HKCU; Subkey: "{#RunKey}"; ValueType: string; ValueName: "{#AppName}"; \
   ValueData: """{app}\{#AppExe}"" --hidden"; Tasks: autostart
+; Same values as RegistryExplorerMenu (ExplorerMenuCommand.Build), so Settings shows the item as on.
+Root: HKCU; Subkey: "{#FilesVerbKey}"; ValueType: string; ValueName: ""; ValueData: "Add to coursee"; Tasks: explorermenu
+Root: HKCU; Subkey: "{#FilesVerbKey}"; ValueType: string; ValueName: "Icon"; ValueData: """{app}\{#AppExe}"",0"; Tasks: explorermenu
+Root: HKCU; Subkey: "{#FilesVerbKey}"; ValueType: string; ValueName: "MultiSelectModel"; ValueData: "Single"; Tasks: explorermenu
+Root: HKCU; Subkey: "{#FilesVerbKey}\command"; ValueType: string; ValueName: ""; \
+  ValueData: """{app}\{#AppExe}"" --add ""%1"""; Tasks: explorermenu
+Root: HKCU; Subkey: "{#FoldersVerbKey}"; ValueType: string; ValueName: ""; ValueData: "Add to coursee"; Tasks: explorermenu
+Root: HKCU; Subkey: "{#FoldersVerbKey}"; ValueType: string; ValueName: "Icon"; ValueData: """{app}\{#AppExe}"",0"; Tasks: explorermenu
+Root: HKCU; Subkey: "{#FoldersVerbKey}"; ValueType: string; ValueName: "MultiSelectModel"; ValueData: "Single"; Tasks: explorermenu
+Root: HKCU; Subkey: "{#FoldersVerbKey}\command"; ValueType: string; ValueName: ""; \
+  ValueData: """{app}\{#AppExe}"" --add ""%1"""; Tasks: explorermenu
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "Start coursee now"; Flags: nowait postinstall skipifsilent
@@ -90,19 +105,34 @@ Filename: "{win}\notepad.exe"; Parameters: """{app}\CHANGELOG.md"""; Description
   Flags: nowait postinstall skipifsilent unchecked
 
 [Code]
-// Auto start can also be switched on later from coursee's Settings, without this installer
-// knowing; remove the value on uninstall in every case, but only if it points at this copy
-// (with or without arguments: older versions wrote the quoted path alone).
+// Auto start and Explorer's item can also be switched on later from coursee's Settings, without
+// this installer knowing; remove them on uninstall in every case, but only if they point at this
+// copy (with or without arguments: older versions wrote the quoted path alone).
+function StartsThisCopy(Command: String): Boolean;
+var
+  Quoted: String;
+begin
+  Quoted := '"' + ExpandConstant('{app}\{#AppExe}') + '"';
+  Result := CompareText(Copy(Trim(Command), 1, Length(Quoted)), Quoted) = 0;
+end;
+
+procedure RemoveVerbOfThisCopy(VerbKey: String);
+var
+  Command: String;
+begin
+  if RegQueryStringValue(HKEY_CURRENT_USER, VerbKey + '\command', '', Command) and StartsThisCopy(Command) then
+    RegDeleteKeyIncludingSubkeys(HKEY_CURRENT_USER, VerbKey);
+end;
+
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 var
   Command: String;
-  Quoted: String;
 begin
   if CurUninstallStep = usUninstall then
   begin
-    Quoted := '"' + ExpandConstant('{app}\{#AppExe}') + '"';
-    if RegQueryStringValue(HKEY_CURRENT_USER, '{#RunKey}', '{#AppName}', Command)
-      and (CompareText(Copy(Trim(Command), 1, Length(Quoted)), Quoted) = 0) then
+    if RegQueryStringValue(HKEY_CURRENT_USER, '{#RunKey}', '{#AppName}', Command) and StartsThisCopy(Command) then
       RegDeleteValue(HKEY_CURRENT_USER, '{#RunKey}', '{#AppName}');
+    RemoveVerbOfThisCopy('{#FilesVerbKey}');
+    RemoveVerbOfThisCopy('{#FoldersVerbKey}');
   end;
 end;

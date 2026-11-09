@@ -49,6 +49,7 @@ public partial class SettingsWindow : Window
     private readonly SettingsStore _settings;
     private readonly RecentStore _recents;
     private readonly IAutoStart _autoStart;
+    private readonly IExplorerMenu _explorerMenu;
     private readonly IHotkeyRegistrar _hotkeys;
     private readonly LogHub _logHub;
     private readonly ILog _log;
@@ -73,6 +74,7 @@ public partial class SettingsWindow : Window
         CustomEntryStore customEntries,
         CustomEntryEditor customEntryEditor,
         IAutoStart autoStart,
+        IExplorerMenu explorerMenu,
         IHotkeyRegistrar hotkeys,
         LogHub logHub,
         AppFiles files,
@@ -83,6 +85,7 @@ public partial class SettingsWindow : Window
         _settings = settings;
         _recents = recents;
         _autoStart = autoStart;
+        _explorerMenu = explorerMenu;
         _hotkeys = hotkeys;
         _logHub = logHub;
         _log = logHub.Filter;
@@ -303,6 +306,7 @@ public partial class SettingsWindow : Window
     {
         _loading = true;
         ShowAutoStart();
+        ShowExplorerMenu();
         RecentsComboBox.SelectedItem = _settings.RecentsCapacity;
         DebugLoggingCheckBox.IsChecked = _settings.DebugLogging;
         IgnoreAccentsCheckBox.IsChecked = _settings.IgnoreAccents;
@@ -421,6 +425,27 @@ public partial class SettingsWindow : Window
         AutoStartCheckBox.IsChecked = status is AutoStartStatus.ThisCopy or AutoStartStatus.ThisCopyOutdated;
         AutoStartNote.Text = $"Windows starts another copy: {program}. Tick the box to start this one instead.";
         AutoStartNote.Visibility = status == AutoStartStatus.OtherCopy ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    /// <summary>Ticked when Explorer's item starts this copy. When it starts another one, says which, as for auto start.</summary>
+    private void ShowExplorerMenu()
+    {
+        ExplorerMenuStatus status;
+        string? program;
+        try
+        {
+            status = _explorerMenu.Status;
+            program = _explorerMenu.RegisteredProgram;
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
+        {
+            status = ExplorerMenuStatus.Off;
+            program = null;
+        }
+
+        ExplorerMenuCheckBox.IsChecked = status == ExplorerMenuStatus.ThisCopy;
+        ExplorerMenuNote.Text = $"Explorer's item starts another copy: {program}. Tick the box to start this one instead.";
+        ExplorerMenuNote.Visibility = status == ExplorerMenuStatus.OtherCopy ? Visibility.Visible : Visibility.Collapsed;
     }
 
     /// <summary>A dialog needs no minimize or maximize button; it can still be resized.</summary>
@@ -609,6 +634,24 @@ public partial class SettingsWindow : Window
         }
 
         ShowAutoStart();
+    }
+
+    private void ExplorerMenuCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        var wanted = ExplorerMenuCheckBox.IsChecked == true;
+
+        try
+        {
+            _explorerMenu.SetEnabled(wanted);
+            _log.Info("Settings", $"Explorer menu item {(wanted ? "on" : "off")}");
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
+        {
+            _log.Error("Settings", "Cannot change the Explorer menu item", ex);
+            ShowMessage(ex.Message);
+        }
+
+        ShowExplorerMenu();
     }
 
     private void AddFolderButton_Click(object sender, RoutedEventArgs e)

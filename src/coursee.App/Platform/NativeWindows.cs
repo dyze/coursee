@@ -67,6 +67,12 @@ public static class NativeWindows
     /// </summary>
     public static void Enable(IntPtr window) => EnableWindow(window, true);
 
+    /// <summary>
+    /// Lets another process bring its window to the front. Windows allows it only to the process the
+    /// user just started (a copy started from Explorer), which hands it to the running copy this way.
+    /// </summary>
+    public static void AllowAnyToTakeForeground() => AllowSetForegroundWindow(AsfwAny);
+
     /// <summary>Removes the minimize and maximize buttons from the title bar. The window can still be resized.</summary>
     public static void RemoveMinimizeMaximizeButtons(IntPtr window)
     {
@@ -126,6 +132,11 @@ public static class NativeWindows
 
     [DllImport("user32.dll")]
     private static extern bool EnableWindow(IntPtr window, bool enable);
+
+    private const int AsfwAny = -1;
+
+    [DllImport("user32.dll")]
+    private static extern bool AllowSetForegroundWindow(int processId);
 
     [DllImport("user32.dll")]
     private static extern bool GetWindowRect(IntPtr window, out NativeRect rect);
