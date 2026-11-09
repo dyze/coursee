@@ -301,7 +301,8 @@ public partial class MainWindow : Window
 
         if (string.IsNullOrWhiteSpace(query))
         {
-            items = _entries.Visible(_settings.FromEnabledSources(_recents.Items));
+            // As the sources list them now: a recent item is saved as it was opened.
+            items = _entries.Visible(_settings.FromEnabledSources(CurrentRecents.Of(_recents.Items, _all)));
         }
         else
         {

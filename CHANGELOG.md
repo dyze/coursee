@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - **Settings reopens on its last tab** instead of General.
+- **Recent items show as their source lists them now**: a shortcut renamed since, or a game opened before 0.9, which now shows its icon. One no source lists any more shows as it was opened.
 - **Versions under development end in `-dev`** (`0.9-dev`), shown so in the window, the tray and Settings > About, so a build between releases is not taken for one; the update check offers the release to it ([Versioning](docs/GOAL.md#versioning)).
 
 ## [0.8.1] - 2026-11-04
