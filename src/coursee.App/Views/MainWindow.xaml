@@ -14,7 +14,6 @@
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
         PreviewKeyDown="Window_PreviewKeyDown">
   <Window.Resources>
-    <views:ActionGlyphConverter x:Key="ActionGlyph" />
     <BooleanToVisibilityConverter x:Key="VisibleWhen" />
 
     <!-- The icons at the right of the action icon. They never take the focus (it stays in the search box),
@@ -28,8 +27,6 @@
       <Setter Property="VerticalAlignment" Value="Center" />
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets" />
-      <Setter Property="FontSize" Value="14" />
       <Style.Triggers>
         <Trigger Property="IsEnabled" Value="False">
           <Setter Property="Visibility" Value="Hidden" />
@@ -94,7 +91,7 @@
                Padding="8"
                TextChanged="SearchBox_TextChanged" />
 
-      <!-- The Windows settings icon. No padding: the Fluent theme's default one leaves too little room and cuts it.
+      <!-- The settings icon. No padding: the Fluent theme's default one leaves too little room and cuts it.
            Tab moves the focus between the search box and this button only; Enter or Space opens Settings. -->
       <!-- Shown while the search box has text: makes that text a custom entry (Ctrl+N). Not a Tab stop. -->
       <Button x:Name="AddButton"
@@ -103,13 +100,12 @@
               Margin="8,0,0,0"
               Padding="0"
               VerticalAlignment="Stretch"
-              Content="&#xE710;"
-              FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-              FontSize="18"
               Focusable="False"
               Visibility="Collapsed"
               ToolTip="Make the typed text a custom entry (Ctrl+N)"
-              Click="AddButton_Click" />
+              Click="AddButton_Click">
+        <views:EntryIconView Size="20" IconName="add" />
+      </Button>
 
       <Button x:Name="SettingsButton"
               Grid.Column="2"
@@ -117,11 +113,10 @@
               Margin="8,0,0,0"
               Padding="0"
               VerticalAlignment="Stretch"
-              Content="&#xE713;"
-              FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-              FontSize="18"
               ToolTip="Settings (Tab, then Enter)"
-              Click="SettingsButton_Click" />
+              Click="SettingsButton_Click">
+        <views:EntryIconView Size="20" IconName="settings" />
+      </Button>
 
       <!-- A newer release is available (see Settings > About). Over the button's corner; clicks go through. -->
       <Ellipse x:Name="UpdateMark"
@@ -184,17 +179,17 @@
             <!-- The entry's icon (chosen with Ctrl+I, else its own), or where the item comes from (the same icon
                  as in Settings > Sources). The source's name is the tooltip either way. Its converter is added by
                  the window, from the list of sources. -->
-            <Grid Width="18"
+            <Grid Width="32"
                   Margin="0,0,10,0"
                   VerticalAlignment="Center"
                   Background="Transparent"
                   ToolTip="{Binding Resource.Source, Converter={StaticResource SourceIcon}, ConverterParameter=Label}">
-              <TextBlock FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                         FontSize="14"
-                         Opacity="0.6"
-                         Text="{Binding Resource.Source, Converter={StaticResource SourceIcon}}"
-                         Visibility="{Binding HasNoIcon, Converter={StaticResource VisibleWhen}}" />
-              <views:EntryIconView Size="16" HorizontalAlignment="Left" Visual="{Binding Icon}" />
+              <views:EntryIconView Size="20"
+                                   HorizontalAlignment="Center"
+                                   Opacity="0.6"
+                                   IconName="{Binding Resource.Source, Converter={StaticResource SourceIcon}}"
+                                   Visibility="{Binding HasNoIcon, Converter={StaticResource VisibleWhen}}" />
+              <views:EntryIconView Size="32" HorizontalAlignment="Center" Visual="{Binding Icon}" />
             </Grid>
 
             <StackPanel Grid.Column="1">
@@ -219,46 +214,31 @@
             <Button Grid.Column="3"
                     Margin="10,0,2,0"
                     Style="{StaticResource RowIconButton}"
-                    FontSize="16"
                     Opacity="0.7"
-                    Content="{Binding Resource.Action, Converter={StaticResource ActionGlyph}}"
                     ToolTip="{Binding Resource.ActionLabel}"
-                    Click="ActionButton_Click" />
+                    Click="ActionButton_Click">
+              <views:EntryIconView Size="16" IconName="{Binding ActionIcon}" />
+            </Button>
 
             <StackPanel Grid.Column="4" Orientation="Horizontal">
               <Button Style="{StaticResource PinButton}"
                       IsEnabled="{Binding CanPin}"
                       ToolTip="{Binding PinToolTip}"
                       Click="PinButton_Click">
-                <!-- Pinned: the outline (E840) with its fill (E841) over it; the fill glyph alone is incomplete. -->
-                <Grid>
-                  <TextBlock Text="{Binding PinGlyph}" />
-                  <TextBlock Text="&#xE841;" Visibility="{Binding IsPinned, Converter={StaticResource VisibleWhen}}" />
-                </Grid>
+                <views:EntryIconView Size="15" IconName="{Binding PinIcon}" />
               </Button>
               <Button Style="{StaticResource AliasButton}"
                       IsEnabled="{Binding CanSetAlias}"
                       ToolTip="{Binding AliasToolTip}"
                       Click="AliasButton_Click">
-                <!-- With an alias: a filled tag, drawn here (the font has no filled tag) over the shape of its Tag glyph (E8EC). -->
-                <Grid>
-                  <TextBlock Text="&#xE8EC;" Visibility="{Binding HasNoAlias, Converter={StaticResource VisibleWhen}}" />
-                  <Path Width="13"
-                        Height="13"
-                        Stretch="Uniform"
-                        Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                        Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                        StrokeThickness="1"
-                        StrokeLineJoin="Round"
-                        Data="F0 M8.5,0.5 L15.5,0.5 L15.5,8 L7.6,15.6 L0.4,8.4 Z M13.2,4.3 A1.6,1.6 0 1 0 10,4.3 A1.6,1.6 0 1 0 13.2,4.3 Z"
-                        Visibility="{Binding HasAlias, Converter={StaticResource VisibleWhen}}" />
-                </Grid>
+                <views:EntryIconView Size="15" IconName="{Binding AliasIcon}" />
               </Button>
               <Button Style="{StaticResource RevealedRowIconButton}"
-                      Content="&#xED1A;"
                       IsEnabled="{Binding CanHide}"
                       ToolTip="Hide from results and recents (Ctrl+H). Restore it in Settings > Entries"
-                      Click="HideButton_Click" />
+                      Click="HideButton_Click">
+                <views:EntryIconView Size="15" IconName="eye-off" />
+              </Button>
             </StackPanel>
           </Grid>
         </DataTemplate>

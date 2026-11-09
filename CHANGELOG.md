@@ -7,11 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
-- **Entry icons.** Rows show their entry's own icon (a file's, a program's, a folder's, an app's, a game's) instead of their source's, when there is one. **Ctrl+I** chooses another: one of 104 icons that come with coursee, or a file of yours (an image, a program's icon, or a simple SVG), copied into coursee's data. Settings > Entries lists the chosen icons ([Entry icons](README.md#behavior-notes)).
+- **Entry icons.** Rows show their entry's own icon (a file's, a program's, a folder's, an app's, a game's) instead of their source's, when there is one. **Ctrl+I** chooses another: one of the 119 icons that come with coursee, or a file of yours (an image, a program's icon, or a simple SVG), copied into coursee's data. Settings > Entries lists the chosen icons ([Entry icons](README.md#behavior-notes)).
 - **Add from Explorer.** *Add to coursee*, in Explorer's right-click menu on any file or folder, makes it a custom entry: the launcher opens with its path typed and the name box open, filled with its name. On Windows 11 it is under *Show more options*. The setup adds it (a task), and Settings > General switches it on and off, in the portable copy too ([Add from Explorer](README.md#behavior-notes)).
 
 ### Changed
 - **New app icon**, on the program, its windows, the notification area and the setup.
+- **One set of icons.** Every icon of the app (sources, row actions, pin, alias, hide, buttons, the warning sign) is now drawn from coursee's own SVG icons instead of the Windows icon font, in the text's colour. Fifteen new ones join the set: folder, open folder, play, apps, hidden, filled tag, console, laptop, network drive, keyboard, and the Steam, Epic Games, GOG, Firefox and Edge logos, now shown by their sources.
 - **Settings reopens on its last tab** instead of General.
 - **Recent items show as their source lists them now**: a shortcut renamed since, or a game opened before 0.9, which now shows its icon. One no source lists any more shows as it was opened.
 - **Versions under development end in `-dev`** (`0.9-dev`), shown so in the window, the tray and Settings > About, so a build between releases is not taken for one; the update check offers the release to it ([Versioning](docs/GOAL.md#versioning)).

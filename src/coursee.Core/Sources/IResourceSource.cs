@@ -18,8 +18,8 @@ public interface IResourceSource
     bool CanBeDisabled { get; }
 
     /// <summary>
-    /// The icon of the source, shown on its rows and in Settings: a glyph of the Segoe Fluent Icons
-    /// font that comes with Windows (for example "\uE728"). See <see cref="SourceIcons"/>.
+    /// The icon of the source, shown on its rows and in Settings: the name of one of
+    /// <see cref="Icons.IconLibrary"/>'s icons (for example "bookmark"). See <see cref="SourceIcons"/>.
     /// </summary>
     string Icon { get; }
 

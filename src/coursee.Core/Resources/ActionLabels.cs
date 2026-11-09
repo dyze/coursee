@@ -49,4 +49,18 @@ public static class ActionLabels
         ResourceKind.Game => ResourceAction.LaunchGame,
         _ => ResourceAction.Open,
     };
+
+    /// <summary>The icon of an action on its row: the name of one of <see cref="Icons.IconLibrary"/>'s icons.</summary>
+    public static string IconOf(ResourceAction action) => action switch
+    {
+        ResourceAction.OpenFile => "file",
+        ResourceAction.OpenFolder => "folder",
+        ResourceAction.OpenUrl => "globe",
+        ResourceAction.OpenInBrowser => "open",
+        ResourceAction.RunCommand => "code",
+        ResourceAction.OpenSetting => "settings",
+        ResourceAction.OpenApp => "apps",
+        ResourceAction.LaunchGame => "play",
+        _ => "network-drive",
+    };
 }

@@ -48,7 +48,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `coursee.App` | Content |
 | --- | --- |
 | *(root)* | `App.xaml`: startup and wiring |
-| `Views/` | Windows: `MainWindow` (the launcher; its entry actions in `MainWindow.Entries.cs`), `SettingsWindow` (its Sources tab in `SettingsWindow.Sources.cs`), `LogWindow`; `ResultRow` (a row of the launcher: the resource, its pin and alias, and what its box is open for: `RowEdit`); `EntriesPanel` and `EntryRows` (Settings > Entries); `MessageDialog` (messages and yes / no questions in the app's theme, instead of the Windows `MessageBox`); `ChangelogWindow` (Settings > About > *Show changelog*); `IconPickerWindow` (Ctrl+I), `EntryIcons` (the icon of each row), `EntryIconView` + `IconVisual` (an icon drawn); `AppTheme`; `ActionGlyphConverter` (the Segoe Fluent glyph of each `ResourceAction`), `SourceIconConverter` (the icon of a row's source) |
+| `Views/` | Windows: `MainWindow` (the launcher; its entry actions in `MainWindow.Entries.cs`), `SettingsWindow` (its Sources tab in `SettingsWindow.Sources.cs`), `LogWindow`; `ResultRow` (a row of the launcher: the resource, its pin and alias, and what its box is open for: `RowEdit`); `EntriesPanel` and `EntryRows` (Settings > Entries); `MessageDialog` (messages and yes / no questions in the app's theme, instead of the Windows `MessageBox`); `ChangelogWindow` (Settings > About > *Show changelog*); `IconPickerWindow` (Ctrl+I), `EntryIcons` (the icon of each row), `EntryIconView` + `IconVisual` (an icon drawn); `AppTheme`; `LibraryIcons` (coursee's icons, parsed once), `SourceIconConverter` (the icon name of a row's source) |
 | `Tray/` | `TrayIcon` |
 | `Platform/` | Implementations of the `Core` interfaces (`ShellFolder` lists a Shell folder on an STA thread, for Quick access and the Apps folder; `ShellIcons` reads Explorer's icon of an item), `SingleInstance`, and window placement (`NativeWindows`, `WindowPlacer`) |
 | `Logging/` | `LogHub`, `SerilogFileLog` |
@@ -128,7 +128,7 @@ Results are sorted by total score, then by name, and capped at 50. Matching igno
 - An entry is known by its **target**, case-insensitive, as in recents. Two items with the same target (one program, two shortcut names) share their pin. A pin outlives a renamed shortcut and a source switched off.
 - **Hidden entries** (Ctrl+H) are known by source, name and target (`HiddenEntry`, case-insensitive), not by target only: one of two shortcuts to the same program can be hidden. `EntryStore.Visible` leaves them out of the resources and of the recent list before searching, so a hidden entry's alias finds nothing.
 - Typed text (the fallback) cannot be pinned, given an alias or hidden (`ResourceActions.CanPin`, `CanSetAlias`, `CanHide`): it is no entry, and would never be listed. It can become a custom entry (`CanMakeCustomEntry`).
-- The launcher shows a `ResultRow` per item. The pin and alias icons are on the selected row and the row under the mouse (a click selects that row first), and the pin of a pinned entry, and the alias icon of an entry with an alias, are always shown, filled (the pin with the font's PinnedFill glyph; the tag with a `Path` of its shape, since the font has no filled tag); hidden (not collapsed) where they do not apply, so the action icons stay aligned. The action icon, on every row, is a button too: a click selects its row and opens it, like Enter. None of these buttons takes the focus, so it stays in the search box.
+- The launcher shows a `ResultRow` per item. The pin and alias icons are on the selected row and the row under the mouse (a click selects that row first), and the pin of a pinned entry, and the alias icon of an entry with an alias, are always shown, filled (`pin-filled`, `tag-filled`); hidden (not collapsed) where they do not apply, so the action icons stay aligned. The action icon, on every row, is a button too: a click selects its row and opens it, like Enter. None of these buttons takes the focus, so it stays in the search box.
 - F2 (alias) or Ctrl+N (name of a new custom entry) opens a text box in the selected row (`ResultRow.Edit`). While it is open, the launcher's keys are off (Enter saves, Esc cancels, everything else is typed in the box), a background refresh does not rebuild the list under it, and losing the focus cancels.
 - Settings > Entries (`EntriesPanel`) lists what `EntryStore` and `CustomEntryStore` hold, to undo or change it: one list at a time, narrowed by `EntryFilter` (every word, ignoring case and accents). It fills the window's height with its own scroll, so `SettingsWindow` shows it in `EntriesHost` instead of the shared scrolled sections; in the Find results, the Entries row is a button that opens the tab. The launcher reloads its list and its sources when Settings closes.
 
@@ -145,15 +145,16 @@ row ─► EntryIcons.Show
          ├─ chosen (EntryStore.IconOf, by target)? ─► IconLibrary SVG, or the user's file (icons\)
          ├─ OwnIcon.PathOf ─► an image file: decoded │ else ShellIcons (STA thread, in turn)
          │                    read once per path, in the background; the row is drawn when ready
-         └─ none ─► the source's glyph
+         └─ none ─► the source's icon
 ```
 
 | Topic | Rule |
 | --- | --- |
 | Own icon | `OwnIcon.PathOf`: a file, folder or shortcut (its `.lnk`, `LaunchPath`), an app (`shell:AppsFolder\…`), else `Resource.IconPath`: a game's program (Epic: `InstallLocation` + `LaunchExecutable`; GOG: `exe`) or Steam's cached icon (`appcache\librarycache\<id>\<hash>.jpg`, or `<id>_icon.jpg` before 2024). URLs, commands and settings have none. A network path is never read |
-| Reading | `ShellIcons`: `IShellItemImageFactory` (icon only, 32 px), its 32-bit DIB copied with its transparency (WPF's `CreateBitmapSourceFromHBitmap` drops it). An image file (Steam's) is decoded by WPF instead: the Shell would give the jpg file icon. Cached for the session: a changed icon shows after a restart |
+| Reading | `ShellIcons`: `IShellItemImageFactory` (icon only, 64 px: a 32 px row icon at 200 %), its 32-bit DIB copied with its transparency (WPF's `CreateBitmapSourceFromHBitmap` drops it). An image file (Steam's) is decoded by WPF instead: the Shell would give the jpg file icon. Cached for the session: a changed icon shows after a restart |
 | Chosen icon | Ctrl+I (`ResourceActions.CanSetIcon`, entries only) opens `IconPickerWindow`. Stored in `entries.json` by target (`library:<name>` or `file:<name>`), moved with a custom entry's target (`EntryStore.Move`) |
 | User's files | `IconFileStore`, in `icons\` of the data folder: named by their content (first 16 hex digits of SHA-256), so two entries share one; `EntryIconEditor` deletes those no entry uses. Accepted (`IconFileType`): ico, png, jpg, bmp, gif (kept as they are), exe and dll (their icon, saved as a 64 px PNG), SVG of plain paths |
+| App icons | Every icon the app draws (sources and groups by `SourceIcons` / `SourceGroups`, row actions by `ActionLabels.IconOf`, buttons, the warning sign) is a name of `IconLibrary`, drawn by `EntryIconView.IconName` through `LibraryIcons`: no icon font. Tests check each name exists |
 | SVG | No SVG library: `SvgIcon.Read` keeps the `d` of every `path` and the `viewBox`, and refuses shapes, text, images and transforms. Drawn by `EntryIconView` as a WPF geometry in the text's colour (selected rows too): the user's with SVG's nonzero rule, coursee's with WPF's even-odd, as designed |
 
 ## Folder sources
@@ -175,7 +176,7 @@ first (Custom) · last (Start Menu, Firefox, Edge, Run, Windows settings): fixed
 | Add, remove | Settings > Sources. Quick access folders are a group (see [Source groups](#source-groups)). The user's folders (the Desktop included, unless pinned) are the Folders group; *Add folder...* is on its row (alone when there is no folder). Choosing a Desktop folder adds the Desktop. Removing forgets the folder's off state; its pins and aliases stay. Quick access folders have no remove button: unpin them in Explorer |
 | Network | Never listed (`FolderSources.IsNetwork`: `\\server\share`, mapped drives): an offline one blocks for seconds. Refused on add, skipped from Quick access. A shortcut to the network is listed without touching it: `ShellLinkHeader` reads from the .lnk file whether its target was a folder |
 | Quick access | Read at each launcher refresh, on a background thread. `ShellQuickAccessReader` runs the Shell COM object on its own STA thread (5 s timeout) and keeps folders whose `System.Home.IsPinned` is true, with their shown name (`PinnedFolder`) (Windows 11; frequent folders are left out). A failed read keeps the last folders read, and is logged (Warning) |
-| Icons | Folder `\uE8B7`, Quick access `\uE80F`. A recent item from a folder that is gone gets the folder icon |
+| Icons | Folder `folder`, Quick access `home`. A recent item from a folder that is gone gets the folder icon |
 | Logs | Quick access changes at Info (category `Quick access`); a source that is off or gone is forgotten by `SourceMonitor.Keep`, and logged as loaded when it comes back |
 
 ## Packaged apps
@@ -184,16 +185,16 @@ first (Custom) · last (Start Menu, Firefox, Edge, Run, Windows settings): fixed
 | Reading | `ShellAppsFolderReader` (App, `IAppsFolderReader`) lists `shell:AppsFolder` through `ShellFolder` (STA thread, 10 s timeout): each item's name, app ID (its path there) and `System.AppUserModel.PackageFamilyName`. `PackagedAppsSource` (Core) keeps the items with a package (the others are desktop programs, found by the Start Menu source), once per app ID |
 | Why not `PackageManager` | WinRT would need a versioned target framework (`net10.0-windows10.0.19041.0`) and its projection DLLs (about 20 to 25 MB more in a self-contained build), and lists packages rather than what Start shows |
 | Target | `shell:AppsFolder\<AppUserModelID>`, `ResourceKind.App` ("Open app"), opened by the shell. No *Show in folder*, no *Run as administrator* |
-| Icon | `` (Shop) |
+| Icon | `shop` |
 
 ## Games
 One source per launcher, in `Core/Games`, after the Start Menu in the `last` list. Their files are not documented: a file that cannot be read is logged (Warning) and skipped. A launcher that is not installed gives no entries.
 
 | Source | Reads | Target (`ResourceKind.Game`, "Launch game") | Left out | Icon |
 | --- | --- | --- | --- | --- |
-| `SteamSource` | Steam's folder (`HKCU\Software\Valve\Steam\SteamPath`, `RegistryGameLaunchers.SteamFolder`), the libraries of `steamapps\libraryfolders.vdf` (both formats), each `appmanifest_<id>.acf`, parsed by `VdfNode` | `steam://rungameid/<appid>` | `StateFlags` without the fully installed bit (4); tools by name: Steamworks Common Redistributables, Steam Linux Runtime, Proton | `` (Game) |
-| `EpicSource` | `%ProgramData%\Epic\EpicGamesLauncher\Data\Manifests\*.item` (JSON) | `com.epicgames.launcher://apps/<CatalogNamespace>%3A<CatalogItemId>%3A<AppName>?action=launch&silent=true` | `bIsIncompleteInstall`; add-ons (`MainGameAppName` of another app); `AppCategories` without `games` (engines) | `` (XboxOneConsole) |
-| `GogSource` | `IGogGamesReader`: `RegistryGameLaunchers` reads `HKLM\SOFTWARE\GOG.com\Games\*` and GOG Galaxy's program (`GalaxyClient\paths\client` + `clientExecutable`, if the file exists) in the 32-bit view (`WOW6432Node`) | With GOG Galaxy and a `gameID`: `"<GalaxyClient.exe>" /command=runGame /gameId=<gameID> /path="<path>"`, the command of its own shortcuts (no documented link). Else `"<exe>" <launchParam>` (GOG games have no DRM) | add-ons (`dependsOn`) | `` (Library) |
+| `SteamSource` | Steam's folder (`HKCU\Software\Valve\Steam\SteamPath`, `RegistryGameLaunchers.SteamFolder`), the libraries of `steamapps\libraryfolders.vdf` (both formats), each `appmanifest_<id>.acf`, parsed by `VdfNode` | `steam://rungameid/<appid>` | `StateFlags` without the fully installed bit (4); tools by name: Steamworks Common Redistributables, Steam Linux Runtime, Proton | `steam` |
+| `EpicSource` | `%ProgramData%\Epic\EpicGamesLauncher\Data\Manifests\*.item` (JSON) | `com.epicgames.launcher://apps/<CatalogNamespace>%3A<CatalogItemId>%3A<AppName>?action=launch&silent=true` | `bIsIncompleteInstall`; add-ons (`MainGameAppName` of another app); `AppCategories` without `games` (engines) | `epic` |
+| `GogSource` | `IGogGamesReader`: `RegistryGameLaunchers` reads `HKLM\SOFTWARE\GOG.com\Games\*` and GOG Galaxy's program (`GalaxyClient\paths\client` + `clientExecutable`, if the file exists) in the 32-bit view (`WOW6432Node`) | With GOG Galaxy and a `gameID`: `"<GalaxyClient.exe>" /command=runGame /gameId=<gameID> /path="<path>"`, the command of its own shortcuts (no documented link). Else `"<exe>" <launchParam>` (GOG games have no DRM) | add-ons (`dependsOn`) | `gog` |
 
 Enter on a game: `ResourceActions.GameStart` splits the target (`CommandLine`); a program starts in its own folder.
 
@@ -211,14 +212,14 @@ Enter on a game: `ResourceActions.GameStart` splits the target (`CommandLine`); 
 
 | Group | Sources | Icon |
 | --- | --- | --- |
-| Folders | The user's folders, the Desktop by default; *Add folder...* on the group's row | `` (FolderOpen) |
-| Quick access | The folders pinned in Explorer | `` (Home) |
-| Windows | Start Menu, Packaged apps, Windows Run, Windows settings | `` (Laptop) |
-| Browsers | Firefox, Edge | `` (Globe) |
-| Games | Steam, Epic Games, GOG | `` (Play) |
+| Folders | The user's folders, the Desktop by default; *Add folder...* on the group's row | `folder-open` |
+| Quick access | The folders pinned in Explorer | `home` |
+| Windows | Start Menu, Packaged apps, Windows Run, Windows settings | `laptop` |
+| Browsers | Firefox, Edge | `globe` |
+| Games | Steam, Epic Games, GOG | `game` |
 
 ## Adding a source
-1. In `Core/Sources`, implement `IResourceSource`: a stable `Name` (it is also the key stored in `settings.json`), a `DisplayName` for Settings, `CanBeDisabled` (true gives it a checkbox in **Sources**), an `Icon` (a Segoe Fluent Icons glyph, kept in `SourceIcons` with the others so each stays distinct; shown on its rows and next to its checkbox), and `GetResources()` returning `Resource` records. Take an optional `ILog`.
+1. In `Core/Sources`, implement `IResourceSource`: a stable `Name` (it is also the key stored in `settings.json`), a `DisplayName` for Settings, `CanBeDisabled` (true gives it a checkbox in **Sources**), an `Icon` (the name of an SVG of `Core/Icons/Svg`, kept in `SourceIcons` with the others so each stays distinct; shown on its rows and next to its checkbox), and `GetResources()` returning `Resource` records. Take an optional `ILog`.
 2. If it needs Windows, define an interface in `Core` (like `IRunHistoryReader`) and implement it in `App`.
 3. Register it in `App.xaml.cs`, in the `first` or `last` list of the `SourceCatalog` (before or after the folder sources). Order matters for duplicates: the first source wins.
 4. Add xUnit tests in `tests/coursee.Core.Tests`, with a fake for any interface from step 2.

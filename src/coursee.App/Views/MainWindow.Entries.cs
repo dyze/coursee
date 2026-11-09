@@ -91,7 +91,7 @@ public partial class MainWindow
             return;
         }
 
-        var picker = new IconPickerWindow(this, resource.Name, _entries.IconOf(resource.Target), _icons);
+        var picker = new IconPickerWindow(this, resource.Name, _entries.IconOf(resource.Target));
         _showingDialog = true;
         try
         {

@@ -139,8 +139,7 @@ public partial class SettingsWindow
         {
             var remove = new Button
             {
-                Content = "", // Cancel
-                FontFamily = new System.Windows.Media.FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"),
+                Content = new EntryIconView { IconName = "close", Size = 12 },
                 Margin = new Thickness(10, 0, 0, 0),
                 Padding = new Thickness(6, 3, 6, 3),
                 VerticalAlignment = VerticalAlignment.Center,

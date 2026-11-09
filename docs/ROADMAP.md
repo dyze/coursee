@@ -7,7 +7,7 @@ Scope of each planned version. Implemented features move to [CHANGELOG.md](../CH
 | 0.9     | Planned | Explorer integration and icons |
 
 ## 0.9
-1. **New icons.** Every image shown in the app redrawn from one set of SVG icons (those of kofrenot, plus the missing ones provided by the owner: folder, folder-open, play, apps, eye-off, tag-filled, console, laptop, network drive, keyboard).
+Every planned feature is implemented: see `[Unreleased]` in the changelog.
 
 ## Later
 1. **Beautify changelog.** Today hard to identify the interesting info reading the md file as is.

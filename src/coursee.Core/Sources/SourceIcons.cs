@@ -3,28 +3,28 @@ using Coursee.Core.Resources;
 namespace Coursee.Core.Sources;
 
 /// <summary>
-/// The icon of each source (a Segoe Fluent Icons glyph) and the icon of a row, found from the
-/// name of the source its resource comes from. Recents keep that name, so a recent item shows
-/// the icon of its source too. Not thread-safe: used on the UI thread.
+/// The icon of each source (the name of one of <see cref="Icons.IconLibrary"/>'s) and the icon of
+/// a row, found from the name of the source its resource comes from. Recents keep that name, so a
+/// recent item shows the icon of its source too. Not thread-safe: used on the UI thread.
 /// </summary>
 public sealed class SourceIcons
 {
-    public const string Desktop = "\uE7F4";        // TVMonitor
-    public const string StartMenu = "\uECA5";      // Tiles
-    public const string Firefox = "\uE728";        // FavoriteList
-    public const string Edge = "\uE734";           // FavoriteStar
-    public const string RunHistory = "\uE81C";     // History
-    public const string WindowsSettings = "\uE770"; // System
-    public const string Custom = "\uE710";         // Add: made with the + button
-    public const string Folder = "\uE8B7";         // Folder: added in Settings > Sources
-    public const string QuickAccess = "\uE80F";    // Home: pinned in Explorer's Quick access
-    public const string PackagedApps = "\uE719";   // Shop
-    public const string Steam = "\uE7FC";          // Game
-    public const string Epic = "\uE990";           // XboxOneConsole
-    public const string Gog = "\uE8F1";            // Library
+    public const string Desktop = "device";
+    public const string StartMenu = "view-cards";
+    public const string Firefox = "firefox";
+    public const string Edge = "edge";
+    public const string RunHistory = "history";
+    public const string WindowsSettings = "settings";
+    public const string Custom = "add";              // Made with the + button.
+    public const string Folder = "folder";           // Added in Settings > Sources.
+    public const string QuickAccess = "home";        // Pinned in Explorer's Quick access.
+    public const string PackagedApps = "shop";
+    public const string Steam = "steam";
+    public const string Epic = "epic";
+    public const string Gog = "gog";
 
     /// <summary>Text typed in the search box (Enter acts on it).</summary>
-    public const string Typed = "\uE765";          // KeyboardClassic
+    public const string Typed = "keyboard";
 
     private readonly Func<IReadOnlyList<IResourceSource>> _sources;
     private IReadOnlyList<IResourceSource>? _indexed;

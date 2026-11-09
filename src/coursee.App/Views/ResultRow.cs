@@ -18,9 +18,6 @@ public enum RowEdit
 /// <summary>A row of the launcher's list: the resource, and what the user set on its entry.</summary>
 public sealed class ResultRow(Resource resource, bool isPinned, string? alias) : INotifyPropertyChanged
 {
-    private static readonly string PinnedGlyph = ((char)0xE840).ToString();
-    private static readonly string UnpinnedGlyph = ((char)0xE718).ToString();
-
     private RowEdit _edit;
     private IconVisual? _icon;
 
@@ -53,7 +50,8 @@ public sealed class ResultRow(Resource resource, bool isPinned, string? alias) :
     /// <summary>Shows the alias icon filled, and always.</summary>
     public bool HasAlias => Alias is not null;
 
-    public bool HasNoAlias => !HasAlias;
+    /// <summary>The icon of what Enter does (<see cref="ActionLabels.IconOf"/>).</summary>
+    public string ActionIcon => ActionLabels.IconOf(Resource.Action);
 
     /// <summary>Typed text has no entry of its own: no pin icon.</summary>
     public bool CanPin => ResourceActions.CanPin(Resource);
@@ -64,11 +62,11 @@ public sealed class ResultRow(Resource resource, bool isPinned, string? alias) :
     /// <summary>Typed text has no entry of its own: no hide icon.</summary>
     public bool CanHide => ResourceActions.CanHide(Resource);
 
-    /// <summary>
-    /// Segoe Fluent Icons: a tilted pin when pinned, an upright one otherwise. When pinned, the window
-    /// also fills it, with the PinnedFill glyph (E841) drawn over this one: alone it is incomplete.
-    /// </summary>
-    public string PinGlyph => IsPinned ? PinnedGlyph : UnpinnedGlyph;
+    /// <summary>A filled pin when pinned, an outlined one otherwise.</summary>
+    public string PinIcon => IsPinned ? "pin-filled" : "pin";
+
+    /// <summary>A filled tag with an alias, an outlined one otherwise.</summary>
+    public string AliasIcon => HasAlias ? "tag-filled" : "tag";
 
     public string PinToolTip => IsPinned ? "Unpin (Ctrl+P)" : "Pin: listed first when it matches (Ctrl+P)";
 

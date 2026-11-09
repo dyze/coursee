@@ -25,14 +25,14 @@ public partial class IconPickerWindow : Window
 
     /// <param name="entryName">The entry's name, shown on top.</param>
     /// <param name="current">The icon the entry has; one of coursee's is selected.</param>
-    public IconPickerWindow(Window owner, string entryName, EntryIcon? current, EntryIcons icons)
+    public IconPickerWindow(Window owner, string entryName, EntryIcon? current)
     {
         InitializeComponent();
         Owner = owner;
         EntryText.Text = $"Icon of {entryName}";
         OwnIconButton.IsEnabled = current is not null;
         _icons = IconLibrary.Names
-            .Select(name => icons.OfLibrary(name) is { } visual ? new LibraryIcon(name, visual) : null)
+            .Select(name => LibraryIcons.Of(name) is { } visual ? new LibraryIcon(name, visual) : null)
             .OfType<LibraryIcon>()
             .ToList();
         IconList.ItemsSource = _icons;

@@ -284,11 +284,11 @@ public partial class SettingsWindow : Window
     private static StackPanel SourceLabel(string icon, string text)
     {
         var label = new StackPanel { Orientation = Orientation.Horizontal };
-        label.Children.Add(new TextBlock
+        label.Children.Add(new EntryIconView
         {
-            Text = icon,
-            FontFamily = new System.Windows.Media.FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"),
-            Width = 22,
+            IconName = icon,
+            Size = 14,
+            Margin = new Thickness(0, 0, 8, 0),
             VerticalAlignment = VerticalAlignment.Center,
             Opacity = 0.7,
         });

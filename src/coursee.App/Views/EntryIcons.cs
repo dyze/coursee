@@ -17,33 +17,20 @@ namespace Coursee.UI.Views;
 /// </summary>
 public sealed class EntryIcons(EntryStore entries, IconFileStore files, ShellIcons shell, ILog log)
 {
-    /// <summary>Pixels of an icon read from Windows: a 16-pixel row at 200 % scaling.</summary>
-    private const int RowPixels = 32;
+    /// <summary>Pixels of an icon read from Windows: a 32-pixel row icon at 200 % scaling.</summary>
+    private const int RowPixels = 64;
 
     /// <summary>Pixels of a program's icon kept as the user's file.</summary>
     private const int KeptPixels = 64;
 
     private const string LogCategory = "Icons";
 
-    private readonly Dictionary<string, IconVisual?> _library = new(StringComparer.Ordinal);
     private readonly Dictionary<string, IconVisual?> _files = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, Task<IconVisual?>> _own = new(StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>One of coursee's icons, by name; null for a name this version does not have.</summary>
-    public IconVisual? OfLibrary(string name)
-    {
-        if (!_library.TryGetValue(name, out var visual))
-        {
-            visual = IconLibrary.Find(name) is { } icon ? IconVisual.OfSvg(icon, nonZero: false) : null;
-            _library[name] = visual;
-        }
-
-        return visual;
-    }
-
     /// <summary>The visual of a chosen icon; null when it cannot be drawn (its file gone, say).</summary>
     public IconVisual? OfChoice(EntryIcon icon) =>
-        icon.Kind == EntryIconKind.Library ? OfLibrary(icon.Name) : OfFile(icon.Name);
+        icon.Kind == EntryIconKind.Library ? LibraryIcons.Of(icon.Name) : OfFile(icon.Name);
 
     /// <summary>Gives <paramref name="row"/> its icon: at once when known, else once read.</summary>
     public void Show(ResultRow row)

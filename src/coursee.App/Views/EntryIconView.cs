@@ -13,6 +13,10 @@ public sealed class EntryIconView : FrameworkElement
     public static readonly DependencyProperty VisualProperty = DependencyProperty.Register(
         nameof(Visual), typeof(IconVisual), typeof(EntryIconView), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
 
+    /// <summary>One of coursee's icons by name (<see cref="LibraryIcons"/>): sets <see cref="Visual"/>.</summary>
+    public static readonly DependencyProperty IconNameProperty = DependencyProperty.Register(
+        nameof(IconName), typeof(string), typeof(EntryIconView), new FrameworkPropertyMetadata(null, (view, change) => ((EntryIconView)view).Visual = LibraryIcons.Of(change.NewValue as string)));
+
     public static readonly DependencyProperty SizeProperty = DependencyProperty.Register(
         nameof(Size), typeof(double), typeof(EntryIconView), new FrameworkPropertyMetadata(16.0, FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
 
@@ -26,6 +30,12 @@ public sealed class EntryIconView : FrameworkElement
     {
         get => (IconVisual?)GetValue(VisualProperty);
         set => SetValue(VisualProperty, value);
+    }
+
+    public string? IconName
+    {
+        get => (string?)GetValue(IconNameProperty);
+        set => SetValue(IconNameProperty, value);
     }
 
     public double Size

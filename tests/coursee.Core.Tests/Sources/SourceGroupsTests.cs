@@ -52,5 +52,6 @@ public class SourceGroupsTests
         Assert.Equal(SourceGroups.All.Count, SourceGroups.All.Select(group => group.Name).Distinct().Count());
         Assert.Equal(SourceGroups.All.Count, SourceGroups.All.Select(group => group.Icon).Distinct().Count());
         Assert.All(SourceGroups.All, group => Assert.False(string.IsNullOrWhiteSpace(group.ToolTip)));
+        Assert.All(SourceGroups.All, group => Assert.NotNull(IconLibrary.Find(group.Icon)));
     }
 }

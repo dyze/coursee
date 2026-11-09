@@ -96,7 +96,8 @@ public class SourceIconsTests
             new GogSource(new NoGogGames()),
         ];
 
-        Assert.All(sources, source => Assert.False(string.IsNullOrEmpty(source.Icon)));
+        Assert.All(sources, source => Assert.NotNull(IconLibrary.Find(source.Icon)));
+        Assert.NotNull(IconLibrary.Find(SourceIcons.Typed));
         Assert.Equal(sources.Length + 1, sources.Select(s => s.Icon).Append(SourceIcons.Typed).Distinct().Count());
     }
 
