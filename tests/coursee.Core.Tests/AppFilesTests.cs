@@ -61,7 +61,7 @@ public class AppFilesTests
     {
         var files = new AppFiles(Data, Program);
 
-        Assert.Equal(8, files.All.Count);
+        Assert.Equal(9, files.All.Count);
         Assert.Equal(files.All.Count, files.All.Select(file => file.Path).Distinct().Count());
         Assert.Equal(new AppFile("Settings", files.Settings), files.All[0]);
         Assert.Equal(new AppFile("Program", Program), files.All[^1]);

@@ -27,6 +27,16 @@ public sealed class CustomEntryRow(CustomEntry entry)
     public string Target { get; set; } = entry.Target;
 }
 
+/// <summary>A chosen icon in Settings > Entries.</summary>
+/// <param name="Visual">The icon, drawn; null when it cannot be (its file gone).</param>
+public sealed record IconRow(EntryIconChoice Choice, IconVisual? Visual)
+{
+    public string Target => Choice.Target;
+
+    /// <summary>One of coursee's icons by its name; a file of the user's as such.</summary>
+    public string Detail => Choice.Icon.Kind == Core.Icons.EntryIconKind.Library ? Choice.Icon.Name : "Your own image";
+}
+
 /// <summary>An alias in Settings > Entries: its box edits <see cref="Alias"/> until saved.</summary>
 public sealed class AliasRow(EntryAlias entry)
 {

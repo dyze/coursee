@@ -47,13 +47,18 @@ public enum ResourceKind
 /// For a URL from a browser's bookmarks, that browser (see <see cref="Browsers"/>): the URL opens
 /// in it rather than in the default browser. Null for everything else.
 /// </param>
+/// <param name="IconPath">
+/// The file whose icon the entry shows, when it is not the target itself: a game's program, or its
+/// icon in the launcher's cache. Null for everything else (see <see cref="Icons.OwnIcon"/>).
+/// </param>
 public sealed record Resource(
     string Name,
     string Target,
     ResourceKind Kind,
     string Source,
     string? LaunchPath = null,
-    string? Browser = null)
+    string? Browser = null,
+    string? IconPath = null)
 {
     /// <summary>What pressing Enter will do, for display (for example "Open folder").</summary>
     [JsonIgnore]

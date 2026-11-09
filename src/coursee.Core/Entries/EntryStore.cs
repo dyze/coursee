@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Coursee.Core.Icons;
 using Coursee.Core.Resources;
 using Coursee.Core.Search;
 
@@ -21,6 +22,9 @@ public sealed class EntryStore
 
     private readonly List<HiddenEntry> _hidden = [];
 
+    /// <summary>The icon the user chose, by target.</summary>
+    private readonly Dictionary<string, EntryIcon> _icons = new(StringComparer.OrdinalIgnoreCase);
+
     public EntryStore(string path)
     {
         _path = path;
@@ -42,6 +46,15 @@ public sealed class EntryStore
             if (hidden is { Source: not null, Name: not null, Target: not null } && !_hidden.Any(hidden.Matches))
             {
                 _hidden.Add(hidden);
+            }
+        }
+
+        foreach (var (target, text) in data?.Icons ?? new Dictionary<string, string>())
+        {
+            // A file edited by hand may hold a text that is no icon: skipped.
+            if (EntryIcon.Parse(text) is { } icon && target.Trim().Length > 0)
+            {
+                _icons.TryAdd(target, icon);
             }
         }
     }
@@ -111,6 +124,31 @@ public sealed class EntryStore
         return movedFrom;
     }
 
+    /// <summary>The icon the user chose for the entry with this target, or null (it shows its own).</summary>
+    public EntryIcon? IconOf(string target) => _icons.GetValueOrDefault(target);
+
+    /// <summary>Every chosen icon with its target, in alphabetical order of the targets.</summary>
+    public IReadOnlyList<EntryIconChoice> Icons =>
+        _icons
+            .Select(pair => new EntryIconChoice(pair.Key, pair.Value))
+            .OrderBy(choice => choice.Target, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+    /// <summary>Gives the entry with this target its icon, replacing the one it had; null removes it.</summary>
+    public void SetIcon(string target, EntryIcon? icon)
+    {
+        if (icon is null)
+        {
+            _icons.Remove(target);
+        }
+        else
+        {
+            _icons[target] = icon;
+        }
+
+        Save();
+    }
+
     /// <summary>The hidden entries, in the order they were hidden.</summary>
     public IReadOnlyList<HiddenEntry> Hidden => _hidden.ToList();
 
@@ -162,6 +200,11 @@ public sealed class EntryStore
             {
                 _aliases[to.Target] = alias;
             }
+
+            if (_icons.Remove(from.Target, out var icon))
+            {
+                _icons[to.Target] = icon;
+            }
         }
 
         if (_hidden.RemoveAll(hidden => hidden.Matches(from)) > 0 && !IsHidden(to))
@@ -183,7 +226,8 @@ public sealed class EntryStore
         var data = new EntryData(
             Pinned.ToList(),
             Aliases.ToDictionary(alias => alias.Alias, alias => alias.Target),
-            _hidden);
+            _hidden,
+            Icons.ToDictionary(choice => choice.Target, choice => choice.Icon.ToString()));
         File.WriteAllText(_path, JsonSerializer.Serialize(data));
     }
 
@@ -202,8 +246,10 @@ public sealed class EntryStore
     }
 
     /// <param name="Aliases">Target by alias, as the user reads it.</param>
+    /// <param name="Icons">Chosen icon by target (<see cref="EntryIcon.ToString"/>).</param>
     internal sealed record EntryData(
         List<string>? Pinned,
         Dictionary<string, string>? Aliases = null,
-        List<HiddenEntry>? Hidden = null);
+        List<HiddenEntry>? Hidden = null,
+        Dictionary<string, string>? Icons = null);
 }

@@ -11,7 +11,7 @@ A personal Windows launcher. Press a global hotkey, type in the compact search w
 
 ## Status
 
-Searches your own custom entries, the Desktop and your own folders (shortcuts, files and folders), the folders pinned in Explorer's Quick access, Start Menu shortcuts, packaged (Store, MSIX) apps, Steam, Epic Games and GOG games, Firefox bookmarks, Edge favorites, the Windows Run history and Windows settings pages and tools. Also: recents, pins, aliases, hidden entries, row actions, tray icon, settings, installer, portable zip.
+Searches your own custom entries, the Desktop and your own folders (shortcuts, files and folders), the folders pinned in Explorer's Quick access, Start Menu shortcuts, packaged (Store, MSIX) apps, Steam, Epic Games and GOG games, Firefox bookmarks, Edge favorites, the Windows Run history and Windows settings pages and tools. Also: recents, pins, aliases, hidden entries, entry icons, row actions, tray icon, settings, installer, portable zip.
 
 ## Install
 
@@ -41,12 +41,13 @@ Upgrade: run a newer setup over the old one. Uninstall: *Settings > Apps*. Your 
 | Ctrl+P | Pin or unpin the selected item (also the pin icon on the selected row; a pinned item always shows it) |
 | F2 | Set the selected item's alias, in a box on its row (also the alias icon; an item with an alias always shows it, filled): Enter saves, Esc cancels, empty removes it |
 | Ctrl+H | Hide the selected item from results and recents (also the hide icon); restore it in Settings > Entries |
+| Ctrl+I | Choose the icon of the selected item: one of coursee's, a file of yours (*Browse...*), or its own icon back (*Own icon*) |
 | Ctrl+N | Make the typed text a custom entry (also the **+** button right of the search box). A box on the typed text's row (added first when something matched) asks for its name: Enter saves, Esc cancels |
 | Del | Remove the selected item from recents (search box empty) |
 | Tab | Move the focus to the Settings button (Enter or Space opens Settings), and back |
 | Esc | Clear the search box; when it is empty, hide the launcher |
 
-Two lines under the search box say which keys apply to the selected item: what Enter does (with Ctrl and Shift) on the first, the other keys (Ctrl+C, Ctrl+P, F2, Ctrl+H, Ctrl+N, Del) on the second. Settings > Keys lists every key. In the list, an icon on the right of each row shows the same action (click it to do it, like Enter), and an icon on the left the source the item comes from (hover them for the wording); Settings > Sources shows the same source icons.
+Two lines under the search box say which keys apply to the selected item: what Enter does (with Ctrl and Shift) on the first, the other keys (Ctrl+C, Ctrl+P, F2, Ctrl+H, Ctrl+I, Ctrl+N, Del) on the second. Settings > Keys lists every key. In the list, an icon on the right of each row shows the same action (click it to do it, like Enter), and an icon on the left the item's own (see *Entry icons* below) or, without one, the source it comes from (hover it for the source); Settings > Sources shows the same source icons.
 
 **Tray icon.** Click: show the launcher. Menu: Show, Settings, Log window (ticked while it is open: a click shows or closes it), Quit.
 
@@ -61,7 +62,7 @@ Gear button in the launcher, or tray menu > Settings. A dialog over the launcher
 | General | Number of recent items (default 20), launcher position, ignore accents when searching (default on), run typed text as a command (default on), start with Windows, *Add to coursee* in Explorer's right-click menu |
 | Appearance | Theme: follow Windows (default), light or dark. The tray menu follows at the next start |
 | Sources | Custom entries, then groups, each with a checkbox that switches all its sources: **Folders**, yours (the Desktop by default; *Add folder...*, on the group's row, adds one; ✕ removes one, the Desktop too), **Quick access** folders, **Windows** (Start Menu, packaged apps, Run history, settings and tools), **Browsers** (Firefox bookmarks, Edge favorites), **Games** (Steam, Epic Games, GOG). Each source switches on and off |
-| Entries | One list at a time, picked in a strip with counts: hidden entries (restore), custom entries (edit name and target, delete), aliases (edit, remove), pins (unpin). A filter box narrows every list (name, target, alias or source). Enter in a box saves its row |
+| Entries | One list at a time, picked in a strip with counts: hidden entries (restore), custom entries (edit name and target, delete), aliases (edit, remove), pins (unpin), icons (remove). A filter box narrows every list (name, target, alias or source). Enter in a box saves its row |
 | Keys | Hotkey (must include Ctrl, Alt or Win), and the list of keys (read only) |
 | Logging | Detailed (debug) logging, open the log window |
 | About | Version, with the commit it was built from (`-dirty`: uncommitted changes); buttons *Website (GitHub)*, *Report an issue* and *Show changelog* (opens it in its own window, Esc closes it); the update check (once a day, on by default: asks GitHub for the latest release, downloads nothing; when a newer one exists, a dot on this tab and, until you have opened About, on the Settings button; a link to its release page, with the setup and the portable zip; in green when you have the latest version); coursee's files (settings, entries, recents, window positions, logs, program), each with its path and *Show in folder* |
@@ -92,6 +93,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#search).
 - **Pins and aliases** belong to an item's target (path, URL or command): two shortcuts to the same program share them, and they stay when a shortcut is renamed or a source is switched off and on. What you typed (a URL or command that matched nothing) cannot be pinned, given an alias or hidden.
 - **Hidden items** are that exact row (source, name and target): hiding one of two shortcuts to the same program keeps the other. A hidden item's alias finds nothing.
 - **Custom entries** are your own name for a URL, folder, file or command. What the target is, and so what Enter does, is decided like for typed text. Changing a target in Settings > Entries keeps the entry's pin, alias and recent history; deleting an entry keeps its pin and alias, like a removed shortcut.
+- **Entry icons.** A row shows its entry's own icon, as Explorer shows it: a file's or a program's, a shortcut's, a folder's, a packaged app's, a game's (its program for Epic and GOG, Steam's cached icon). Without one (a URL, a command, a setting), or on a network path (never read, so the window never waits), the row shows its source's icon. Ctrl+I chooses another: one of coursee's icons (a filter finds them by name), or a file of yours: an image (ico, png, jpg, bmp, gif), a program's icon (exe, dll), or an SVG made of plain paths, drawn in the text's colour. Your file is copied into coursee's data, so it stays if the original moves. Like pins and aliases, the icon belongs to the target. Settings > Entries > Icons lists the chosen ones.
 - **Add from Explorer.** Right-click a file or folder in Explorer, then *Add to coursee* (on Windows 11, under *Show more options*; one item at a time). The launcher opens with its path typed and the name box open, filled with the file's name without its extension, or the folder's name: Enter saves, Esc cancels. Coursee starts if it is not running. The item is added by the setup (a task, ticked by default) or in Settings > General, the portable copy too; like *Start with Windows*, it is ticked only when it starts *this* copy. Uninstalling removes it.
 - **Instant window.** Sources are reloaded in the background each time the launcher opens: it shows the previous list at once, and new or removed items appear a moment later.
 - **Desktop and Start Menu shortcuts** are searched by their target, but opened through the shortcut itself, so their arguments and working folder are kept. Uninstall shortcuts are skipped, and a program found in both places is listed once. A shortcut whose target is gone is skipped, except a target on the network: it is never checked (an offline share would block coursee), so it stays listed.
@@ -114,8 +116,9 @@ Everything stays on your computer, in `%LOCALAPPDATA%\coursee` (a portable copy:
 | --- | --- |
 | `settings.json` | Settings |
 | `recents.json` | Recent list, with the last times each item was opened |
-| `entries.json` | Pinned items, aliases and hidden items |
+| `entries.json` | Pinned items, aliases, hidden items and chosen icons |
 | `custom.json` | Custom entries |
+| `icons` | Your own icon files, copied when chosen; one no entry uses is deleted |
 | `windows.json` | Where each window was left |
 | `logs\coursee.log` | Log, at most 3 files of 1 MB, oldest deleted |
 

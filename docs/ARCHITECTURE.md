@@ -8,12 +8,13 @@ coursee.App   (WPF, Windows only)
 │  adapters: ShellLinkResolver, RegistryRunHistoryReader, RegistryAutoStart, RegistryExplorerMenu,
 │            RegistryBrowserLocator, HotkeyService, SerilogFileLog, SingleInstance,
 │            NativeWindows + WindowPlacer (window positions), ShellFolder: ShellQuickAccessReader + ShellAppsFolderReader,
-│            RegistryGameLaunchers, GitHubReleaseFeed
+│            RegistryGameLaunchers, GitHubReleaseFeed, ShellIcons
 │
 │  implements ▼  IShortcutResolver · IRunHistoryReader · IQuickAccessReader · IAppsFolderReader · IGogGamesReader · IReleaseFeed · IAutoStart · IExplorerMenu · IHotkeyRegistrar · IBrowserLocator · ILog
 │
 coursee.Core  (no Windows dependency, fully unit-tested on any OS)
    SearchEngine · RecentStore · EntryStore · CustomEntryStore · CustomEntryEditor · SettingsStore · SettingsCatalog · KeyBindings
+   IconLibrary · SvgIcon · IconFileStore · EntryIconEditor · OwnIcon
    SourceCatalog · SourceLoader · SourceMonitor · FallbackClassifier
    ResourceActions · PlacementRules · PlacementStore · UpdateChecker · UpdateStore
    sources (IResourceSource): CustomSource · ShortcutsSource (Desktop, folders, Start Menu) · FirefoxBookmarksSource · EdgeFavoritesSource · RunHistorySource
@@ -32,6 +33,7 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | --- | --- |
 | *(root)* | `AppVersion`; `AppFiles` (where every file of coursee is: the only place their names are written, listed in Settings > About; `AppFiles.For` picks the data folder, see [Portable copy](#portable-copy)); `Changelog` (reads the text shown by Settings > About); `ProjectLinks` (website, issues) |
 | `Resources/` | `Resource` and what can be done with it: `ResourceActions`, `ActionLabels` (the wording, and the `ResourceAction` behind the row icon), `FallbackClassifier`, `CommandLine` (program and arguments), `ProgramFinder` (the program's file, in the user's folder or PATH, so `kill rds.cmd` needs no quotes), `Browsers` |
+| `Icons/` | Entry icons, see [Entry icons](#entry-icons): `IconLibrary` (the SVGs of `Icons/Svg`, embedded), `SvgIcon` (an SVG of plain paths), `EntryIcon` (a chosen icon), `IconFileStore` (the user's icon files), `EntryIconEditor`, `OwnIcon` (where an entry's own icon is read from) |
 | `Search/` | `SearchEngine`, `SearchBoosts` (what raises a result above its match), `TextFolding` (accents removed before matching), `ListNavigation` (moving the selection in the result list) |
 | `Recents/` | `RecentStore`, `Frecency` (recency plus frequency) |
 | `Entries/` | `EntryStore`: what the user set on entries (pins, aliases as `EntryAlias`, hidden entries as `HiddenEntry`); custom entries: `CustomEntry`, `CustomEntryStore`, `CustomEntryEditor`; `EntryFilter` (the filter of Settings > Entries) |
@@ -46,9 +48,9 @@ One namespace per folder (`Coursee.Core.Sources`, `Coursee.UI.Views`, ...). The 
 | `coursee.App` | Content |
 | --- | --- |
 | *(root)* | `App.xaml`: startup and wiring |
-| `Views/` | Windows: `MainWindow` (the launcher; its entry actions in `MainWindow.Entries.cs`), `SettingsWindow` (its Sources tab in `SettingsWindow.Sources.cs`), `LogWindow`; `ResultRow` (a row of the launcher: the resource, its pin and alias, and what its box is open for: `RowEdit`); `EntriesPanel` and `EntryRows` (Settings > Entries); `MessageDialog` (messages and yes / no questions in the app's theme, instead of the Windows `MessageBox`); `ChangelogWindow` (Settings > About > *Show changelog*); `AppTheme`; `ActionGlyphConverter` (the Segoe Fluent glyph of each `ResourceAction`), `SourceIconConverter` (the icon of a row's source) |
+| `Views/` | Windows: `MainWindow` (the launcher; its entry actions in `MainWindow.Entries.cs`), `SettingsWindow` (its Sources tab in `SettingsWindow.Sources.cs`), `LogWindow`; `ResultRow` (a row of the launcher: the resource, its pin and alias, and what its box is open for: `RowEdit`); `EntriesPanel` and `EntryRows` (Settings > Entries); `MessageDialog` (messages and yes / no questions in the app's theme, instead of the Windows `MessageBox`); `ChangelogWindow` (Settings > About > *Show changelog*); `IconPickerWindow` (Ctrl+I), `EntryIcons` (the icon of each row), `EntryIconView` + `IconVisual` (an icon drawn); `AppTheme`; `ActionGlyphConverter` (the Segoe Fluent glyph of each `ResourceAction`), `SourceIconConverter` (the icon of a row's source) |
 | `Tray/` | `TrayIcon` |
-| `Platform/` | Implementations of the `Core` interfaces (`ShellFolder` lists a Shell folder on an STA thread, for Quick access and the Apps folder), `SingleInstance`, and window placement (`NativeWindows`, `WindowPlacer`) |
+| `Platform/` | Implementations of the `Core` interfaces (`ShellFolder` lists a Shell folder on an STA thread, for Quick access and the Apps folder; `ShellIcons` reads Explorer's icon of an item), `SingleInstance`, and window placement (`NativeWindows`, `WindowPlacer`) |
 | `Logging/` | `LogHub`, `SerilogFileLog` |
 | `Assets/` | `coursee.ico` |
 
@@ -121,7 +123,7 @@ Results are sorted by total score, then by name, and capped at 50. Matching igno
 - Up to 0.4 the file was a plain list of resources; it is read as each one opened once, in its order, and saved in the new format at the next open.
 
 ## Entries
-- `EntryStore` (`entries.json`) keeps what the user set on entries: the pinned targets, and the aliases (stored as alias → target, as the user reads them).
+- `EntryStore` (`entries.json`) keeps what the user set on entries: the pinned targets, the aliases (stored as alias → target, as the user reads them), and the chosen icons (see [Entry icons](#entry-icons)).
 - An alias belongs to one entry and an entry has one alias: `SetAlias` replaces the entry's old alias, and moves an alias another entry had (it returns that entry, for the log). An empty alias removes it. Aliases are compared with `TextFolding.AreEqual` (case and accents ignored). It is kept out of the sources, so adding a source still does not touch it, and out of `settings.json`: it is about entries, not how coursee behaves.
 - An entry is known by its **target**, case-insensitive, as in recents. Two items with the same target (one program, two shortcut names) share their pin. A pin outlives a renamed shortcut and a source switched off.
 - **Hidden entries** (Ctrl+H) are known by source, name and target (`HiddenEntry`, case-insensitive), not by target only: one of two shortcuts to the same program can be hidden. `EntryStore.Visible` leaves them out of the resources and of the recent list before searching, so a hidden entry's alias finds nothing.
@@ -135,6 +137,24 @@ Results are sorted by total score, then by name, and capped at 50. Matching igno
 - What an entry is (URL, folder, file, network path, command) is not stored: `CustomEntry.ToResource` decides it at each load with `FallbackClassifier`, as for typed text. The stored target is the one that is opened (`www.x` is stored as `https://www.x`), so pins and aliases, keyed by target, match.
 - Explorer's *Add to coursee* goes through the same box: see [Add from Explorer](#add-from-explorer).
 - `CustomEntryEditor.Create` makes one from the typed text (the + button, Ctrl+N, whenever the search box has text; the launcher adds the typed text's row first when something matched). `Edit` changes name and target, and moves what was set on the entry: pin, alias and hidden state (`EntryStore.Move`), recent history (`RecentStore.Move`, merged with an item that already had the new target). Deleting an entry leaves its pin and alias, like a shortcut removed from the Desktop.
+
+## Entry icons
+
+```
+row ─► EntryIcons.Show
+         ├─ chosen (EntryStore.IconOf, by target)? ─► IconLibrary SVG, or the user's file (icons\)
+         ├─ OwnIcon.PathOf ─► an image file: decoded │ else ShellIcons (STA thread, in turn)
+         │                    read once per path, in the background; the row is drawn when ready
+         └─ none ─► the source's glyph
+```
+
+| Topic | Rule |
+| --- | --- |
+| Own icon | `OwnIcon.PathOf`: a file, folder or shortcut (its `.lnk`, `LaunchPath`), an app (`shell:AppsFolder\…`), else `Resource.IconPath`: a game's program (Epic: `InstallLocation` + `LaunchExecutable`; GOG: `exe`) or Steam's cached icon (`appcache\librarycache\<id>\<hash>.jpg`, or `<id>_icon.jpg` before 2024). URLs, commands and settings have none. A network path is never read |
+| Reading | `ShellIcons`: `IShellItemImageFactory` (icon only, 32 px), its 32-bit DIB copied with its transparency (WPF's `CreateBitmapSourceFromHBitmap` drops it). An image file (Steam's) is decoded by WPF instead: the Shell would give the jpg file icon. Cached for the session: a changed icon shows after a restart |
+| Chosen icon | Ctrl+I (`ResourceActions.CanSetIcon`, entries only) opens `IconPickerWindow`. Stored in `entries.json` by target (`library:<name>` or `file:<name>`), moved with a custom entry's target (`EntryStore.Move`) |
+| User's files | `IconFileStore`, in `icons\` of the data folder: named by their content (first 16 hex digits of SHA-256), so two entries share one; `EntryIconEditor` deletes those no entry uses. Accepted (`IconFileType`): ico, png, jpg, bmp, gif (kept as they are), exe and dll (their icon, saved as a 64 px PNG), SVG of plain paths |
+| SVG | No SVG library: `SvgIcon.Read` keeps the `d` of every `path` and the `viewBox`, and refuses shapes, text, images and transforms. Drawn by `EntryIconView` as a WPF geometry in the text's colour (selected rows too): the user's with SVG's nonzero rule, coursee's with WPF's even-odd, as designed |
 
 ## Folder sources
 The list of sources changes while coursee runs, so `SourceCatalog` owns it; the launcher, Settings and `SourceIcons` read `SourceCatalog.All`.

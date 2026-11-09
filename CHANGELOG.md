@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **Entry icons.** Rows show their entry's own icon (a file's, a program's, a folder's, an app's, a game's) instead of their source's, when there is one. **Ctrl+I** chooses another: one of 104 icons that come with coursee, or a file of yours (an image, a program's icon, or a simple SVG), copied into coursee's data. Settings > Entries lists the chosen icons ([Entry icons](README.md#behavior-notes)).
 - **Add from Explorer.** *Add to coursee*, in Explorer's right-click menu on any file or folder, makes it a custom entry: the launcher opens with its path typed and the name box open, filled with its name. On Windows 11 it is under *Show more options*. The setup adds it (a task), and Settings > General switches it on and off, in the portable copy too ([Add from Explorer](README.md#behavior-notes)).
 
 ### Changed

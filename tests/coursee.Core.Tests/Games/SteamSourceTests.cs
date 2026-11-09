@@ -34,6 +34,26 @@ public sealed class SteamSourceTests : IDisposable
     }
 
     [Fact]
+    public void AGame_ShowsItsIconFromSteamsCache()
+    {
+        var hash = new string('a', 39) + "f";
+        var cache = Path.Combine(_steam, "appcache", "librarycache");
+        Directory.CreateDirectory(Path.Combine(cache, "620"));
+        File.WriteAllText(Path.Combine(cache, "620", "header.jpg"), "artwork");
+        File.WriteAllText(Path.Combine(cache, "620", hash + ".jpg"), "icon");
+        File.WriteAllText(Path.Combine(cache, "570_icon.jpg"), "icon");
+        WriteManifest(_steam, "620", "Portal 2");
+        WriteManifest(_steam, "570", "Dota 2");
+        WriteManifest(_steam, "440", "Team Fortress 2");
+
+        var icons = Load().ToDictionary(game => game.Name, game => game.IconPath);
+
+        Assert.Equal(Path.Combine(cache, "620", hash + ".jpg"), icons["Portal 2"]);
+        Assert.Equal(Path.Combine(cache, "570_icon.jpg"), icons["Dota 2"]);
+        Assert.Null(icons["Team Fortress 2"]);
+    }
+
+    [Fact]
     public void GamesOfEveryLibrary_AreListed()
     {
         var library = Path.Combine(Path.GetDirectoryName(_steam)!, "SteamLibrary");

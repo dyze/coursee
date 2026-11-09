@@ -1,0 +1,191 @@
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Windows.Media.Imaging;
+using Coursee.Core.Entries;
+using Coursee.Core.Icons;
+using Coursee.Core.Logging;
+using Coursee.Core.Resources;
+using Coursee.UI.Platform;
+
+namespace Coursee.UI.Views;
+
+/// <summary>
+/// The icons of the rows: the one the user chose (one of coursee's, or a file of theirs), else the
+/// entry's own as Explorer shows it (<see cref="OwnIcon"/>), else none (the row keeps its source's
+/// icon). Each is read once; an entry's own icon is read in the background and shown when ready.
+/// Used on the UI thread.
+/// </summary>
+public sealed class EntryIcons(EntryStore entries, IconFileStore files, ShellIcons shell, ILog log)
+{
+    /// <summary>Pixels of an icon read from Windows: a 16-pixel row at 200 % scaling.</summary>
+    private const int RowPixels = 32;
+
+    /// <summary>Pixels of a program's icon kept as the user's file.</summary>
+    private const int KeptPixels = 64;
+
+    private const string LogCategory = "Icons";
+
+    private readonly Dictionary<string, IconVisual?> _library = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, IconVisual?> _files = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, Task<IconVisual?>> _own = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>One of coursee's icons, by name; null for a name this version does not have.</summary>
+    public IconVisual? OfLibrary(string name)
+    {
+        if (!_library.TryGetValue(name, out var visual))
+        {
+            visual = IconLibrary.Find(name) is { } icon ? IconVisual.OfSvg(icon, nonZero: false) : null;
+            _library[name] = visual;
+        }
+
+        return visual;
+    }
+
+    /// <summary>The visual of a chosen icon; null when it cannot be drawn (its file gone, say).</summary>
+    public IconVisual? OfChoice(EntryIcon icon) =>
+        icon.Kind == EntryIconKind.Library ? OfLibrary(icon.Name) : OfFile(icon.Name);
+
+    /// <summary>Gives <paramref name="row"/> its icon: at once when known, else once read.</summary>
+    public void Show(ResultRow row)
+    {
+        if (entries.IconOf(row.Resource.Target) is { } chosen && OfChoice(chosen) is { } visual)
+        {
+            row.Icon = visual;
+            return;
+        }
+
+        if (OwnIcon.PathOf(row.Resource) is not { } path)
+        {
+            return;
+        }
+
+        var own = Own(path);
+        if (own.IsCompletedSuccessfully)
+        {
+            row.Icon = own.Result;
+        }
+        else
+        {
+            ShowWhenRead(row, own);
+        }
+    }
+
+    /// <summary>
+    /// What a file the user picked keeps as its icon: an image as it is, an SVG of plain paths, a
+    /// program's icon as a PNG. Null when it cannot be one (the reason is logged).
+    /// </summary>
+    public async Task<(byte[] Content, string Extension)?> ReadPicked(string path)
+    {
+        try
+        {
+            switch (IconFileStore.TypeOf(path))
+            {
+                case IconFileType.Image:
+                    var image = await File.ReadAllBytesAsync(path);
+                    return Decode(new MemoryStream(image), RowPixels) is null ? null : (image, Path.GetExtension(path));
+
+                case IconFileType.Svg:
+                    var svg = await File.ReadAllTextAsync(path);
+                    return SvgIcon.Read(svg) is { } icon && IconVisual.OfSvg(icon, nonZero: true) is not null
+                        ? (Encoding.UTF8.GetBytes(svg), ".svg")
+                        : null;
+
+                case IconFileType.Program:
+                    return await shell.LoadAsync(path, KeptPixels) is { } program ? (Png(program), ".png") : null;
+
+                default:
+                    return null;
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException or COMException or FileFormatException or ArgumentException)
+        {
+            log.Warn(LogCategory, $"Cannot read {path} as an icon: {ex.Message}");
+            return null;
+        }
+    }
+
+    private async void ShowWhenRead(ResultRow row, Task<IconVisual?> own) => row.Icon = await own;
+
+    /// <summary>A file of the user's, in the icons folder: named by its content, so read once.</summary>
+    private IconVisual? OfFile(string name)
+    {
+        if (_files.TryGetValue(name, out var visual))
+        {
+            return visual;
+        }
+
+        var path = files.PathOf(name);
+        try
+        {
+            visual = IconFileStore.TypeOf(path) switch
+            {
+                IconFileType.Svg => SvgIcon.Read(File.ReadAllText(path)) is { } icon ? IconVisual.OfSvg(icon, nonZero: true) : null,
+                IconFileType.Image => DecodeFile(path),
+                _ => null,
+            };
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException or COMException or FileFormatException)
+        {
+            log.Warn(LogCategory, $"Cannot read the icon {path}: {ex.Message}");
+            visual = null;
+        }
+
+        _files[name] = visual;
+        return visual;
+    }
+
+    /// <summary>An entry's own icon, read once per path: an image file as it is (Steam's icons), anything else through the Shell.</summary>
+    private Task<IconVisual?> Own(string path)
+    {
+        if (!_own.TryGetValue(path, out var own))
+        {
+            own = ReadOwn(path);
+            _own[path] = own;
+        }
+
+        return own;
+    }
+
+    private async Task<IconVisual?> ReadOwn(string path)
+    {
+        try
+        {
+            var image = IconFileStore.TypeOf(path) == IconFileType.Image
+                ? await Task.Run(() => DecodeFile(path)?.Image as BitmapSource)
+                : await shell.LoadAsync(path, RowPixels);
+            return image is null ? null : IconVisual.OfImage(image);
+        }
+        catch (Exception ex)
+        {
+            // A file gone, a Shell item without icon: the row keeps its source's icon.
+            log.Debug(LogCategory, $"No icon for {path}: {ex.GetType().Name}: {ex.Message}");
+            return null;
+        }
+    }
+
+    private static IconVisual? DecodeFile(string path)
+    {
+        using var stream = File.OpenRead(path);
+        return Decode(stream, RowPixels) is { } image ? IconVisual.OfImage(image) : null;
+    }
+
+    /// <summary>The frame closest above <paramref name="pixels"/> (an .ico holds several sizes), else the largest; frozen.</summary>
+    private static BitmapSource? Decode(Stream stream, int pixels)
+    {
+        var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.IgnoreColorProfile, BitmapCacheOption.OnLoad);
+        var frame = decoder.Frames
+            .OrderBy(candidate => candidate.PixelWidth >= pixels ? candidate.PixelWidth : int.MaxValue - candidate.PixelWidth)
+            .FirstOrDefault();
+        frame?.Freeze();
+        return frame;
+    }
+
+    private static byte[] Png(BitmapSource image)
+    {
+        var encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(image));
+        using var stream = new MemoryStream();
+        encoder.Save(stream);
+        return stream.ToArray();
+    }
+}

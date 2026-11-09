@@ -72,8 +72,8 @@ public sealed class SettingsCatalog
         entries.Add(new(
             EntriesId,
             EntriesTab,
-            "Hidden entries, custom entries, aliases and pins",
-            ["hide", "restore", "show", "custom", "own", "edit", "delete", "rename", "alias", "pin", "unpin"]));
+            "Hidden entries, custom entries, aliases, pins and icons",
+            ["hide", "restore", "show", "custom", "own", "edit", "delete", "rename", "alias", "pin", "unpin", "icon", "image"]));
         entries.Add(new(HotkeyId, KeysTab, "Hotkey", ["shortcut", "key", "keyboard", "show", "launcher"]));
         entries.Add(new(KeyBindingsId, KeysTab, "Key bindings", ["shortcut", "keyboard", "keys", "help"]));
         entries.Add(new(DebugLoggingId, LoggingTab, "Detailed (debug) logging", ["log", "verbose", "trace"]));

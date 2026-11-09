@@ -2,15 +2,12 @@
 
 Scope of each planned version. Implemented features move to [CHANGELOG.md](../CHANGELOG.md). The goal, principles and non-goals are in [GOAL.md](GOAL.md). The features are sorted by priority.
 
-| Version | Status  | Theme     |
-| ------- | ------- | --------- |
+| Version | Status  | Theme                          |
+| ------- | ------- | ------------------------------ |
 | 0.9     | Planned | Explorer integration and icons |
 
 ## 0.9
-1. **Entry icons.** Rows show the entry's own icon (a game's or a file's exe icon) when it can be found, else the source icon.
-   - The user can choose an icon for any entry: one of the app's SVG icons, or their own file. Kept by target, like pins and aliases.
-   - Network paths are never read for an icon.
-2. **New icons.** New app and installer icon (provided by the owner), and every image shown in the app redrawn from one set of SVG icons (those of kofrenot).
+1. **New icons.** New app and installer icon (provided by the owner), and every image shown in the app redrawn from one set of SVG icons (those of kofrenot).
 
 ## Later
 1. **Beautify changelog.** Today hard to identify the interesting info reading the md file as is.

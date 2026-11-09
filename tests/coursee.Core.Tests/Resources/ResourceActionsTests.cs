@@ -154,7 +154,7 @@ public class ResourceActionsTests
     public void KeysHint_ListsCopyPinAndAlias()
     {
         Assert.Equal(
-            "Ctrl+C: Copy  ·  Ctrl+P: Pin  ·  F2: Alias  ·  Ctrl+H: Hide  ·  Ctrl+N: New custom entry",
+            "Ctrl+C: Copy  ·  Ctrl+P: Pin  ·  F2: Alias  ·  Ctrl+H: Hide  ·  Ctrl+I: Icon  ·  Ctrl+N: New custom entry",
             ResourceActions.KeysHint(R(ResourceKind.Folder, @"C:\work"), inRecents: false, isPinned: false));
     }
 
@@ -162,7 +162,7 @@ public class ResourceActionsTests
     public void KeysHint_OffersUnpinForAPinnedItem()
     {
         Assert.Equal(
-            "Ctrl+C: Copy  ·  Ctrl+P: Unpin  ·  F2: Alias  ·  Ctrl+H: Hide  ·  Ctrl+N: New custom entry",
+            "Ctrl+C: Copy  ·  Ctrl+P: Unpin  ·  F2: Alias  ·  Ctrl+H: Hide  ·  Ctrl+I: Icon  ·  Ctrl+N: New custom entry",
             ResourceActions.KeysHint(R(ResourceKind.Folder, @"C:\work"), inRecents: false, isPinned: true));
     }
 
@@ -170,7 +170,7 @@ public class ResourceActionsTests
     public void KeysHint_OffersRemovalForRecentItems()
     {
         Assert.Equal(
-            "Ctrl+C: Copy  ·  Ctrl+P: Pin  ·  F2: Alias  ·  Ctrl+H: Hide  ·  Del: Remove from recents",
+            "Ctrl+C: Copy  ·  Ctrl+P: Pin  ·  F2: Alias  ·  Ctrl+H: Hide  ·  Ctrl+I: Icon  ·  Del: Remove from recents",
             ResourceActions.KeysHint(R(ResourceKind.Folder, @"C:\work"), inRecents: true, isPinned: false));
     }
 

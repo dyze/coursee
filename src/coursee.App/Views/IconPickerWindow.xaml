@@ -1,0 +1,89 @@
+<Window x:Class="Coursee.UI.Views.IconPickerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:Coursee.UI.Views"
+        Title="Icon"
+        Icon="/Assets/coursee.ico"
+        Width="480"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        SourceInitialized="Window_SourceInitialized">
+  <!-- Ctrl+I in the launcher: one of coursee's icons, a file of the user's (Browse...), or the entry's own
+       icon back. Enter or a double click: OK, Esc: Cancel. -->
+  <Grid Margin="16">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <TextBlock x:Name="EntryText" TextTrimming="CharacterEllipsis" />
+
+    <Grid Grid.Row="1" Margin="0,10,0,0">
+      <TextBox x:Name="FilterBox"
+               Padding="6,4"
+               ToolTip="Filter by name (Down: go to the icons)"
+               TextChanged="FilterBox_TextChanged"
+               PreviewKeyDown="FilterBox_PreviewKeyDown" />
+      <TextBlock x:Name="FilterPlaceholder"
+                 Margin="10,0,0,0"
+                 VerticalAlignment="Center"
+                 IsHitTestVisible="False"
+                 Opacity="0.5"
+                 Text="Filter" />
+    </Grid>
+
+    <ListBox x:Name="IconList"
+             Grid.Row="2"
+             Height="260"
+             Margin="0,10,0,0"
+             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+             MouseDoubleClick="IconList_MouseDoubleClick">
+      <ListBox.ItemsPanel>
+        <ItemsPanelTemplate>
+          <WrapPanel Orientation="Horizontal" />
+        </ItemsPanelTemplate>
+      </ListBox.ItemsPanel>
+      <ListBox.ItemContainerStyle>
+        <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+          <Setter Property="Padding" Value="8" />
+          <Setter Property="Margin" Value="2" />
+          <Setter Property="MinHeight" Value="0" />
+          <Setter Property="ToolTip" Value="{Binding Name}" />
+        </Style>
+      </ListBox.ItemContainerStyle>
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <views:EntryIconView Size="24" Visual="{Binding Visual}" />
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+
+    <DockPanel Grid.Row="3" Margin="0,14,0,0" LastChildFill="False">
+      <Button Content="Browse..."
+              Padding="12,4"
+              ToolTip="An image (ico, png, jpg, bmp, gif), a program's icon (exe, dll) or an SVG of plain paths. It is copied into coursee's data"
+              Click="BrowseButton_Click" />
+      <Button x:Name="OwnIconButton"
+              Margin="8,0,0,0"
+              Padding="12,4"
+              Content="Own icon"
+              ToolTip="Back to the entry's own icon, or its source's"
+              Click="OwnIconButton_Click" />
+      <Button DockPanel.Dock="Right"
+              Margin="8,0,0,0"
+              Padding="12,4"
+              Content="Cancel"
+              IsCancel="True" />
+      <Button x:Name="OkButton"
+              DockPanel.Dock="Right"
+              Padding="20,4"
+              Content="OK"
+              IsDefault="True"
+              Click="OkButton_Click" />
+    </DockPanel>
+  </Grid>
+</Window>

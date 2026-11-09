@@ -42,7 +42,7 @@ public class KeyBindingsTests
             .Distinct()
             .ToList();
 
-        Assert.Equal(9, hintKeys.Count);
+        Assert.Equal(10, hintKeys.Count);
         Assert.All(hintKeys, key => Assert.Contains(key, launcherKeys));
     }
 }

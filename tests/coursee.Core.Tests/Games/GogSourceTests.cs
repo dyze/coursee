@@ -36,7 +36,7 @@ public class GogSourceTests
         };
 
         Assert.Equal(
-            new Resource("Foundation", @"""C:\GOG Galaxy\GalaxyClient.exe"" /command=runGame /gameId=1446930743 /path=""D:\gog\Foundation""", ResourceKind.Game, "GOG"),
+            new Resource("Foundation", @"""C:\GOG Galaxy\GalaxyClient.exe"" /command=runGame /gameId=1446930743 /path=""D:\gog\Foundation""", ResourceKind.Game, "GOG", IconPath: @"D:\gog\Foundation\foundation.exe"),
             Assert.Single(LoadWithGalaxy(game)));
     }
 
@@ -62,7 +62,7 @@ public class GogSourceTests
         var game = new Dictionary<string, string> { ["gameName"] = "The Witcher 3", ["exe"] = @"C:\GOG Games\Witcher 3\bin\witcher3.exe" };
 
         Assert.Equal(
-            new Resource("The Witcher 3", @"""C:\GOG Games\Witcher 3\bin\witcher3.exe""", ResourceKind.Game, "GOG"),
+            new Resource("The Witcher 3", @"""C:\GOG Games\Witcher 3\bin\witcher3.exe""", ResourceKind.Game, "GOG", IconPath: @"C:\GOG Games\Witcher 3\bin\witcher3.exe"),
             Assert.Single(Load(game)));
     }
 

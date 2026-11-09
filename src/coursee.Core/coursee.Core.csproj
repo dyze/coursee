@@ -9,4 +9,9 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.12" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The icons an entry can be given (IconLibrary), read by name. -->
+    <EmbeddedResource Include="Icons\Svg\*.svg" LogicalName="icons/%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

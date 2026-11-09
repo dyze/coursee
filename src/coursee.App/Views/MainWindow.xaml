@@ -181,16 +181,21 @@
               <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <!-- Where the item comes from (the same icon as in Settings > Sources). Its converter is
-                 added by the window, from the list of sources. -->
-            <TextBlock Width="18"
-                       Margin="0,0,10,0"
-                       VerticalAlignment="Center"
-                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                       FontSize="14"
-                       Opacity="0.6"
-                       Text="{Binding Resource.Source, Converter={StaticResource SourceIcon}}"
-                       ToolTip="{Binding Resource.Source, Converter={StaticResource SourceIcon}, ConverterParameter=Label}" />
+            <!-- The entry's icon (chosen with Ctrl+I, else its own), or where the item comes from (the same icon
+                 as in Settings > Sources). The source's name is the tooltip either way. Its converter is added by
+                 the window, from the list of sources. -->
+            <Grid Width="18"
+                  Margin="0,0,10,0"
+                  VerticalAlignment="Center"
+                  Background="Transparent"
+                  ToolTip="{Binding Resource.Source, Converter={StaticResource SourceIcon}, ConverterParameter=Label}">
+              <TextBlock FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                         FontSize="14"
+                         Opacity="0.6"
+                         Text="{Binding Resource.Source, Converter={StaticResource SourceIcon}}"
+                         Visibility="{Binding HasNoIcon, Converter={StaticResource VisibleWhen}}" />
+              <views:EntryIconView Size="16" HorizontalAlignment="Left" Visual="{Binding Icon}" />
+            </Grid>
 
             <StackPanel Grid.Column="1">
               <TextBlock Text="{Binding Resource.Name}" FontSize="15" TextTrimming="CharacterEllipsis" />

@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Coursee.Core.Entries;
+using Coursee.Core.Icons;
 using Coursee.Core.Logging;
 using Coursee.Core.Sources;
 
@@ -9,7 +10,8 @@ namespace Coursee.UI.Views;
 
 /// <summary>
 /// Settings > Entries: what the user set on entries, to undo or change it, one list at a time:
-/// hidden entries (restore), custom entries (edit, delete), aliases (edit, remove) and pins (unpin).
+/// hidden entries (restore), custom entries (edit, delete), aliases (edit, remove), pins (unpin)
+/// and chosen icons (remove).
 /// A filter narrows every list. Each change is saved at once.
 /// </summary>
 public partial class EntriesPanel : UserControl
@@ -20,6 +22,8 @@ public partial class EntriesPanel : UserControl
     private readonly EntryStore _entries;
     private readonly CustomEntryStore _customEntries;
     private readonly CustomEntryEditor _customEntryEditor;
+    private readonly EntryIcons _icons;
+    private readonly EntryIconEditor _iconEditor;
     private readonly SourceIcons _sourceIcons;
     private readonly ILog _log;
     private readonly Action<string> _showMessage;
@@ -31,6 +35,8 @@ public partial class EntriesPanel : UserControl
         EntryStore entries,
         CustomEntryStore customEntries,
         CustomEntryEditor customEntryEditor,
+        EntryIcons icons,
+        EntryIconEditor iconEditor,
         SourceIcons sourceIcons,
         ILog log,
         Action<string> showMessage)
@@ -38,6 +44,8 @@ public partial class EntriesPanel : UserControl
         _entries = entries;
         _customEntries = customEntries;
         _customEntryEditor = customEntryEditor;
+        _icons = icons;
+        _iconEditor = iconEditor;
         _sourceIcons = sourceIcons;
         _log = log;
         _showMessage = showMessage;
@@ -49,6 +57,7 @@ public partial class EntriesPanel : UserControl
             new("Custom", CustomList, "None. Ctrl+N or + in the launcher makes the typed text one."),
             new("Aliases", AliasList, "None. F2 in the launcher gives the selected entry an alias."),
             new("Pins", PinList, "None. Ctrl+P in the launcher pins the selected entry."),
+            new("Icons", IconList, "None. Ctrl+I in the launcher chooses the icon of the selected entry."),
         ];
         Reload();
     }
@@ -70,6 +79,10 @@ public partial class EntriesPanel : UserControl
             .Select(alias => new AliasRow(alias))
             .ToList();
         PinList.ItemsSource = _entries.Pinned.Where(target => EntryFilter.Matches(filter, target)).ToList();
+        IconList.ItemsSource = _entries.Icons
+            .Select(choice => new IconRow(choice, _icons.OfChoice(choice.Icon)))
+            .Where(row => EntryFilter.Matches(filter, row.Target, row.Detail))
+            .ToList();
 
         var selected = Math.Max(GroupList.SelectedIndex, 0);
         _reloading = true;
@@ -259,5 +272,19 @@ public partial class EntriesPanel : UserControl
                 return true;
             },
             "Cannot save the pinned entries");
+    }
+
+    /// <summary>The entry shows its own icon again; a file of the user's no entry uses is deleted.</summary>
+    private void RemoveIconButton_Click(object sender, RoutedEventArgs e)
+    {
+        var target = RowOf<IconRow>(sender).Target;
+        Change(
+            () =>
+            {
+                _iconEditor.Set(target, null);
+                _log.Info("Entries", $"Icon removed: {target}");
+                return true;
+            },
+            "Cannot save the icons");
     }
 }

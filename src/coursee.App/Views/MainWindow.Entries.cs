@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Coursee.Core.Entries;
+using Coursee.Core.Icons;
 using Coursee.Core.Logging;
 using Coursee.Core.Resources;
 
@@ -77,6 +78,69 @@ public partial class MainWindow
         SelectRowOf(sender);
         HideSelected();
         SearchBox.Focus();
+    }
+
+    /// <summary>
+    /// Ctrl+I: chooses the selected entry's icon in a dialog over the launcher: one of coursee's, a
+    /// file of the user's (copied into the data folder), or its own icon back.
+    /// </summary>
+    private async void ChooseIconForSelected()
+    {
+        if (Selected is not { } resource || !ResourceActions.CanSetIcon(resource))
+        {
+            return;
+        }
+
+        var picker = new IconPickerWindow(this, resource.Name, _entries.IconOf(resource.Target), _icons);
+        _showingDialog = true;
+        try
+        {
+            picker.ShowDialog();
+        }
+        finally
+        {
+            _showingDialog = false;
+        }
+
+        Activate();
+        SearchBox.Focus();
+        if (picker.Pick is not { } pick)
+        {
+            return;
+        }
+
+        try
+        {
+            if (pick.FilePath is { } file)
+            {
+                if (await _icons.ReadPicked(file) is not { } picked)
+                {
+                    ShowMessage($"{file} cannot be an icon: use an image (ico, png, jpg, bmp, gif), a program (exe, dll) or an SVG made of plain paths.");
+                    return;
+                }
+
+                var icon = _iconEditor.SetFile(resource.Target, picked.Content, picked.Extension);
+                _log.Info("Action", $"Icon set: {file} as {icon} -> {resource.Target}");
+            }
+            else if (pick.LibraryName is { } name)
+            {
+                _iconEditor.Set(resource.Target, EntryIcon.Library(name));
+                _log.Info("Action", $"Icon set: {name} -> {resource.Target}");
+            }
+            else
+            {
+                _iconEditor.Set(resource.Target, null);
+                _log.Info("Action", $"Icon removed: {resource.Target}");
+            }
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            _log.Error("Entries", "Cannot save the icon", ex);
+            ShowMessage(ex.Message);
+            return;
+        }
+
+        Refresh(keepSelection: true);
     }
 
     /// <summary>F2 or the alias icon: opens the row's box on the selected row, filled with its alias.</summary>

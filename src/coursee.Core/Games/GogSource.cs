@@ -75,7 +75,7 @@ public sealed class GogSource : IResourceSource
             return null;
         }
 
-        return new Resource(name, ThroughGalaxy(values, galaxy) ?? FromProgram(values, program), ResourceKind.Game, SourceName);
+        return new Resource(name, ThroughGalaxy(values, galaxy) ?? FromProgram(values, program), ResourceKind.Game, SourceName, IconPath: program);
     }
 
     /// <summary>The command line of GOG Galaxy's own shortcuts, or null without GOG Galaxy or a game ID.</summary>

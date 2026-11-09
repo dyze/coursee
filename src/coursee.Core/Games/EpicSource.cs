@@ -38,6 +38,12 @@ public sealed class EpicSource : IResourceSource
     public static string ManifestsFolderIn(string programData) =>
         Path.Combine(programData, "Epic", "EpicGamesLauncher", "Data", "Manifests");
 
+    /// <summary>The game's program (<c>InstallLocation</c> + <c>LaunchExecutable</c>), for its icon; null when either is missing.</summary>
+    private static string? ProgramOf(JsonElement root) =>
+        Text(root, "InstallLocation") is { } folder && Text(root, "LaunchExecutable") is { } program
+            ? Path.Combine(folder, program)
+            : null;
+
     public IReadOnlyList<Resource> GetResources()
     {
         if (string.IsNullOrEmpty(_manifestsFolder) || !Directory.Exists(_manifestsFolder))
@@ -69,7 +75,7 @@ public sealed class EpicSource : IResourceSource
             }
 
             var link = $"com.epicgames.launcher://apps/{Uri.EscapeDataString(catalog)}%3A{Uri.EscapeDataString(item)}%3A{Uri.EscapeDataString(app)}?action=launch&silent=true";
-            return new Resource(name, link, ResourceKind.Game, Name);
+            return new Resource(name, link, ResourceKind.Game, Name, IconPath: ProgramOf(root));
         }
         catch (Exception ex) when (ex is JsonException or InvalidOperationException or IOException or UnauthorizedAccessException)
         {

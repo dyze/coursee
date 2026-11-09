@@ -47,6 +47,9 @@ public static class ResourceActions
     /// <summary>Ctrl+H: entries from a source can be hidden. Not what was typed: there is nothing to hide.</summary>
     public static bool CanHide(Resource resource) => IsEntry(resource);
 
+    /// <summary>Ctrl+I: entries from a source can be given an icon. Not what was typed: it is no entry.</summary>
+    public static bool CanSetIcon(Resource resource) => IsEntry(resource);
+
     /// <summary>
     /// The row of the typed text, whose name box Ctrl+N or the + button opens to make it a custom
     /// entry. When something matched, the launcher adds that row first.
@@ -122,6 +125,11 @@ public static class ResourceActions
         if (CanHide(resource))
         {
             parts.Add("Ctrl+H: Hide");
+        }
+
+        if (CanSetIcon(resource))
+        {
+            parts.Add("Ctrl+I: Icon");
         }
 
         parts.Add(inRecents ? "Del: Remove from recents" : "Ctrl+N: New custom entry");

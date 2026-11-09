@@ -22,10 +22,29 @@ public sealed class ResultRow(Resource resource, bool isPinned, string? alias) :
     private static readonly string UnpinnedGlyph = ((char)0xE718).ToString();
 
     private RowEdit _edit;
+    private IconVisual? _icon;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public Resource Resource { get; } = resource;
+
+    /// <summary>The entry's icon (<see cref="EntryIcons"/>), set when read; null: its source's icon shows.</summary>
+    public IconVisual? Icon
+    {
+        get => _icon;
+        set
+        {
+            if (_icon != value)
+            {
+                _icon = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Icon)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasNoIcon)));
+            }
+        }
+    }
+
+    /// <summary>Shows the source's icon in place of the entry's.</summary>
+    public bool HasNoIcon => Icon is null;
 
     public bool IsPinned { get; } = isPinned;
 

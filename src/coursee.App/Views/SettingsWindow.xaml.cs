@@ -5,6 +5,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using Coursee.Core;
 using Coursee.Core.Entries;
+using Coursee.Core.Icons;
 using Coursee.Core.Logging;
 using Coursee.Core.Platform;
 using Coursee.Core.Recents;
@@ -73,6 +74,8 @@ public partial class SettingsWindow : Window
         EntryStore entries,
         CustomEntryStore customEntries,
         CustomEntryEditor customEntryEditor,
+        EntryIcons icons,
+        EntryIconEditor iconEditor,
         IAutoStart autoStart,
         IExplorerMenu explorerMenu,
         IHotkeyRegistrar hotkeys,
@@ -118,7 +121,7 @@ public partial class SettingsWindow : Window
         _updates = updates;
         ShowAbout(files);
 
-        EntriesHost.Content = new EntriesPanel(entries, customEntries, customEntryEditor, new SourceIcons(() => sources.All), _log, ShowMessage);
+        EntriesHost.Content = new EntriesPanel(entries, customEntries, customEntryEditor, icons, iconEditor, new SourceIcons(() => sources.All), _log, ShowMessage);
 
         var keyBindings = new ListCollectionView(KeyBindings.All.ToList());
         keyBindings.GroupDescriptions.Add(new PropertyGroupDescription(nameof(Core.Settings.KeyBinding.Area)));

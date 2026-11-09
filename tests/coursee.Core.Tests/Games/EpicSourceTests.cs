@@ -34,6 +34,18 @@ public sealed class EpicSourceTests : IDisposable
     }
 
     [Fact]
+    public void AGame_ShowsTheIconOfItsProgram()
+    {
+        WriteGame("A.item", "Fortnite", "Fortnite", """, "InstallLocation": "D:\\Epic\\Fortnite", "LaunchExecutable": "FortniteGame/Binaries/Win64/Fortnite.exe" """);
+        WriteGame("B.item", "Other", "Other", """, "InstallLocation": "D:\\Epic\\Other" """);
+
+        var games = Load();
+
+        Assert.Equal(Path.Combine(@"D:\Epic\Fortnite", "FortniteGame/Binaries/Win64/Fortnite.exe"), games[0].IconPath);
+        Assert.Null(games[1].IconPath);
+    }
+
+    [Fact]
     public void OnlyItemFiles_AreRead_InNameOrder()
     {
         WriteGame("B.item", "Second", "b");

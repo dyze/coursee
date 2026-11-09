@@ -98,7 +98,7 @@ public sealed class SteamSource : IResourceSource
                 return null;
             }
 
-            return new Resource(name.Trim(), $"steam://rungameid/{id.Trim()}", ResourceKind.Game, Name);
+            return new Resource(name.Trim(), $"steam://rungameid/{id.Trim()}", ResourceKind.Game, Name, IconPath: IconOf(id.Trim()));
         }
         catch (Exception ex) when (ex is FormatException or IOException or UnauthorizedAccessException)
         {
@@ -106,6 +106,23 @@ public sealed class SteamSource : IResourceSource
             return null;
         }
     }
+
+    /// <summary>
+    /// The game's icon in Steam's cache: since 2024, the image named by its hash (40 hex digits) in
+    /// <c>appcache\librarycache\&lt;id&gt;</c>, beside the artwork; before, <c>&lt;id&gt;_icon.jpg</c>. Null when there is none.
+    /// </summary>
+    private string? IconOf(string id)
+    {
+        var cache = Path.Combine(_steamFolder!, "appcache", "librarycache");
+        var folder = Path.Combine(cache, id);
+        var hashed = Directory.Exists(folder)
+            ? Directory.EnumerateFiles(folder, "*.jpg").FirstOrDefault(file => IsHash(Path.GetFileNameWithoutExtension(file)))
+            : null;
+        var old = Path.Combine(cache, $"{id}_icon.jpg");
+        return hashed ?? (File.Exists(old) ? old : null);
+    }
+
+    private static bool IsHash(string name) => name.Length == 40 && name.All(char.IsAsciiHexDigit);
 
     /// <summary>Not being downloaded or half removed. A manifest without flags counts as installed.</summary>
     private static bool IsInstalled(VdfNode state) =>

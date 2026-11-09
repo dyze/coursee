@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Coursee.Core;
 using Coursee.Core.Entries;
+using Coursee.Core.Icons;
 using Coursee.Core.Logging;
 using Coursee.Core.Platform;
 using Coursee.Core.Recents;
@@ -23,6 +24,8 @@ public partial class MainWindow : Window
     private readonly RecentStore _recents;
     private readonly EntryStore _entries;
     private readonly CustomEntryEditor _customEntries;
+    private readonly EntryIcons _icons;
+    private readonly EntryIconEditor _iconEditor;
     private readonly SettingsStore _settings;
     private readonly ILog _log;
     private readonly IBrowserLocator _browsers;
@@ -46,6 +49,8 @@ public partial class MainWindow : Window
         RecentStore recents,
         EntryStore entries,
         CustomEntryEditor customEntries,
+        EntryIcons icons,
+        EntryIconEditor iconEditor,
         SettingsStore settings,
         ILog log,
         IBrowserLocator browsers,
@@ -60,6 +65,8 @@ public partial class MainWindow : Window
         _recents = recents;
         _entries = entries;
         _customEntries = customEntries;
+        _icons = icons;
+        _iconEditor = iconEditor;
         _settings = settings;
         _createSettings = createSettings;
 
@@ -320,9 +327,11 @@ public partial class MainWindow : Window
         // The typed text can become a custom entry.
         AddButton.Visibility = IsShowingRecents ? Visibility.Collapsed : Visibility.Visible;
 
-        ResultsList.ItemsSource = items
+        var rows = items
             .Select(r => new ResultRow(r, _entries.IsPinned(r.Target), _entries.AliasOf(r.Target)))
             .ToList();
+        rows.ForEach(_icons.Show);
+        ResultsList.ItemsSource = rows;
         if (items.Count > 0)
         {
             var keep = selectedTarget is null
@@ -682,6 +691,10 @@ public partial class MainWindow : Window
                 break;
             case Key.H when Keyboard.Modifiers == ModifierKeys.Control:
                 HideSelected();
+                e.Handled = true;
+                break;
+            case Key.I when Keyboard.Modifiers == ModifierKeys.Control:
+                ChooseIconForSelected();
                 e.Handled = true;
                 break;
             case Key.N when Keyboard.Modifiers == ModifierKeys.Control:

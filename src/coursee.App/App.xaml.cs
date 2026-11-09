@@ -3,6 +3,7 @@ using System.Windows.Interop;
 using Coursee.Core;
 using Coursee.Core.Entries;
 using Coursee.Core.Games;
+using Coursee.Core.Icons;
 using Coursee.Core.Logging;
 using Coursee.Core.Placement;
 using Coursee.Core.Platform;
@@ -29,6 +30,7 @@ public partial class App : Application
     private LogWindow? _logWindow;
     private TrayIcon? _tray;
     private UiWatchdog? _watchdog;
+    private ShellIcons? _shellIcons;
 
     // Set at startup; a closed window cannot be shown again, so each opening creates a new one.
     private Func<LogWindow>? _createLogWindow;
@@ -143,6 +145,10 @@ public partial class App : Application
 
         var entries = new EntryStore(files.Entries);
         var customEntryEditor = new CustomEntryEditor(customEntries, entries, recents);
+        var iconFiles = new IconFileStore(files.Icons);
+        var iconEditor = new EntryIconEditor(entries, iconFiles);
+        _shellIcons = new ShellIcons();
+        var icons = new EntryIcons(entries, iconFiles, _shellIcons, log);
 
         var autoStart = new RegistryAutoStart(executablePath);
         var explorerMenu = new RegistryExplorerMenu(executablePath);
@@ -158,6 +164,8 @@ public partial class App : Application
             recents,
             entries,
             customEntryEditor,
+            icons,
+            iconEditor,
             settings,
             log,
             new RegistryBrowserLocator(),
@@ -171,6 +179,8 @@ public partial class App : Application
                     entries,
                     customEntries,
                     customEntryEditor,
+                    icons,
+                    iconEditor,
                     autoStart,
                     explorerMenu,
                     hotkey,
@@ -378,6 +388,7 @@ public partial class App : Application
         _watchdog?.Dispose();
         _tray?.Dispose();
         _hotkey?.Dispose();
+        _shellIcons?.Dispose();
         _logHub?.Filter.Info("App", "coursee stopped");
         _logHub?.Dispose();
         _singleInstance?.Dispose();

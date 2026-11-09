@@ -55,6 +55,9 @@ public sealed class AppFiles
 
     public string Logs => Path.Combine(DataDirectory, "logs");
 
+    /// <summary>The icon files chosen for entries, copied here (<see cref="Coursee.Core.Icons.IconFileStore"/>).</summary>
+    public string Icons => Path.Combine(DataDirectory, "icons");
+
     /// <summary>The changelog, shipped next to coursee.exe.</summary>
     public string Changelog => Path.Combine(ProgramDirectory, "CHANGELOG.md");
 
@@ -64,6 +67,7 @@ public sealed class AppFiles
         new("Settings", Settings),
         new("Pins, aliases, hidden", Entries),
         new("Custom entries", CustomEntries),
+        new("Entry icons", Icons),
         new("Recents", Recents),
         new("Window positions", WindowPositions),
         new("Update check", UpdateCheck),
