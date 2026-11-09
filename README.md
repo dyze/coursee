@@ -146,7 +146,7 @@ The build fails if `Core` line coverage is below **95 %**. `build\build.cmd` fir
 | `src/` | `coursee.App` (WPF) and `coursee.Core` |
 | `tests/` | Unit tests for `Core` |
 | `docs/` | Documentation |
-| `build/` | Build and test scripts (`build.cmd`, `build.sh`), installer and portable zip script (`installer.cmd`, `installer/coursee.iss`), icon generator (`make_icon.py`) |
+| `build/` | Build and test scripts (`build.cmd`, `build.sh`), installer and portable zip script (`installer.cmd`, `installer/coursee.iss`) |
 | `lib/` | Third-party binaries, if any |
 | `packages/` | Local NuGet packages, if any |
 | `samples/` | Samples |
