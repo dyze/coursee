@@ -2,12 +2,12 @@
 
 Scope of each planned version. Implemented features move to [CHANGELOG.md](../CHANGELOG.md). The goal, principles and non-goals are in [GOAL.md](GOAL.md). The features are sorted by priority.
 
-| Version | Status  | Theme                          |
-| ------- | ------- | ------------------------------ |
+| Version | Status   | Theme                          |
+| ------- | -------- | ------------------------------ |
 | 0.9     | Released | Explorer integration and icons |
 
-## 0.9
-Released: see `[0.9]` in the changelog.
+## 0.10
+1. Add screenshots to README.md.
 
 ## Later
 1. **Beautify changelog.** Today hard to identify the interesting info reading the md file as is.
