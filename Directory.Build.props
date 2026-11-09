@@ -9,7 +9,7 @@
     <DebugType>embedded</DebugType>
     <!-- Single source of truth for the version (0.1, then 0.2, ...). Stamped into every assembly.
          "-dev" while it is developed (0.9-dev), dropped by the release commit (docs/GOAL.md#versioning). -->
-    <Version>0.9</Version>
+    <Version>0.10-dev</Version>
     <!-- The version without "-dev", where only numbers fit (the setup's file version). -->
     <VersionNumber>$(Version.Split('-')[0])</VersionNumber>
     <!-- Lets the Windows-only WPF project be restored/built on non-Windows machines (CI). -->
