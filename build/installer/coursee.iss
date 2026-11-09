@@ -1,12 +1,15 @@
 ; coursee installer (Inno Setup 6.3 or later).
 ; Built by build\installer.cmd, which publishes the app and passes the version:
-;   ISCC.exe /DAppVersion=<version> /DPublishDir=<published app folder> build\installer\coursee.iss
+;   ISCC.exe /DAppVersion=<version> /DVersionNumber=<version without -dev> /DPublishDir=<published app folder> build\installer\coursee.iss
 ;
 ; Per-user install: no administrator rights, installed in %LOCALAPPDATA%\Programs\coursee.
 ; User data (%LOCALAPPDATA%\coursee: settings, recents, logs) is left in place on uninstall.
 
 #ifndef AppVersion
   #error AppVersion is not defined. Run build\installer.cmd instead of compiling this file directly.
+#endif
+#ifndef VersionNumber
+  #error VersionNumber is not defined. Run build\installer.cmd instead of compiling this file directly.
 #endif
 #ifndef PublishDir
   #error PublishDir is not defined. Run build\installer.cmd instead of compiling this file directly.
@@ -24,7 +27,8 @@ AppName={#AppName}
 AppVersion={#AppVersion}
 AppVerName={#AppName} {#AppVersion}
 AppPublisher=dyze
-VersionInfoVersion={#AppVersion}
+; Numbers only: the version without "-dev".
+VersionInfoVersion={#VersionNumber}
 PrivilegesRequired=lowest
 DefaultDirName={autopf}\{#AppName}
 DisableProgramGroupPage=yes

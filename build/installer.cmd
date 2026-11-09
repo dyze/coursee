@@ -11,6 +11,9 @@ set "PUBLISH=%CD%\artifacts\installer\app"
 rem The version comes from Directory.Build.props, the single source of truth.
 set "VERSION="
 for /f "usebackq delims=" %%v in (`dotnet msbuild "%PROJECT%" -nologo -getProperty:Version`) do set "VERSION=%%v"
+rem The same without "-dev", for the setup's file version, which takes numbers only.
+set "VERSION_NUMBER="
+for /f "usebackq delims=" %%v in (`dotnet msbuild "%PROJECT%" -nologo -getProperty:VersionNumber`) do set "VERSION_NUMBER=%%v"
 if not defined VERSION (
   echo Could not read the version from Directory.Build.props.
   exit /b 1
@@ -33,7 +36,7 @@ rem Self-contained: the installed app needs no .NET runtime on the PC. A single 
 if exist "%PUBLISH%" rmdir /s /q "%PUBLISH%"
 dotnet publish "%PROJECT%" -c Release -r win-x64 --self-contained true -o "%PUBLISH%" || exit /b 1
 
-"%ISCC%" /Q "/DAppVersion=%VERSION%" "/DPublishDir=%PUBLISH%" "build\installer\coursee.iss" || exit /b 1
+"%ISCC%" /Q "/DAppVersion=%VERSION%" "/DVersionNumber=%VERSION_NUMBER%" "/DPublishDir=%PUBLISH%" "build\installer\coursee.iss" || exit /b 1
 
 rem Portable zip: the same files in a coursee folder, with the marker that keeps the data beside coursee.exe.
 set "PORTABLE=%CD%\artifacts\installer\portable\coursee"

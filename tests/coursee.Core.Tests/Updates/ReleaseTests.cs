@@ -35,4 +35,18 @@ public class ReleaseTests
     {
         Assert.Equal(expected, Release.IsNewer(candidate, current));
     }
+
+    [Theory]
+    [InlineData("0.9", "0.9-dev", true)]
+    [InlineData("v0.9", "0.9-dev", true)]
+    [InlineData("0.10", "0.9-dev", true)]
+    [InlineData("0.8.1", "0.9-dev", false)]
+    [InlineData("0.9-dev", "0.9", false)]
+    [InlineData("0.9-dev", "0.9-dev", false)]
+    [InlineData("0.9-dev", "0.8.1", true)]
+    [InlineData("x-dev", "0.8.1", false)]
+    public void IsNewer_TakesADevelopmentVersionAsOlderThanItsRelease(string candidate, string current, bool expected)
+    {
+        Assert.Equal(expected, Release.IsNewer(candidate, current));
+    }
 }

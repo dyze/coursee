@@ -28,7 +28,7 @@ Only those listed in `docs/ARCHITECTURE.md#stack`. Ask before adding one.
 ## Versioning rules
 - Format and policy: `docs/GOAL.md#versioning`.
 - `<Version>` in `Directory.Build.props` is the only place the version is written: not in code, docs or scripts.
-- Bump it only when the owner asks.
+- Bump it only when the owner asks. Between releases it ends in `-dev` (`0.9-dev`): a release commit drops `-dev`; `<next>-dev` is set only once the release is published (tag, files, GitHub release), when the owner says so.
 
 ## Repo layout
 `src/`, `tests/`, `docs/`, `build/`, `lib/`, `packages/`, `samples/`, `.config/` (dotnet tools), `artifacts/` (ignored). Do not add top-level folders without asking.

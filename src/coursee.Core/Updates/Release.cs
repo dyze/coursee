@@ -29,12 +29,16 @@ public sealed record Release(string Version, string Page)
 
     /// <summary>
     /// True when <paramref name="candidate"/> is a later version than <paramref name="current"/>
-    /// (<c>MAJOR.MINOR</c> or <c>MAJOR.MINOR.PATCH</c>, a leading <c>v</c> allowed). False when either cannot be read.
+    /// (<c>MAJOR.MINOR</c> or <c>MAJOR.MINOR.PATCH</c>, a leading <c>v</c> allowed, a suffix such as
+    /// <c>-dev</c> for a version under development, older than its release: <c>0.9-dev</c> &lt; <c>0.9</c>).
+    /// False when either cannot be read.
     /// </summary>
     public static bool IsNewer(string candidate, string current) =>
-        TryParse(candidate, out var later) && TryParse(current, out var now) && later > now;
+        TryParse(candidate, out var later, out var laterInDevelopment)
+        && TryParse(current, out var now, out var nowInDevelopment)
+        && (later > now || (later == now && nowInDevelopment && !laterInDevelopment));
 
-    private static bool TryParse(string text, out System.Version version)
+    private static bool TryParse(string text, out System.Version version, out bool inDevelopment)
     {
         var trimmed = text.Trim();
         if (trimmed.StartsWith('v') || trimmed.StartsWith('V'))
@@ -42,7 +46,9 @@ public sealed record Release(string Version, string Page)
             trimmed = trimmed[1..];
         }
 
-        return System.Version.TryParse(trimmed, out version!);
+        var dash = trimmed.IndexOf('-');
+        inDevelopment = dash >= 0;
+        return System.Version.TryParse(inDevelopment ? trimmed[..dash] : trimmed, out version!);
     }
 }
 

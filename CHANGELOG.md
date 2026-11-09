@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- **Versions under development end in `-dev`** (`0.9-dev`), shown so in the window, the tray and Settings > About, so a build between releases is not taken for one; the update check offers the release to it ([Versioning](docs/GOAL.md#versioning)).
+
 ## [0.8.1] - 2026-11-04
 
 Faster refresh, build identity, another build detected, freeze and timing logs.

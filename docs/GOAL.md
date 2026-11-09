@@ -29,7 +29,14 @@ Enter ─► open resource    Esc ─► hide
 
 ## Versioning
 - Format `MAJOR.MINOR`, starting at **0.1**, then 0.2, and so on. A release with fixes only adds a patch number: `MAJOR.MINOR.PATCH` (0.8.1). No `v` prefix, and no 1.0 until I decide.
-- Defined once, in `Directory.Build.props`, stamped into every produced assembly, and shown at the bottom right of the launcher window.
+- **Under development**, the version has a `-dev` suffix: `0.9-dev` is 0.9 being built, not released, older than `0.9` (the update check offers the release to it). Only a release is ever plain `MAJOR.MINOR[.PATCH]`:
+
+  ```
+  0.8.1 published ──► 0.9-dev … ──► 0.9 (release commit) ──► published ──► 0.10-dev …
+  ```
+
+  The release commit drops `-dev`, when I ask for a release. The next version with `-dev` is set once the release is published (tagged, its files built from the release commit, the GitHub release made), when I ask for the bump: builds of the release keep the plain version until then.
+- Defined once, in `Directory.Build.props`, stamped into every produced assembly, and shown at the bottom right of the launcher window, `-dev` included. Where only numbers fit (the setup's file version), the number without `-dev` is used (`VersionNumber`).
 - Each build is identified by its git commit (no build number), shown in Settings > About and the log: `0.8.1 (97bddb2)`, `-dirty` for a build with uncommitted changes.
 
 What each version contains: [ROADMAP.md](ROADMAP.md).
