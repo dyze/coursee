@@ -11,11 +11,12 @@ namespace Coursee.UI.Views;
 
 /// <summary>
 /// The icons of the rows: the one the user chose (one of coursee's, or a file of theirs), else the
-/// entry's own as Explorer shows it (<see cref="OwnIcon"/>), else none (the row keeps its source's
+/// entry's own as Explorer shows it (<see cref="OwnIcon"/>) or, for a web address, its site's icon
+/// (<see cref="SiteIcons"/>), else none (the row keeps its source's
 /// icon). Each is read once; an entry's own icon is read in the background and shown when ready.
 /// Used on the UI thread.
 /// </summary>
-public sealed class EntryIcons(EntryStore entries, IconFileStore files, ShellIcons shell, ILog log)
+public sealed class EntryIcons(EntryStore entries, IconFileStore files, ShellIcons shell, SiteIcons sites, ILog log)
 {
     /// <summary>Pixels of an icon read from Windows: a 32-pixel row icon at 200 % scaling.</summary>
     private const int RowPixels = 64;
@@ -27,6 +28,7 @@ public sealed class EntryIcons(EntryStore entries, IconFileStore files, ShellIco
 
     private readonly Dictionary<string, IconVisual?> _files = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, Task<IconVisual?>> _own = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, Task<IconVisual?>> _sites = new(StringComparer.Ordinal);
 
     /// <summary>The visual of a chosen icon; null when it cannot be drawn (its file gone, say).</summary>
     public IconVisual? OfChoice(EntryIcon icon) =>
@@ -41,12 +43,15 @@ public sealed class EntryIcons(EntryStore entries, IconFileStore files, ShellIco
             return;
         }
 
-        if (OwnIcon.PathOf(row.Resource) is not { } path)
+        var resource = row.Resource;
+        var own = OwnIcon.PathOf(resource) is { } path ? Own(path)
+            : resource.Kind == ResourceKind.Url ? Site(resource.Target, resource.Browser)
+            : null;
+        if (own is null)
         {
             return;
         }
 
-        var own = Own(path);
         if (own.IsCompletedSuccessfully)
         {
             row.Icon = own.Result;
@@ -131,6 +136,43 @@ public sealed class EntryIcons(EntryStore entries, IconFileStore files, ShellIco
         }
 
         return own;
+    }
+
+    /// <summary>
+    /// A web site's icon, as a browser keeps it (<see cref="SiteIcons"/>), read once per site and
+    /// browser. None found is asked again next time: the browser may keep it by then.
+    /// </summary>
+    private Task<IconVisual?>? Site(string url, string? browser)
+    {
+        if (SiteIcons.HostOf(url) is not { } host)
+        {
+            return null;
+        }
+
+        var key = $"{browser}|{host}";
+        if (_sites.TryGetValue(key, out var site) && !(site.IsCompletedSuccessfully && site.Result is null))
+        {
+            return site;
+        }
+
+        site = ReadSite(url, browser);
+        _sites[key] = site;
+        return site;
+    }
+
+    private async Task<IconVisual?> ReadSite(string url, string? browser)
+    {
+        try
+        {
+            return await Task.Run(() => sites.IconFor(url, browser) is { } data && Decode(new MemoryStream(data), RowPixels) is { } image
+                ? IconVisual.OfImage(image)
+                : null);
+        }
+        catch (Exception ex) when (ex is NotSupportedException or FileFormatException or ArgumentException or COMException)
+        {
+            log.Debug(LogCategory, $"Cannot decode the site icon of {url}: {ex.GetType().Name}: {ex.Message}");
+            return null;
+        }
     }
 
     private async Task<IconVisual?> ReadOwn(string path)

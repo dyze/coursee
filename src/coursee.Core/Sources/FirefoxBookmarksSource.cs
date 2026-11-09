@@ -5,17 +5,14 @@ using Microsoft.Data.Sqlite;
 namespace Coursee.Core.Sources;
 
 /// <summary>
-/// Exposes the bookmarks of a Firefox profile. Firefox keeps <c>places.sqlite</c> locked
-/// while it runs, and its newest changes sit in the <c>-wal</c> file, so both files are
-/// copied to a temporary folder and read from there. The result is cached until one of
-/// the two files changes.
+/// Exposes the bookmarks of a Firefox profile, read from <c>places.sqlite</c> through a copy
+/// (<see cref="SqliteSnapshot"/>). The result is cached until the file or its <c>-wal</c> changes.
 /// </summary>
 public sealed class FirefoxBookmarksSource : IResourceSource
 {
     public const string SourceName = "Firefox";
 
     private const string DatabaseFile = "places.sqlite";
-    private const string WalFile = "places.sqlite-wal";
 
     private readonly string? _profileDirectory;
     private readonly ILog _log;
@@ -49,8 +46,7 @@ public sealed class FirefoxBookmarksSource : IResourceSource
             return [];
         }
 
-        var wal = Path.Combine(_profileDirectory, WalFile);
-        var stamp = Stamp(database) + "|" + Stamp(wal);
+        var stamp = SqliteSnapshot.Stamp(database);
         if (stamp == _cachedStamp)
         {
             return _cached;
@@ -58,7 +54,7 @@ public sealed class FirefoxBookmarksSource : IResourceSource
 
         try
         {
-            _cached = Read(database, wal);
+            _cached = SqliteSnapshot.Read(database, Read);
             _cachedStamp = stamp;
         }
         catch (Exception ex) when (ex is SqliteException or IOException or UnauthorizedAccessException)
@@ -70,71 +66,38 @@ public sealed class FirefoxBookmarksSource : IResourceSource
         return _cached;
     }
 
-    private static string Stamp(string path)
+    private IReadOnlyList<Resource> Read(SqliteConnection connection)
     {
-        var info = new FileInfo(path);
-        return info.Exists ? $"{info.LastWriteTimeUtc.Ticks}:{info.Length}" : "-";
-    }
+        using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT b.title, p.title, p.url
+            FROM moz_bookmarks b
+            JOIN moz_places p ON b.fk = p.id
+            WHERE b.type = 1
+            ORDER BY b.id
+            """;
 
-    private IReadOnlyList<Resource> Read(string database, string wal)
-    {
-        var temp = Path.Combine(Path.GetTempPath(), "coursee-firefox-" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(temp);
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var resources = new List<Resource>();
 
-        try
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
         {
-            var copy = Path.Combine(temp, DatabaseFile);
-            File.Copy(database, copy);
-            if (File.Exists(wal))
+            var url = reader.IsDBNull(2) ? null : reader.GetString(2);
+            if (!BookmarkUrls.IsOpenable(url) || !seen.Add(url!))
             {
-                File.Copy(wal, copy + "-wal");
+                continue;
             }
 
-            using var connection = new SqliteConnection($"Data Source={copy};Pooling=False");
-            connection.Open();
+            var title = FirstNonEmpty(
+                reader.IsDBNull(0) ? null : reader.GetString(0),
+                reader.IsDBNull(1) ? null : reader.GetString(1),
+                url!);
 
-            using var command = connection.CreateCommand();
-            command.CommandText = """
-                SELECT b.title, p.title, p.url
-                FROM moz_bookmarks b
-                JOIN moz_places p ON b.fk = p.id
-                WHERE b.type = 1
-                ORDER BY b.id
-                """;
-
-            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var resources = new List<Resource>();
-
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                var url = reader.IsDBNull(2) ? null : reader.GetString(2);
-                if (!BookmarkUrls.IsOpenable(url) || !seen.Add(url!))
-                {
-                    continue;
-                }
-
-                var title = FirstNonEmpty(
-                    reader.IsDBNull(0) ? null : reader.GetString(0),
-                    reader.IsDBNull(1) ? null : reader.GetString(1),
-                    url!);
-
-                resources.Add(new Resource(title, url!, ResourceKind.Url, Name, Browser: Browsers.Firefox));
-            }
-
-            return resources;
+            resources.Add(new Resource(title, url!, ResourceKind.Url, Name, Browser: Browsers.Firefox));
         }
-        finally
-        {
-            try
-            {
-                Directory.Delete(temp, recursive: true);
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-            {
-                // A leftover temp folder is harmless.
-            }
-        }
+
+        return resources;
     }
 
     private static string FirstNonEmpty(params string?[] values) =>

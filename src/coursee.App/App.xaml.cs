@@ -148,7 +148,9 @@ public partial class App : Application
         var iconFiles = new IconFileStore(files.Icons);
         var iconEditor = new EntryIconEditor(entries, iconFiles);
         _shellIcons = new ShellIcons();
-        var icons = new EntryIcons(entries, iconFiles, _shellIcons, log);
+        // Read from the browsers' own caches on this PC: nothing is downloaded.
+        var siteIcons = new SiteIcons([BrowserSiteIcons.Firefox(firefoxProfile), BrowserSiteIcons.Edge(edgeProfile)], log);
+        var icons = new EntryIcons(entries, iconFiles, _shellIcons, siteIcons, log);
 
         var autoStart = new RegistryAutoStart(executablePath);
         var explorerMenu = new RegistryExplorerMenu(executablePath);
