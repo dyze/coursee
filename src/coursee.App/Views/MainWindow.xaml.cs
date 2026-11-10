@@ -153,10 +153,13 @@ public partial class MainWindow : Window
         // Show the list from the last refresh at once; the fresh one replaces it when ready.
         SearchBox.Text = string.Empty;
         Refresh();
+        var listed = watch.ElapsedMilliseconds;
         WindowPlacer.PlaceLauncher(this, _settings.LauncherPosition, _log);
+        var placed = watch.ElapsedMilliseconds;
         Show();
         Activate();
         SearchBox.Focus();
+        _log.Debug("Window", $"Show steps: list {listed} ms, place {placed - listed} ms, show {watch.ElapsedMilliseconds - placed} ms");
 
         // ContextIdle comes after the layout and render passes: the first frame is handed to the render thread.
         Dispatcher.BeginInvoke(
@@ -234,12 +237,18 @@ public partial class MainWindow : Window
                 _refreshAgain = false;
                 _log.Debug("App", "Refreshing the sources");
                 var watch = System.Diagnostics.Stopwatch.StartNew();
-                await Task.Run(() => _sources.SyncQuickAccess());
-                _log.Debug(SourceCatalog.QuickAccessCategory, $"Read in {watch.ElapsedMilliseconds} ms");
+                // Timed on the background thread: the wait for the UI thread afterwards is not part of the read.
+                var quickAccessRead = await Task.Run(() =>
+                {
+                    _sources.SyncQuickAccess();
+                    return watch.ElapsedMilliseconds;
+                });
+                _log.Debug(SourceCatalog.QuickAccessCategory, $"Read in {quickAccessRead} ms, back on the UI thread after {watch.ElapsedMilliseconds - quickAccessRead} ms");
                 var enabled = _sources.All.Where(s => _settings.IsSourceEnabled(s.Name)).ToList();
                 var results = await Task.Run(() => SourceLoader.Load(enabled));
+                var loaded = watch.ElapsedMilliseconds;
                 ApplyResults(results);
-                _log.Debug("App", $"Sources refreshed in {watch.ElapsedMilliseconds} ms");
+                _log.Debug("App", $"Sources refreshed in {watch.ElapsedMilliseconds} ms (list updated in {watch.ElapsedMilliseconds - loaded} ms)");
             }
             while (_refreshAgain);
         }

@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- **Finer show and refresh timings in the debug log**: how long showing the launcher spends listing, placing and showing, how long a refresh spends updating the list, and the Quick access read apart from the wait for the window, to find what freezes the window.
+
 ## [0.9] - 2026-11-09
 
 Add from Explorer, entry and web site icons, new app icon, one set of SVG icons.
