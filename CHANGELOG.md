@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - **Finer show and refresh timings in the debug log**: how long showing the launcher spends listing, placing and showing, how long a refresh spends updating the list, and the Quick access read apart from the wait for the window, to find what freezes the window.
+- **Slow searches in the debug log**: a list update taking 50 ms or more logs how long it spent searching, checking typed text that matches nothing, reading icons and filling the list, with the text's length and what it was taken for (never the text itself).
 
 ## [0.9] - 2026-11-09
 

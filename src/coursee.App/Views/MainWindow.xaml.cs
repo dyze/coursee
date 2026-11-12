@@ -307,11 +307,15 @@ public partial class MainWindow : Window
         var selectedTarget = keepSelection ? Selected?.Target : null;
         var query = SearchBox.Text;
         IReadOnlyList<Resource> items;
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        long searched;
+        var fallbackKind = "none";
 
         if (string.IsNullOrWhiteSpace(query))
         {
             // As the sources list them now: a recent item is saved as it was opened.
             items = _entries.Visible(_settings.FromEnabledSources(CurrentRecents.Of(_recents.Items, _all)));
+            searched = watch.ElapsedMilliseconds;
         }
         else
         {
@@ -323,16 +327,21 @@ public partial class MainWindow : Window
                     IsPinned: _entries.IsPinned,
                     AliasTarget: _entries.TargetOfAlias),
                 ignoreAccents: _settings.IgnoreAccents);
+            searched = watch.ElapsedMilliseconds;
 
             // Nothing matches: offer what the Windows Run dialog would do with the typed text,
             // unless that is running a command and typed commands are off.
-            if (items.Count == 0
-                && FallbackClassifier.Classify(query) is { } fallback
-                && !FallbackClassifier.IsBlocked(fallback, _settings.AllowTypedCommands))
+            if (items.Count == 0 && FallbackClassifier.Classify(query) is { } fallback)
             {
-                items = [fallback];
+                fallbackKind = fallback.Kind.ToString();
+                if (!FallbackClassifier.IsBlocked(fallback, _settings.AllowTypedCommands))
+                {
+                    items = [fallback];
+                }
             }
         }
+
+        var classified = watch.ElapsedMilliseconds;
 
         // The typed text can become a custom entry.
         AddButton.Visibility = IsShowingRecents ? Visibility.Collapsed : Visibility.Visible;
@@ -341,6 +350,7 @@ public partial class MainWindow : Window
             .Select(r => new ResultRow(r, _entries.IsPinned(r.Target), _entries.AliasOf(r.Target)))
             .ToList();
         rows.ForEach(_icons.Show);
+        var iconed = watch.ElapsedMilliseconds;
         ResultsList.ItemsSource = rows;
         if (items.Count > 0)
         {
@@ -357,7 +367,17 @@ public partial class MainWindow : Window
         }
 
         UpdateActionText();
+
+        // Only a slow one: every keystroke would fill the log. Never the typed text, only its length.
+        if (watch.ElapsedMilliseconds >= SlowRefreshMilliseconds)
+        {
+            _log.Debug("Search", $"Slow list update ({query.Length} chars, {items.Count} results, fallback {fallbackKind}): "
+                + $"search {searched} ms, fallback {classified - searched} ms, icons {iconed - classified} ms, "
+                + $"list {watch.ElapsedMilliseconds - iconed} ms");
+        }
     }
+
+    private const int SlowRefreshMilliseconds = 50;
 
     private void UpdateActionText()
     {
